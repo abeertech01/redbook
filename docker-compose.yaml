@@ -1,0 +1,54 @@
+services:
+  client:
+    container_name: client
+    build:
+      context: ./client
+      dockerfile: client.dockerfile
+    ports:
+      - "5173:5173"
+    networks:
+      - redbook_net
+    env_file:
+      - ./client/.env
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - server
+
+  server:
+    container_name: server
+    build:
+      context: ./server
+      dockerfile: server.dockerfile
+    env_file:
+      - ./server/.env
+    ports:
+      - "3030:3030"
+    networks:
+      - redbook_net
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    image: postgres:14
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - redbook_net
+    env_file:
+      - ./server/.env
+    volumes:
+      - pgdata:/data/db
+
+networks:
+  redbook_net:
+    driver: bridge
+
+volumes:
+  pgdata: {}
