@@ -2,18 +2,14 @@ import express, { Request, Response } from "express"
 import "dotenv/config"
 import cors from "cors"
 import prisma from "./lib/prismadb"
+import { corsOptions } from "./constants/config"
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  })
-)
+app.use(cors(corsOptions))
 
 app.get("/", (req: Request, res: Response) => {
   res.json({
@@ -34,7 +30,9 @@ app.post("/register", async (req: Request, res: Response) => {
     },
   })
 
-  res.send(`Logged in with username: ${username} and password: ${password}`)
+  res.json({
+    message: "User created successfully",
+  })
 })
 
 app.listen(PORT, () => {
