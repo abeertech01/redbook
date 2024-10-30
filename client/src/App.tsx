@@ -7,11 +7,21 @@ import Post from "./pages/Post"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
 import Inbox from "./pages/Inbox"
+import axios from "axios"
 
 type AppProps = {}
 
 const App: React.FC<AppProps> = () => {
   // const dispatch = useDispatch<AppDispatch>()
+
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_SERVER_URL}`, {
+        withCredentials: true,
+      })
+      .then(({ data }) => console.log(data))
+      .catch((_) => console.log("Unknown error occured!!"))
+  }, [])
 
   // useEffect(() => {
   //   axios

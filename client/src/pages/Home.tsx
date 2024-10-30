@@ -2,41 +2,32 @@ import Navbar from "@/components/Navbar"
 import PostCard from "@/components/PostCard"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import React from "react"
-import { useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 type HomeProps = {}
 
 const Home: React.FC<HomeProps> = () => {
-  const navigate = useNavigate()
-
   return (
     <div>
       <Navbar />
       {/* 768 = 14rem + 20rem + 14rem = 48 */}
 
       <div className="md:grid md:grid-cols-[minmax(13rem,_22rem)_minmax(22rem,_auto)_minmax(13rem,_22rem)]">
-        <ScrollArea className="h-[calc(100vh-3.5rem)]">
-          <div className="min-h-full flex flex-col items-start p-4">
-            <Button
-              onClick={() => navigate("/profile")}
-              variant={"link"}
-              className="text-md"
-            >
+        <ScrollArea className="h-[calc(100vh-3.5rem)] p-2">
+          <div className="min-h-full flex flex-col gap-2 items-start p-4 bg-secondary rounded-md shadow-md">
+            <Link to={"/profile"} className="text-md hover:underline">
               Profile
-            </Button>
-            <Button
-              onClick={() => navigate("/messages")}
-              variant={"link"}
-              className="text-md"
-            >
+            </Link>
+
+            <Link to={"/messages"} className="text-md hover:underline">
               Messages
-            </Button>
-            <Button disabled variant={"link"} className="text-md">
+            </Link>
+
+            <Link to={"#"} className="text-md hover:underline">
               Marketplace
-            </Button>
+            </Link>
           </div>
         </ScrollArea>
 
@@ -64,8 +55,8 @@ const Home: React.FC<HomeProps> = () => {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-3.5rem)]">
-          <div className="min-h-full py-4 px-6">
+        <ScrollArea className="h-[calc(100vh-3.5rem)] p-2">
+          <div className="min-h-full py-4 px-6 bg-secondary rounded-md shadow-md">
             <h1 className="underline mb-4">People You may want to chat with</h1>
             <ul className="flex flex-col gap-3">
               {Array(10)

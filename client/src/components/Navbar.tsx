@@ -1,5 +1,5 @@
 import React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import logo from "@/assets/RedBook.svg"
 import {
   DropdownMenu,
@@ -15,6 +15,13 @@ import { Button } from "./ui/button"
 type NavbarProps = {}
 
 const Navbar: React.FC<NavbarProps> = () => {
+  const navigate = useNavigate()
+
+  const logout = () => {
+    localStorage.removeItem("user")
+    navigate("/login")
+  }
+
   return (
     <div className="bg-primary dark:bg-zinc-700 text-white py-2 px-5 flex justify-between items-center">
       <Link to={"/"}>
@@ -32,10 +39,11 @@ const Navbar: React.FC<NavbarProps> = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Team</DropdownMenuItem>
-            <DropdownMenuItem>Subscription</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/profile")}>
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
