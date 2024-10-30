@@ -5,16 +5,11 @@ export interface IError extends Error {
   statusCode?: number
 }
 
-const errorMiddleware = (
-  err: IError,
-  req: IRequest,
-  res: Response,
-  next: NextFunction
-) => {
+const errorMiddleware = (err: IError, req: IRequest, res: Response) => {
   err.message = err.message || "Internal Server Error"
-  err.statusCode ||= 500
+  err.statusCode = err.statusCode || 500
 
-  return res.status(err.statusCode).json({
+  res.status(err.statusCode).json({
     success: false,
     message: err.message,
     error: err,
