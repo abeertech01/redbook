@@ -11,15 +11,42 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import ThemeToggle from "./ThemeToggle"
 import { Menu } from "lucide-react"
 import { Button } from "./ui/button"
+import axios from "axios"
+import { useDispatch } from "react-redux"
+import { userDoesntExist } from "@/app/reducers/user"
+import { useToast } from "@/hooks/use-toast"
+import { isAxiosError } from "@/lib/helper"
 
 type NavbarProps = {}
 
 const Navbar: React.FC<NavbarProps> = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { toast } = useToast()
 
-  const logout = () => {
-    localStorage.removeItem("user")
-    navigate("/login")
+  const logout = async () => {
+    try {
+      await axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/user/logout`, {
+        withCredentials: true,
+      })
+
+      await dispatch(userDoesntExist())
+      navigate("/login")
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast({
+          title: "Logout Error",
+          description: error.response?.data.message,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Logout Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        })
+      }
+    }
   }
 
   return (
@@ -39,8 +66,8 @@ const Navbar: React.FC<NavbarProps> = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              Profile
+            <DropdownMenuItem>
+              <Link to={"/profile"}>My Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem disabled>Settings</DropdownMenuItem>
             <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>

@@ -17,6 +17,7 @@ const PostCreate: React.FC<PostCreateProps> = () => {
   const handleSubmit = () => {
     console.log("submitted")
   }
+
   return (
     <Dialog>
       <DialogTrigger className="w-full pr-3">

@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useCallback } from "react"
 import {
   Card,
   CardContent,
@@ -19,10 +19,11 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useDispatch } from "react-redux"
-import { AppDispatch } from "@/app/store"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch, RootState } from "@/app/store"
 import { loginUser as loginUserThunk } from "@/app/thunks/auth"
 import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   userAddress: z.string().min(1, { message: "Username/Email is required!" }),
@@ -34,6 +35,8 @@ type LoginFormProps = {}
 const LoginForm: React.FC<LoginFormProps> = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
+  // const { toast } = useToast()
+  const { loader } = useSelector((state: RootState) => state.user)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,11 +46,18 @@ const LoginForm: React.FC<LoginFormProps> = () => {
     },
   })
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    dispatch(loginUserThunk(data))
+  const handleSubmit = useCallback(async (data: z.infer<typeof formSchema>) => {
+    await dispatch(loginUserThunk(data))
 
     navigate("/")
-  }
+  }, [])
+
+  // navigate("/")
+
+  //     toast({
+  //       title: `Welcome back ${user.name}`,
+  //       description: "User has been logged in Successfully!!",
+  //     })
 
   return (
     <Card>
@@ -105,7 +115,7 @@ const LoginForm: React.FC<LoginFormProps> = () => {
               )}
             />
 
-            <Button type="submit" className="w-full">
+            <Button disabled={loader} type="submit" className="w-full">
               Sign In
             </Button>
           </form>
