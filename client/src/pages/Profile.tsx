@@ -3,23 +3,29 @@ import PostCard from "@/components/PostCard"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import React from "react"
+import React, { useState } from "react"
 
 type ProfileProps = {}
 
 const Profile: React.FC<ProfileProps> = () => {
+  const [isLoading, setIsLoading] = useState(true)
+
   return (
     <div className="min-h-screen">
       <Navbar />
       <ScrollArea className="w-full h-[calc(100vh-3.5rem)]">
         <div className="w-full md:w-4/6 lg:w-7/12 h-full mx-auto">
           <div className="relative w-full h-[12rem] md:h-[20rem] mb-[8rem]">
+            {isLoading && (
+              <div className="absolute w-full h-full bg-gray-300 animate-pulse rounded-bl-md rounded-br-md"></div>
+            )}
             <img
-              src={
-                "https://cdn.pixabay.com/photo/2021/01/01/14/29/skiing-5878729_1280.jpg"
-              }
+              src="https://cdn.pixabay.com/photo/2021/01/01/14/29/skiing-5878729_1280.jpg"
               alt="cover photo"
-              className="absolute w-full h-full object-cover rounded-bl-md rounded-br-md"
+              className={`absolute w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
+                isLoading ? "opacity-0" : "opacity-100"
+              }`}
+              onLoad={() => setIsLoading(false)}
             />
 
             <div className="absolute bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">

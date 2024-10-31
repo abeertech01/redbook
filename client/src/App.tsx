@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Login from "./pages/Login"
 import Home from "./pages/Home"
@@ -13,13 +13,13 @@ import { userDoesntExist, userExists } from "./app/reducers/user"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "./app/store"
 import ProtectedRoute from "./components/ProtectedRoute"
+import LayoutLoader from "./components/LayoutLoader"
 
 type AppProps = {}
 
 const App: React.FC<AppProps> = () => {
   const dispatch = useDispatch<AppDispatch>()
-  const { loader } = useSelector((state: RootState) => state.user)
-  const [fetchedUser, setFetchedUser] = useState<User | null>()
+  const { user, loader } = useSelector((state: RootState) => state.user)
 
   useEffect(() => {
     axios
@@ -28,18 +28,21 @@ const App: React.FC<AppProps> = () => {
       })
       .then(({ data }) => {
         if (data) {
-          setFetchedUser(data.user)
           dispatch(userExists(data.user))
         }
       })
       .catch((_) => dispatch(userDoesntExist()))
   }, [dispatch])
 
-  return (
+  return loader ? (
+    <div className="w-screen h-screen centering">
+      <LayoutLoader />
+    </div>
+  ) : (
     <BrowserRouter>
       <Toaster />
       <Routes>
-        <Route element={<ProtectedRoute user={fetchedUser as User} />}>
+        <Route element={<ProtectedRoute user={user as User} />}>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/messages" element={<Messages />}>

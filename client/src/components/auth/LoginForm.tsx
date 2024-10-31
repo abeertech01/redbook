@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -35,8 +35,8 @@ type LoginFormProps = {}
 const LoginForm: React.FC<LoginFormProps> = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
-  // const { toast } = useToast()
-  const { loader } = useSelector((state: RootState) => state.user)
+  const { toast } = useToast()
+  const { user, loader } = useSelector((state: RootState) => state.user)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,18 +46,19 @@ const LoginForm: React.FC<LoginFormProps> = () => {
     },
   })
 
-  const handleSubmit = useCallback(async (data: z.infer<typeof formSchema>) => {
-    await dispatch(loginUserThunk(data))
+  useEffect(() => {
+    if (user) {
+      navigate("/")
 
-    navigate("/")
+      toast({
+        title: `Welcome back ${user.name}`,
+        description: "User has been logged in Successfully!!",
+      })
+    }
   }, [])
 
-  // navigate("/")
-
-  //     toast({
-  //       title: `Welcome back ${user.name}`,
-  //       description: "User has been logged in Successfully!!",
-  //     })
+  const handleSubmit = (data: z.infer<typeof formSchema>) =>
+    dispatch(loginUserThunk(data))
 
   return (
     <Card>
