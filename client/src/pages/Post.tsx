@@ -1,5 +1,11 @@
 import { useAddCommentMutation } from "@/app/api/comment"
-import { useDeletePostMutation, useGetPostQuery } from "@/app/api/post"
+import {
+  useDeletePostMutation,
+  useDownvotePostMutation,
+  useGetPostQuery,
+  useUpvotePostMutation,
+} from "@/app/api/post"
+import { RootState } from "@/app/store"
 import Comments from "@/components/Comments"
 import Navbar from "@/components/Navbar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -22,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import clsx from "clsx"
 import {
   ArrowBigDown,
   ArrowBigUp,
@@ -30,6 +37,7 @@ import {
   Trash,
 } from "lucide-react"
 import React, { useState } from "react"
+import { useSelector } from "react-redux"
 import { useParams } from "react-router-dom"
 
 type PostProps = {}
@@ -38,10 +46,13 @@ const Post: React.FC<PostProps> = () => {
   const [commentText, setCommentText] = useState("")
   const [commentNumber, setCommentNumber] = useState<number>(0)
   const { id } = useParams()
+  const { user } = useSelector((state: RootState) => state.user)
   const { data } = useGetPostQuery(id as string)
   const { toast } = useToast()
   const [deletePost, { isLoading: deleteLoading }] = useDeletePostMutation()
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
+  const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
+  const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
 
   const deletePostClick = () => {
     deletePost("123")
@@ -84,16 +95,32 @@ const Post: React.FC<PostProps> = () => {
             <p className="">{data?.post.content}</p>
           </CardContent>
           <CardFooter className="flex flex-col items-start">
-            <div className="w-full flex justify-between items-center  mb-4">
+            <div className="w-full flex justify-between items-center mb-4">
               <div className="flex gap-2 items-center">
                 {/* Upvote */}
-                <Button variant={"outline"}>
+                <Button
+                  disabled={uv_loading || dv_loading}
+                  onClick={() => upvotePost(data?.post.id!)}
+                  variant={"outline"}
+                  className={clsx(
+                    data?.post.upvoteIds.includes(user?.id!) &&
+                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  )}
+                >
                   <ArrowBigUp className="scale-125" />{" "}
                   {data?.post.upvoteIds.length}
                 </Button>
                 <div>|</div>
                 {/* Downvote */}
-                <Button variant={"outline"}>
+                <Button
+                  disabled={uv_loading || dv_loading}
+                  onClick={() => downvotePost(data?.post.id!)}
+                  variant={"outline"}
+                  className={clsx(
+                    data?.post.downvoteIds.includes(user?.id!) &&
+                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  )}
+                >
                   <ArrowBigDown className="scale-125" />{" "}
                   {data?.post.downvoteIds.length}
                 </Button>

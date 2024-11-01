@@ -66,10 +66,18 @@ const postAPI = createApi({
             upvoteCacheHelper<Post>(post, authorId)
           })
         )
+
+        const patchSinglePostResult = dispatch(
+          postAPI.util.updateQueryData("getPost", id, (draft) => {
+            upvoteCacheHelper<Post>(draft.post, authorId)
+          })
+        )
+
         try {
           await queryFulfilled
         } catch {
           patchResult.undo()
+          patchSinglePostResult.undo()
         }
       },
     }),
@@ -90,10 +98,18 @@ const postAPI = createApi({
             downvoteCacheHelper<Post>(post, authorId)
           })
         )
+
+        const patchSinglePostPatch = dispatch(
+          postAPI.util.updateQueryData("getPost", id, (draft) => {
+            downvoteCacheHelper<Post>(draft.post, authorId)
+          })
+        )
+
         try {
           await queryFulfilled
         } catch {
           patchResult.undo()
+          patchSinglePostPatch.undo()
         }
       },
     }),

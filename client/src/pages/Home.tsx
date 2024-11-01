@@ -1,14 +1,18 @@
+import { RootState } from "@/app/store"
 import AllPosts from "@/components/AllPosts"
 import Navbar from "@/components/Navbar"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import React from "react"
+import { useSelector } from "react-redux"
 import { Link } from "react-router-dom"
 
 type HomeProps = {}
 
 const Home: React.FC<HomeProps> = () => {
+  const { user } = useSelector((state: RootState) => state.user)
+
   return (
     <div>
       <Navbar />
@@ -44,7 +48,7 @@ const Home: React.FC<HomeProps> = () => {
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 left-0 bg-background z-30"></div>
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 right-3 bg-background z-30"></div>
 
-              <AllPosts />
+              <AllPosts userId={user?.id!} />
             </ScrollArea>
           </div>
         </div>

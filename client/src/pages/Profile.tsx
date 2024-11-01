@@ -82,7 +82,7 @@ const Profile: React.FC<ProfileProps> = () => {
             <div>
               <ul className="flex flex-col gap-3">
                 {profilePosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <PostCard key={post.id} post={post} userId={user?.id!} />
                 ))}
               </ul>
             </div>

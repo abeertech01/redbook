@@ -4,9 +4,11 @@ import { useGetPostsQuery } from "@/app/api/post"
 import LayoutLoader from "./LayoutLoader"
 import { Post } from "@/utility/types"
 
-type AllPostsProps = {}
+type AllPostsProps = {
+  userId: string
+}
 
-const AllPosts: React.FC<AllPostsProps> = () => {
+const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
   const { data, isLoading } = useGetPostsQuery()
 
   return (
@@ -17,7 +19,7 @@ const AllPosts: React.FC<AllPostsProps> = () => {
         </div>
       ) : (
         data?.posts?.map((post) => (
-          <PostCard key={post.id} post={post as Post} />
+          <PostCard key={post.id} post={post as Post} userId={userId!} />
         ))
       )}
     </div>

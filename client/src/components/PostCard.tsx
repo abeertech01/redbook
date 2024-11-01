@@ -1,3 +1,4 @@
+import { Post } from "@/utility/types"
 import React from "react"
 import {
   Card,
@@ -6,19 +7,20 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card"
+} from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "./ui/button"
 import { ArrowBigDown, ArrowBigUp, MessageSquareText } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
-import { useNavigate } from "react-router-dom"
-import { Post } from "@/utility/types"
 import { useDownvotePostMutation, useUpvotePostMutation } from "@/app/api/post"
+import clsx from "clsx"
+import { useNavigate } from "react-router-dom"
 
 type PostCardProps = {
   post: Post
+  userId: string
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, userId }) => {
   const navigate = useNavigate()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
@@ -40,34 +42,47 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="">{post.content}</p>
+        <p>{post.content}</p>
       </CardContent>
       <CardFooter className="flex gap-2">
-        {/* Upvote */}
-        <Button
-          disabled={uv_loading || dv_loading}
-          onClick={() => upvotePost(post.id)}
-          variant={"outline"}
-        >
-          <ArrowBigUp className="scale-125" /> {post.upvoteIds.length}
-        </Button>
-        <div>|</div>
-        {/* Downvote */}
-        <Button
-          disabled={uv_loading || dv_loading}
-          onClick={() => downvotePost(post.id)}
-          variant={"outline"}
-        >
-          <ArrowBigDown className="scale-125" /> {post.downvoteIds.length}
-        </Button>
-        <div>|</div>
-        {/* Comment */}
-        <Button
-          onClick={() => navigate(`/post/${post.id}`)}
-          variant={"outline"}
-        >
-          <MessageSquareText className="scale-125" /> 100
-        </Button>
+        <div className="w-full flex justify-between items-center">
+          <div className="flex gap-2 items-center">
+            {/* Upvote */}
+            <Button
+              disabled={uv_loading || dv_loading}
+              onClick={() => upvotePost(post.id)}
+              variant={"outline"}
+              className={clsx(
+                post.upvoteIds.includes(userId) &&
+                  "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+              )}
+            >
+              <ArrowBigUp className="scale-125" /> {post.upvoteIds.length}
+            </Button>
+            <div>|</div>
+            {/* Downvote */}
+            <Button
+              disabled={uv_loading || dv_loading}
+              onClick={() => downvotePost(post.id)}
+              variant={"outline"}
+              className={clsx(
+                post.downvoteIds.includes(userId) &&
+                  "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+              )}
+            >
+              <ArrowBigDown className="scale-125" /> {post.downvoteIds.length}
+            </Button>
+            <div>|</div>
+            {/* Comment */}
+            <Button
+              onClick={() => navigate(`/post/${post.id}`)}
+              variant={"outline"}
+            >
+              <MessageSquareText className="scale-125" />{" "}
+              {post.comments?.length}
+            </Button>
+          </div>
+        </div>
       </CardFooter>
     </Card>
   )
