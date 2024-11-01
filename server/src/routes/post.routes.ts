@@ -1,11 +1,15 @@
 import express from "express"
 import {
+  addComment,
   createPost,
   deletePost,
+  downvoteComment,
   downvotePost,
+  getComments,
   getPost,
   getPosts,
   getUserPosts,
+  upvoteComment,
   upvotePost,
 } from "../controllers/post.controllers"
 import { isAuthenticated } from "../middlewares/auth"
@@ -22,5 +26,9 @@ router.get("/get-post/:id", getPost)
 router.delete("/delete-post/:id", deletePost)
 router.put("/upvote-post/:id", upvotePost)
 router.put("/downvote-post/:id", downvotePost)
+router.get("/get-comments/:postId", getComments)
+router.post("/add-comment", addComment)
+router.put("/upvote-comment/:commentId", upvoteComment)
+router.put("/downvote-comment/:commentId", downvoteComment)
 
 export default router

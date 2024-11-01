@@ -6,3 +6,8 @@ export const createPostSchema = z.object({
 })
 
 export type CreatePostSchemaType = z.infer<typeof createPostSchema>
+
+export const addCommentSchema = z.object({
+  postId: z.string().min(1, "Post ID has not been placed!!"),
+  content: z.string().min(1, "Comment is empty!!"),
+})
