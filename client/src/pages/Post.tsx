@@ -1,3 +1,4 @@
+import { useDeletePostMutation, useGetPostQuery } from "@/app/api/post"
 import Navbar from "@/components/Navbar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -9,57 +10,100 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowBigDown, ArrowBigUp, MessageSquareText } from "lucide-react"
+import {
+  ArrowBigDown,
+  ArrowBigUp,
+  CircleEllipsis,
+  MessageSquareText,
+  Trash,
+} from "lucide-react"
 import React from "react"
+import { useParams } from "react-router-dom"
 
 type PostProps = {}
 
 const Post: React.FC<PostProps> = () => {
+  const { id } = useParams()
+  const { data } = useGetPostQuery(id as string)
+  const [deletePost, { isLoading }] = useDeletePostMutation()
+
+  const deletePostClick = () => {
+    deletePost("123")
+  }
+
   return (
     <div>
       <Navbar />
       <div className="min-h-[calc(100vh-3.5rem)] w-[47rem] mx-auto py-4">
         <Card>
           <CardHeader>
-            <CardTitle>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Cupiditate nobis rem doloremque?
-            </CardTitle>
+            <CardTitle>{data?.post.title}</CardTitle>
             <CardDescription className="py-2">
               <div className="flex gap-1 items-center">
                 <Avatar className="w-[1.8rem] h-[1.8rem]">
                   <AvatarImage src="https://github.com/shadcn.png" />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
-                <div>John Doe</div>
+                <div>{data?.post.author?.name}</div>
                 <div>•</div>
                 <div>2 hour ago</div>
               </div>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Impedit
-              necessitatibus explicabo unde nihil incidunt voluptatem eveniet
-              quibusdam praesentium temporibus ipsam molestiae accusantium
-              nesciunt sunt similique voluptas, pariatur quisquam cumque
-              voluptatum!
-            </p>
+            <p className="">{data?.post.content}</p>
           </CardContent>
           <CardFooter className="flex flex-col items-start">
-            <div className="flex items-center gap-2 mb-4">
-              <Button variant={"outline"}>
-                <ArrowBigUp className="scale-125" /> 100
-              </Button>
-              <div>|</div>
-              <Button variant={"outline"}>
-                <ArrowBigDown className="scale-125" /> 100
-              </Button>
-              <div>|</div>
-              <Button variant={"outline"}>
-                <MessageSquareText className="scale-125" /> 100
-              </Button>
+            <div className="w-full flex justify-between items-center  mb-4">
+              <div className="flex gap-2 items-center">
+                {/* Upvote */}
+                <Button variant={"outline"}>
+                  <ArrowBigUp className="scale-125" />{" "}
+                  {data?.post.upvoteIds.length}
+                </Button>
+                <div>|</div>
+                {/* Downvote */}
+                <Button variant={"outline"}>
+                  <ArrowBigDown className="scale-125" />{" "}
+                  {data?.post.downvoteIds.length}
+                </Button>
+                <div>|</div>
+                {/* Comment */}
+                <Button variant={"outline"}>
+                  <MessageSquareText className="scale-125" /> 100
+                </Button>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button variant={"ghost"} size={"icon"}>
+                    <CircleEllipsis />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel className="text-center">
+                    More Options
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Button
+                      disabled={isLoading}
+                      onClick={deletePostClick}
+                      variant={"ghost"}
+                    >
+                      Delete Post <Trash />
+                    </Button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="w-full h-[1px] bg-zinc-500 mb-4"></div>
 

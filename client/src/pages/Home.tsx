@@ -1,5 +1,5 @@
+import AllPosts from "@/components/AllPosts"
 import Navbar from "@/components/Navbar"
-import PostCard from "@/components/PostCard"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -44,13 +44,7 @@ const Home: React.FC<HomeProps> = () => {
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 left-0 bg-background z-30"></div>
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 right-3 bg-background z-30"></div>
 
-              <div className="flex flex-col gap-4 w-full">
-                {Array(10)
-                  .fill(null)
-                  .map((_, i) => (
-                    <PostCard key={i} />
-                  ))}
-              </div>
+              <AllPosts />
             </ScrollArea>
           </div>
         </div>

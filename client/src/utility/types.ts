@@ -30,6 +30,39 @@ export interface SignupData {
   password: string
 }
 
+export interface FetchedPosts {
+  success: boolean
+  posts: Post[]
+}
+
+export interface Post {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  title: string
+  content: string
+  upvoteIds: string[]
+  downvoteIds: string[]
+  authorId: string
+  comments?: Comment[]
+  author?: User
+}
+
+export interface PostResponse {
+  success: boolean
+  post: Post
+}
+
+export interface CreatePostReqBody {
+  title: string
+  content: string
+}
+
+export interface FetchedPost {
+  success: boolean
+  post: Post
+}
+
 export interface AxiosError {
   response: {
     data: {
