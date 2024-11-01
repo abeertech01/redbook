@@ -63,7 +63,7 @@ const postAPI = createApi({
           postAPI.util.updateQueryData("getPosts", undefined, (draft) => {
             const post = draft.posts.find((post) => post.id === id) as Post
 
-            upvoteCacheHelper(post, authorId)
+            upvoteCacheHelper<Post>(post, authorId)
           })
         )
         try {
@@ -87,7 +87,7 @@ const postAPI = createApi({
           postAPI.util.updateQueryData("getPosts", undefined, (draft) => {
             const post = draft.posts.find((post) => post.id === id) as Post
 
-            downvoteCacheHelper(post, authorId)
+            downvoteCacheHelper<Post>(post, authorId)
           })
         )
         try {

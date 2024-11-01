@@ -9,7 +9,7 @@ import { downvoteCommentHelper, upvoteCommentHelper } from "../lib/helpers"
 class Comment {
   getComments = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      const { id: postId } = req.params
+      const { postId } = req.params
 
       const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -34,8 +34,10 @@ class Comment {
 
   addcomment = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      addCommentSchema.parse(req.body)
-      const { postId, content } = req.body
+      const { postId } = req.params
+      const { content } = req.body
+
+      addCommentSchema.parse({ postId, content })
 
       const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -62,7 +64,7 @@ class Comment {
 
   upvoteComment = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      const { id: commentId } = req.params
+      const { commentId } = req.params
 
       // get the comment by matching the commentId
       const comment = await prisma.comment.findUnique({
@@ -84,7 +86,7 @@ class Comment {
 
   downvoteComment = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      const { id: commentId } = req.params
+      const { commentId } = req.params
 
       // get the comment by matching the commentId
       const comment = await prisma.comment.findUnique({
@@ -100,6 +102,27 @@ class Comment {
       res.status(200).json({
         success: true,
         comment: updatedComment,
+      })
+    }
+  )
+
+  deleteComment = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { commentId } = req.params
+
+      const record = await prisma.comment.findUnique({
+        where: { id: commentId },
+      })
+
+      if (!record) return next(new ErrorHandler("Comment not found", 404))
+
+      const comment = await prisma.comment.delete({
+        where: { authorId: req.id, id: commentId },
+      })
+
+      res.status(200).json({
+        success: true,
+        comment,
       })
     }
   )

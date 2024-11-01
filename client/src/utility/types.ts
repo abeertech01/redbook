@@ -63,6 +63,38 @@ export interface FetchedPost {
   post: Post
 }
 
+export interface Comment {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  content: string
+  upvoteIds: string[]
+  downvoteIds: string[]
+  authorId: string
+  author?: User
+  postId: string
+}
+
+export interface CommentVotePayload {
+  commentId: string
+  postId: string
+}
+
+export interface CommentResponse {
+  success: boolean
+  comment: Comment
+}
+
+export interface CommentsResponse {
+  success: boolean
+  comments: Comment[]
+}
+
+export interface CreateCommentPayload {
+  content: string
+  postId: string
+}
+
 export interface AxiosError {
   response: {
     data: {

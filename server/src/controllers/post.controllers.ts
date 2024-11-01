@@ -12,3 +12,4 @@ export const getComments = commentClass.getComments
 export const addComment = commentClass.addcomment
 export const upvoteComment = commentClass.upvoteComment
 export const downvoteComment = commentClass.downvoteComment
+export const deleteComment = commentClass.deleteComment
