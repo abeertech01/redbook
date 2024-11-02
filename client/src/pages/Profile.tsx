@@ -5,6 +5,7 @@ import PostCard from "@/components/PostCard"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { formatHumanReadTimestamp } from "@/lib/helper"
 import { Post } from "@/utility/types"
 import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
@@ -75,7 +76,7 @@ const Profile: React.FC<ProfileProps> = () => {
                 </li>
                 <li>
                   <h1 className="text-lg font-semibold underline">Joined</h1>
-                  <p>10th June, 2024</p>
+                  <p>{formatHumanReadTimestamp(user?.createdAt as Date)}</p>
                 </li>
               </ul>
             </Card>

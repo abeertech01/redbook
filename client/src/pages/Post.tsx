@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { timeAgo } from "@/lib/helper"
 import clsx from "clsx"
 import {
   ArrowBigDown,
@@ -36,15 +37,17 @@ import {
   MessageSquareText,
   Trash,
 } from "lucide-react"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 
 type PostProps = {}
 
 const Post: React.FC<PostProps> = () => {
   const [commentText, setCommentText] = useState("")
   const [commentNumber, setCommentNumber] = useState<number>(0)
+  const [timeDiff, setTimeDiff] = useState("")
+  const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useSelector((state: RootState) => state.user)
   const { data } = useGetPostQuery(id as string)
@@ -54,8 +57,15 @@ const Post: React.FC<PostProps> = () => {
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
 
-  const deletePostClick = () => {
-    deletePost("123")
+  const deletePostClick = async () => {
+    const result = await deletePost(data?.post.id!)
+
+    if (result.data?.success) {
+      toast({
+        title: "Post Deleted Successfully",
+      })
+      navigate("/")
+    }
   }
 
   const submitComment = async () => {
@@ -72,6 +82,12 @@ const Post: React.FC<PostProps> = () => {
     }
   }
 
+  useEffect(() => {
+    if (data?.success) {
+      setTimeDiff(timeAgo(data.post.createdAt as Date))
+    }
+  }, [data])
+
   return (
     <div>
       <Navbar />
@@ -87,7 +103,7 @@ const Post: React.FC<PostProps> = () => {
                 </Avatar>
                 <div>{data?.post.author?.name}</div>
                 <div>•</div>
-                <div>2 hour ago</div>
+                <div>{timeDiff}</div>
               </div>
             </CardDescription>
           </CardHeader>
