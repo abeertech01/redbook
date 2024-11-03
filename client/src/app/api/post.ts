@@ -24,7 +24,7 @@ const postAPI = createApi({
       }),
       providesTags: ["Posts"],
     }),
-    getPaginatedPosts: builder.query<FetchedPosts, string>({
+    getPaginatedPosts: builder.query<FetchedPosts, number>({
       query: (page) => ({
         url: `/get-paginated-posts?page=${page}`,
         method: "GET",
@@ -76,13 +76,18 @@ const postAPI = createApi({
       async onQueryStarted(id, { dispatch, queryFulfilled, getState }) {
         const state = getState() as RootState
         const authorId = state.user.user?.id as string
+        const pageNumber = state.post.currentPage
 
         const patchResult = dispatch(
-          postAPI.util.updateQueryData("getPosts", undefined, (draft) => {
-            const post = draft.posts.find((post) => post.id === id) as Post
+          postAPI.util.updateQueryData(
+            "getPaginatedPosts",
+            pageNumber,
+            (draft) => {
+              const post = draft.posts.find((post) => post.id === id) as Post
 
-            upvoteCacheHelper<Post>(post, authorId)
-          })
+              upvoteCacheHelper<Post>(post, authorId)
+            }
+          )
         )
 
         const patchSinglePostResult = dispatch(
@@ -108,13 +113,18 @@ const postAPI = createApi({
       async onQueryStarted(id, { dispatch, queryFulfilled, getState }) {
         const state = getState() as RootState
         const authorId = state.user.user?.id as string
+        const pageNumber = state.post.currentPage
 
         const patchResult = dispatch(
-          postAPI.util.updateQueryData("getPosts", undefined, (draft) => {
-            const post = draft.posts.find((post) => post.id === id) as Post
+          postAPI.util.updateQueryData(
+            "getPaginatedPosts",
+            pageNumber,
+            (draft) => {
+              const post = draft.posts.find((post) => post.id === id) as Post
 
-            downvoteCacheHelper<Post>(post, authorId)
-          })
+              downvoteCacheHelper<Post>(post, authorId)
+            }
+          )
         )
 
         const patchSinglePostPatch = dispatch(
@@ -137,7 +147,7 @@ const postAPI = createApi({
 export { postAPI }
 export const {
   useGetPostsQuery,
-  useLazyGetPaginatedPostsQuery,
+  useGetPaginatedPostsQuery,
   useGetPostQuery,
   useCreatePostMutation,
   useDeletePostMutation,

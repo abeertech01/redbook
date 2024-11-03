@@ -66,6 +66,10 @@ class Post {
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
+        include: {
+          author: true,
+          comments: true,
+        },
       })
 
       res.status(200).json({
