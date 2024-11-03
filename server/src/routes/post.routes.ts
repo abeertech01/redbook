@@ -7,6 +7,7 @@ import {
   downvoteComment,
   downvotePost,
   getComments,
+  getPaginatedPosts,
   getPost,
   getPosts,
   getUserPosts,
@@ -22,6 +23,7 @@ router.use(isAuthenticated)
 
 router.post("/create-post", createPost)
 router.get("/get-posts", getPosts)
+router.get("/get-paginated-posts", getPaginatedPosts)
 router.get("/get-user-posts/:id", getUserPosts)
 router.get("/get-post/:id", getPost)
 router.delete("/delete-post/:id", deletePost)

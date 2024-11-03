@@ -55,6 +55,26 @@ class Post {
     }
   )
 
+  getPaginatedPosts = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 10
+
+      const skip = (page - 1) * limit
+
+      const posts = await prisma.post.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      })
+
+      res.status(200).json({
+        success: true,
+        posts,
+      })
+    }
+  )
+
   getUserPosts = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
       const posts = await prisma.post.findMany({
