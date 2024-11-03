@@ -12,9 +12,9 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
   const { data, isLoading } = useGetPostsQuery()
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full h-full">
       {isLoading ? (
-        <div className="flex justify-center items-center">
+        <div className="w-full h-full flex justify-center items-center">
           <LayoutLoader />
         </div>
       ) : (

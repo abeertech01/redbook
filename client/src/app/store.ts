@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit"
 import userSlice from "./reducers/user"
-import miscSlice from "./reducers/misc"
+import postSlice from "./reducers/post"
 import { postAPI } from "./api/post"
 import { commentAPI } from "./api/comment"
 
 const store = configureStore({
   reducer: {
     [userSlice.name]: userSlice.reducer,
-    [miscSlice.name]: miscSlice.reducer,
+    [postSlice.name]: postSlice.reducer,
     [postAPI.reducerPath]: postAPI.reducer,
     [commentAPI.reducerPath]: commentAPI.reducer,
   },

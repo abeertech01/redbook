@@ -58,6 +58,14 @@ const Post: React.FC<PostProps> = () => {
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
 
   const deletePostClick = async () => {
+    if (user?.id !== data?.post.authorId) {
+      toast({
+        title: "You are not authorized to delete this post",
+        variant: "destructive",
+      })
+      return
+    }
+
     const result = await deletePost(data?.post.id!)
 
     if (result.data?.success) {

@@ -8,6 +8,7 @@ import {
   useGetCommentsQuery,
   useUpvoteCommentMutation,
 } from "@/app/api/comment"
+import { timeAgo } from "@/lib/helper"
 
 type CommentsProps = {
   postId: string
@@ -74,7 +75,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, setCommentNumber }) => {
                 <CardDescription>
                   <h1>
                     <span>{comment.author?.name}</span> •{" "}
-                    <span>2 hour ago</span>
+                    <span>{timeAgo(comment.createdAt)}</span>
                   </h1>
                 </CardDescription>
                 <p className="mb-4">{comment.content}</p>

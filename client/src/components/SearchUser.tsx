@@ -43,7 +43,7 @@ const SearchUser: React.FC<SearchUserProps> = () => {
       />
 
       {query && filteredProfiles.length > 0 && (
-        <ul className="absolute w-full mt-2 bg-secondary rounded shadow-lg max-h-36 overflow-y-auto scrollbar scrollbar-thumb-destructive scrollbar-track-transparent border border-destructive">
+        <ul className="absolute w-full mt-2 bg-secondary rounded shadow-lg max-h-[75vh] overflow-y-auto scrollbar scrollbar-thumb-destructive scrollbar-track-transparent border border-destructive">
           {filteredProfiles.map((profile) => (
             <li
               key={profile.id}

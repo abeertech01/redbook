@@ -101,6 +101,11 @@ class Post {
 
       if (!record) return next(new ErrorHandler("Post not found", 404))
 
+      if (record.authorId !== req.id)
+        return next(
+          new ErrorHandler("You are not authorized to delete this post", 401)
+        )
+
       const post = await prisma.post.delete({
         where: { authorId: req.id, id: postId },
       })
