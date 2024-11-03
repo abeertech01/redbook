@@ -24,6 +24,24 @@ const postAPI = createApi({
       }),
       providesTags: ["Posts"],
     }),
+    getPaginatedPosts: builder.query<FetchedPosts, string>({
+      query: (page) => ({
+        url: `/get-paginated-posts?page=${page}`,
+        method: "GET",
+        credentials: "include",
+      }),
+      keepUnusedDataFor: 60,
+      serializeQueryArgs: ({ endpointName }) => {
+        return endpointName
+      },
+      merge: (currentCache, newItems) => {
+        currentCache.posts.push(...newItems.posts)
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg
+      },
+      providesTags: ["Posts"],
+    }),
     getPost: builder.query<FetchedPost, string>({
       query: (id) => ({
         url: `/get-post/${id}`,
@@ -119,6 +137,7 @@ const postAPI = createApi({
 export { postAPI }
 export const {
   useGetPostsQuery,
+  useLazyGetPaginatedPostsQuery,
   useGetPostQuery,
   useCreatePostMutation,
   useDeletePostMutation,
