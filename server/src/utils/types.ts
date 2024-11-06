@@ -43,3 +43,15 @@ export interface ExtendedSocket extends Socket {
   request: IIncomingMessage
   user?: User
 }
+
+export interface Comment {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  content: string
+  upvoteIds: string[]
+  downvoteIds: string[]
+  authorId: string
+  author?: User
+  postId: string
+}

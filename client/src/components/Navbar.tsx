@@ -66,8 +66,11 @@ const Navbar: React.FC<NavbarProps> = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>
-              <Link to={"/profile"}>My Profile</Link>
+            <DropdownMenuItem
+              onClick={() => navigate("/profile")}
+              className="cursor-pointer"
+            >
+              My Profile
             </DropdownMenuItem>
             <DropdownMenuItem disabled>Settings</DropdownMenuItem>
             <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>

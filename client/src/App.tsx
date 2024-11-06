@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "./app/store"
 import ProtectedRoute from "./components/ProtectedRoute"
 import LayoutLoader from "./components/LayoutLoader"
+import { SocketProvider } from "./constants/SocketProvider"
 
 type AppProps = {}
 
@@ -42,7 +43,13 @@ const App: React.FC<AppProps> = () => {
     <BrowserRouter>
       <Toaster />
       <Routes>
-        <Route element={<ProtectedRoute user={user as User} />}>
+        <Route
+          element={
+            <SocketProvider>
+              <ProtectedRoute user={user as User} />
+            </SocketProvider>
+          }
+        >
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/messages" element={<Messages />}>

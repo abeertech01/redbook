@@ -1,14 +1,29 @@
+import { useGetPostsQuery } from "@/app/api/post"
+import { RootState } from "@/app/store"
 import Navbar from "@/components/Navbar"
 import PostCard from "@/components/PostCard"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import React, { useState } from "react"
+import { formatHumanReadTimestamp } from "@/lib/helper"
+import { Post } from "@/utility/types"
+import React, { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
 
 type ProfileProps = {}
 
 const Profile: React.FC<ProfileProps> = () => {
+  const { user } = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(true)
+  const [profilePosts, setProfilePosts] = useState<Post[]>([])
+
+  const { data } = useGetPostsQuery()
+
+  useEffect(() => {
+    if (data) {
+      setProfilePosts(data.posts.filter((post) => post.authorId === user?.id))
+    }
+  }, [data])
 
   return (
     <div className="min-h-screen">
@@ -34,7 +49,7 @@ const Profile: React.FC<ProfileProps> = () => {
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
 
-              <h1 className="text-xl md:text-2xl font-bold">John Doe</h1>
+              <h1 className="text-xl md:text-2xl font-bold">{user?.name}</h1>
             </div>
           </div>
 
@@ -43,12 +58,12 @@ const Profile: React.FC<ProfileProps> = () => {
               <ul className="flex flex-col gap-3 overflow-x-hidden">
                 <li>
                   <h1 className="text-lg font-semibold underline">Username</h1>
-                  <p>@johndoe01</p>
+                  <p>@{user?.username}</p>
                 </li>
                 <li>
                   <h1 className="text-lg font-semibold underline">Email</h1>
                   <p className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                    john.technology@gmail.com
+                    {user?.email}
                   </p>
                 </li>
                 <li>
@@ -61,21 +76,15 @@ const Profile: React.FC<ProfileProps> = () => {
                 </li>
                 <li>
                   <h1 className="text-lg font-semibold underline">Joined</h1>
-                  <p>10th June, 2024</p>
+                  <p>{formatHumanReadTimestamp(user?.createdAt as Date)}</p>
                 </li>
               </ul>
             </Card>
             <div>
               <ul className="flex flex-col gap-3">
-                <li>
-                  <PostCard />
-                </li>
-                <li>
-                  <PostCard />
-                </li>
-                <li>
-                  <PostCard />
-                </li>
+                {profilePosts.map((post) => (
+                  <PostCard key={post.id} post={post} userId={user?.id!} />
+                ))}
               </ul>
             </div>
           </div>

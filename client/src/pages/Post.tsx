@@ -1,3 +1,12 @@
+import { useAddCommentMutation } from "@/app/api/comment"
+import {
+  useDeletePostMutation,
+  useDownvotePostMutation,
+  useGetPostQuery,
+  useUpvotePostMutation,
+} from "@/app/api/post"
+import { RootState } from "@/app/store"
+import Comments from "@/components/Comments"
 import Navbar from "@/components/Navbar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -9,100 +18,189 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowBigDown, ArrowBigUp, MessageSquareText } from "lucide-react"
-import React from "react"
+import { useToast } from "@/hooks/use-toast"
+import { timeAgo } from "@/lib/helper"
+import clsx from "clsx"
+import {
+  ArrowBigDown,
+  ArrowBigUp,
+  CircleEllipsis,
+  MessageSquareText,
+  Trash,
+} from "lucide-react"
+import React, { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
+import { useNavigate, useParams } from "react-router-dom"
 
 type PostProps = {}
 
 const Post: React.FC<PostProps> = () => {
+  const [commentText, setCommentText] = useState("")
+  const [commentNumber, setCommentNumber] = useState<number>(0)
+  const [timeDiff, setTimeDiff] = useState("")
+  const navigate = useNavigate()
+  const { id } = useParams()
+  const { user } = useSelector((state: RootState) => state.user)
+  const { data } = useGetPostQuery(id as string)
+  const { toast } = useToast()
+  const [deletePost, { isLoading: deleteLoading }] = useDeletePostMutation()
+  const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
+  const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
+  const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
+
+  const deletePostClick = async () => {
+    if (user?.id !== data?.post.authorId) {
+      toast({
+        title: "You are not authorized to delete this post",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const result = await deletePost(data?.post.id!)
+
+    if (result.data?.success) {
+      toast({
+        title: "Post Deleted Successfully",
+      })
+      navigate("/")
+    }
+  }
+
+  const submitComment = async () => {
+    const comment = await addComment({
+      postId: id as string,
+      content: commentText,
+    })
+
+    if (comment) {
+      setCommentText("")
+      toast({
+        title: "Comment Added Successfully",
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (data?.success) {
+      setTimeDiff(timeAgo(data.post.createdAt as Date))
+    }
+  }, [data])
+
   return (
     <div>
       <Navbar />
       <div className="min-h-[calc(100vh-3.5rem)] w-[47rem] mx-auto py-4">
         <Card>
           <CardHeader>
-            <CardTitle>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Cupiditate nobis rem doloremque?
-            </CardTitle>
+            <CardTitle>{data?.post.title}</CardTitle>
             <CardDescription className="py-2">
               <div className="flex gap-1 items-center">
                 <Avatar className="w-[1.8rem] h-[1.8rem]">
                   <AvatarImage src="https://github.com/shadcn.png" />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
-                <div>John Doe</div>
+                <div>{data?.post.author?.name}</div>
                 <div>•</div>
-                <div>2 hour ago</div>
+                <div>{timeDiff}</div>
               </div>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Impedit
-              necessitatibus explicabo unde nihil incidunt voluptatem eveniet
-              quibusdam praesentium temporibus ipsam molestiae accusantium
-              nesciunt sunt similique voluptas, pariatur quisquam cumque
-              voluptatum!
-            </p>
+            <p className="">{data?.post.content}</p>
           </CardContent>
           <CardFooter className="flex flex-col items-start">
-            <div className="flex items-center gap-2 mb-4">
-              <Button variant={"outline"}>
-                <ArrowBigUp className="scale-125" /> 100
-              </Button>
-              <div>|</div>
-              <Button variant={"outline"}>
-                <ArrowBigDown className="scale-125" /> 100
-              </Button>
-              <div>|</div>
-              <Button variant={"outline"}>
-                <MessageSquareText className="scale-125" /> 100
-              </Button>
+            <div className="w-full flex justify-between items-center mb-4">
+              <div className="flex gap-2 items-center">
+                {/* Upvote */}
+                <Button
+                  disabled={uv_loading || dv_loading}
+                  onClick={() => upvotePost(data?.post.id!)}
+                  variant={"outline"}
+                  className={clsx(
+                    data?.post.upvoteIds.includes(user?.id!) &&
+                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  )}
+                >
+                  <ArrowBigUp className="scale-125" />{" "}
+                  {data?.post.upvoteIds.length}
+                </Button>
+                <div>|</div>
+                {/* Downvote */}
+                <Button
+                  disabled={uv_loading || dv_loading}
+                  onClick={() => downvotePost(data?.post.id!)}
+                  variant={"outline"}
+                  className={clsx(
+                    data?.post.downvoteIds.includes(user?.id!) &&
+                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  )}
+                >
+                  <ArrowBigDown className="scale-125" />{" "}
+                  {data?.post.downvoteIds.length}
+                </Button>
+                <div>|</div>
+                {/* Comment */}
+                <Button variant={"outline"}>
+                  <MessageSquareText className="scale-125" /> {commentNumber}
+                </Button>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button variant={"ghost"} size={"icon"}>
+                    <CircleEllipsis />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel className="text-center">
+                    More Options
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Button
+                      disabled={deleteLoading}
+                      onClick={deletePostClick}
+                      variant={"ghost"}
+                    >
+                      Delete Post <Trash />
+                    </Button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="w-full h-[1px] bg-zinc-500 mb-4"></div>
 
+            {/* Comment Area */}
             <div className="flex flex-col w-full gap-2 mb-4">
               <Textarea
                 rows={1}
                 placeholder="Comment..."
+                onChange={(e) => setCommentText(e.target.value)}
                 className="focus-visible:outline-none"
               />
-              <Button variant={"secondary"}>Comment</Button>
+              <Button
+                onClick={submitComment}
+                variant={"secondary"}
+                disabled={addCommentLoading}
+              >
+                Comment
+              </Button>
             </div>
 
-            <ul className="w-full flex flex-col gap-4">
-              <li className="flex w-full space-x-2">
-                <Avatar className="w-[2.5rem] h-[2.5rem]">
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-
-                <Card className="px-3 py-2">
-                  <CardDescription>
-                    <h1>
-                      <span>John Doe</span> • <span>2 hour ago</span>
-                    </h1>
-                  </CardDescription>
-                  <p className="mb-4">
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                    Ipsa quia optio recusandae error eaque quasi aspernatur
-                    delectus quam. Minus, nobis.
-                  </p>
-
-                  <div className="flex items-center gap-2">
-                    <Button variant={"secondary"}>
-                      <ArrowBigUp className="scale-125" /> 100
-                    </Button>
-                    <div>|</div>
-                    <Button variant={"secondary"}>
-                      <ArrowBigDown className="scale-125" /> 100
-                    </Button>
-                  </div>
-                </Card>
-              </li>
-            </ul>
+            {/* All Comments */}
+            <Comments
+              postId={data?.post.id!}
+              setCommentNumber={setCommentNumber}
+            />
           </CardFooter>
         </Card>
       </div>

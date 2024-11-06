@@ -1,14 +1,18 @@
+import { RootState } from "@/app/store"
+import AllPosts from "@/components/AllPosts"
 import Navbar from "@/components/Navbar"
-import PostCard from "@/components/PostCard"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import React from "react"
+import { useSelector } from "react-redux"
 import { Link } from "react-router-dom"
 
 type HomeProps = {}
 
 const Home: React.FC<HomeProps> = () => {
+  const { user } = useSelector((state: RootState) => state.user)
+
   return (
     <div>
       <Navbar />
@@ -35,7 +39,7 @@ const Home: React.FC<HomeProps> = () => {
           <div className="h-full md:px-2 lg:px-0 md:full lg:w-9/12 mx-auto flex flex-col gap-4 py-4">
             <PostCreate />
 
-            <ScrollArea className="relative h-[calc(100vh-9.25rem)] pr-3 before:w-[calc(100%-0.75rem)] before:min-h-6 before:absolute before:top-0 before:border-t before:border-t-rose-500 before:rounded-xl before:z-40 after:w-[calc(100%-0.75rem)] after:min-h-6 after:absolute after:bottom-0 after:border-b after:border-b-rose-500 after:rounded-xl after:z-40">
+            <div className="relative h-[calc(100vh-9.25rem)] before:w-[calc(100%-0.75rem)] before:min-h-6 before:absolute before:top-0 before:border-t before:border-t-rose-500 before:rounded-xl before:z-40 after:w-[calc(100%-0.75rem)] after:min-h-6 after:absolute after:bottom-0 after:border-b after:border-b-rose-500 after:rounded-xl after:z-40">
               {/* Top Corners */}
               <div className="w-[0.75rem] h-[0.75rem] absolute left-0 bg-background z-30"></div>
               <div className="w-[0.75rem] h-[0.75rem] absolute right-3 bg-background z-30"></div>
@@ -44,14 +48,8 @@ const Home: React.FC<HomeProps> = () => {
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 left-0 bg-background z-30"></div>
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 right-3 bg-background z-30"></div>
 
-              <div className="flex flex-col gap-4 w-full">
-                {Array(10)
-                  .fill(null)
-                  .map((_, i) => (
-                    <PostCard key={i} />
-                  ))}
-              </div>
-            </ScrollArea>
+              <AllPosts userId={user?.id!} />
+            </div>
           </div>
         </div>
 

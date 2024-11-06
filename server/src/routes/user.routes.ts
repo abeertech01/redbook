@@ -18,6 +18,6 @@ router.use(isAuthenticated)
 
 router.delete("/logout", logoutUser)
 router.get("/profile", userProfile)
-router.get("/search", searchUser)
+router.get("/search-user", searchUser)
 
 export default router

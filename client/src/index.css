@@ -97,3 +97,10 @@
     transform: rotate(1turn);
   }
 }
+
+.no-color-change:disabled {
+  background-color: inherit;
+  color: inherit;
+  opacity: 1;
+  cursor: not-allowed;
+}

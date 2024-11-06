@@ -4,19 +4,19 @@ import { IRequest } from "../utils/types"
 import prisma from "../lib/prismadb"
 import { createPostSchema } from "../lib/zod"
 import { ErrorHandler } from "../utils/utility"
-import { upvotePostHelper } from "../lib/helpers"
+import { downvotePostHelper, upvotePostHelper } from "../lib/helpers"
 
 class Post {
   createPost = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
       createPostSchema.parse(req.body)
-      const { title, content, authorId } = req.body
+      const { title, content } = req.body
 
       const newPost = await prisma.post.create({
         data: {
           title,
           content,
-          authorId,
+          authorId: req.id as string,
         },
       })
 
@@ -47,6 +47,30 @@ class Post {
           posts: filteredPosts,
         })
       }
+
+      res.status(200).json({
+        success: true,
+        posts,
+      })
+    }
+  )
+
+  getPaginatedPosts = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 10
+
+      const skip = (page - 1) * limit
+
+      const posts = await prisma.post.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          author: true,
+          comments: true,
+        },
+      })
 
       res.status(200).json({
         success: true,
@@ -101,6 +125,11 @@ class Post {
 
       if (!record) return next(new ErrorHandler("Post not found", 404))
 
+      if (record.authorId !== req.id)
+        return next(
+          new ErrorHandler("You are not authorized to delete this post", 401)
+        )
+
       const post = await prisma.post.delete({
         where: { authorId: req.id, id: postId },
       })
@@ -122,6 +151,24 @@ class Post {
       })
 
       const updatedPost = upvotePostHelper(post!, prisma, req.id!, postId)
+
+      res.status(200).json({
+        success: true,
+        post: updatedPost,
+      })
+    }
+  )
+
+  downvotePost = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { id: postId } = req.params
+
+      // get the post by matching the postId
+      const post = await prisma.post.findUnique({
+        where: { id: postId },
+      })
+
+      const updatedPost = downvotePostHelper(post!, prisma, req.id!, postId)
 
       res.status(200).json({
         success: true,

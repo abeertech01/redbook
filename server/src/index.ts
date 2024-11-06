@@ -12,6 +12,7 @@ import { Server } from "socket.io"
 import { ExtendedSocket } from "./utils/types"
 import { socketAuthenticator } from "./middlewares/auth"
 import chatClass from "./classes/chat.class"
+import { generateFakePosts, generateFakeUsers } from "./utils/utility"
 
 const userSocketIDs = new Map()
 
@@ -32,6 +33,12 @@ app.use(cors(corsOptions))
 app.use("/api/user", userRoutes)
 app.use("/api/post", postRoutes)
 app.use("/api/chat", chatRoutes)
+
+// Fake Data Generating to make a good-looking social media app
+;(async function (userNumeber: number) {
+  await generateFakeUsers(userNumeber)
+  await generateFakePosts()
+})(100)
 
 app.get("/", (req: Request, res: Response) => {
   res.json({
@@ -60,7 +67,7 @@ io.on("connection", (socket: ExtendedSocket) => {
 app.use(errorMiddleware)
 
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
+  console.log(`Server is running at http://localhost:${PORT}`)
 })
 
 export { userSocketIDs }
