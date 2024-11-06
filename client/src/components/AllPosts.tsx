@@ -1,7 +1,6 @@
 import React from "react"
 import PostCard from "./PostCard"
-import { useGetPostsQuery, useGetPaginatedPostsQuery } from "@/app/api/post"
-import LayoutLoader from "./LayoutLoader"
+import { useGetPaginatedPostsQuery } from "@/app/api/post"
 import { Post } from "@/utility/types"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/app/store"
@@ -36,16 +35,6 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
         <PostCard key={post.id} post={post as Post} userId={userId!} />
       ))}
       {isFetching && <p>Loading for more...</p>}
-
-      {/* {isLoading ? (
-        <div className="w-full h-full flex justify-center items-center">
-          <LayoutLoader />
-        </div>
-      ) : (
-        data?.posts?.map((post) => (
-          <PostCard key={post.id} post={post as Post} userId={userId!} />
-        ))
-      )} */}
     </div>
   )
 }

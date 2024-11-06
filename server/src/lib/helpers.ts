@@ -26,6 +26,7 @@ const getAllChats = async (
           name: true,
           username: true,
           email: true,
+          messages: true,
           createdAt: true,
           updatedAt: true,
         },

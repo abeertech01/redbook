@@ -1,3 +1,4 @@
+import { useGetChatsQuery } from "@/app/api/chat"
 import Navbar from "@/components/Navbar"
 import SearchUser from "@/components/SearchUser"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -7,13 +8,27 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import React from "react"
+import { NEW_CHAT } from "@/constants/events"
+import { getSocket } from "@/constants/SocketProvider"
+import useSocketEvents from "@/hooks/useSocketEvents"
+import { timeAgo } from "@/lib/helper"
+import { Chat } from "@/utility/types"
+import React, { useEffect } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 
 type MessagesProps = {}
 
 const Messages: React.FC<MessagesProps> = () => {
   const { pathname } = useLocation()
+  const { data, isLoading, refetch } = useGetChatsQuery()
+
+  const socket = getSocket()
+
+  const eventHandler = {
+    [NEW_CHAT]: (_: string) => refetch(),
+  }
+
+  useSocketEvents(socket!, eventHandler)
 
   return (
     <div>
@@ -27,18 +42,19 @@ const Messages: React.FC<MessagesProps> = () => {
 
               <ScrollArea className="w-full h-[calc(100vh-9rem)]">
                 <ul className="w-full flex flex-col gap-4 mt-4">
-                  {Array(20)
-                    .fill(null)
-                    .map((_, i: number) => (
+                  {data &&
+                    data.chats.map((chat: Chat, i: number) => (
                       <li key={i} className="w-full flex gap-2 items-center">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src="https://github.com/shadcn.png" />
                           <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
                         <div className="w-full">
-                          <h3 className="font-semibold">
-                            John Doe{" "}
-                            <small className="text-gray-400">@johndoe</small>
+                          <h3 className="font-semibold line-clamp-1">
+                            {chat?.members[chat.theOtherUserIndex]?.name}{" "}
+                            <small className="text-gray-400">
+                              @{chat.members[chat.theOtherUserIndex]?.username}
+                            </small>
                           </h3>
                           <div className="w-[12rem] flex gap-2">
                             <p className="flex-1 text-sm line-clamp-1">
@@ -48,7 +64,7 @@ const Messages: React.FC<MessagesProps> = () => {
                               delectus ipsa.
                             </p>
                             <small className="inline-block text-zinc-400">
-                              2hr ago
+                              {timeAgo(chat.updatedAt)}
                             </small>
                           </div>
                         </div>

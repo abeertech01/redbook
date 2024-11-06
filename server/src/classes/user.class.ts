@@ -48,7 +48,10 @@ class User {
       // Finding all users except me and my friends
       const allUsers = await prisma.user.findMany({
         where: {
-          NOT: [...allUsersFromMyChats, { id: req.id }],
+          NOT: [
+            ...allUsersFromMyChats.map((u) => ({ id: u.id })),
+            { id: req.id },
+          ],
           name: {
             contains: name as string,
             mode: "insensitive",

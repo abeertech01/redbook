@@ -12,10 +12,19 @@ export interface User {
   updatedAt: Date
 }
 
+export interface UsersResponse {
+  success: boolean
+  users: User[]
+}
+
 export interface AuthResult {
   success: boolean
   message: string
   user: User
+}
+
+export interface SocketEventHandlers {
+  [key: string]: (...args: any) => void
 }
 
 export interface LoginData {
@@ -93,6 +102,33 @@ export interface CommentsResponse {
 export interface CreateCommentPayload {
   content: string
   postId: string
+}
+
+export interface ChatsResponse {
+  success: boolean
+  chats: Chat[]
+}
+
+export interface Chat {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  members: User[]
+  messages: Message[]
+  creatorId: string
+  creator?: User
+  theOtherUserIndex: number
+}
+
+export interface Message {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  text: string
+  chatId: string
+  chat?: Chat
+  authorId: string
+  author?: User
 }
 
 export interface AxiosError {
