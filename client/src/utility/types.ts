@@ -117,6 +117,7 @@ export interface Chat {
   messages: Message[]
   creatorId: string
   creator?: User
+  lastMessage: string
   theOtherUserIndex: number
 }
 

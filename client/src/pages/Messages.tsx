@@ -58,10 +58,7 @@ const Messages: React.FC<MessagesProps> = () => {
                           </h3>
                           <div className="w-[12rem] flex gap-2">
                             <p className="flex-1 text-sm line-clamp-1">
-                              Lorem ipsum dolor sit amet, consectetur
-                              adipisicing elit. Ipsam eum expedita nostrum
-                              accusamus commodi laboriosam optio aliquam animi
-                              delectus ipsa.
+                              {chat.lastMessage}
                             </p>
                             <small className="inline-block text-zinc-400">
                               {timeAgo(chat.updatedAt)}

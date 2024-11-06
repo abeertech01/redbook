@@ -92,8 +92,17 @@ class Chat {
           },
         })
 
-        const theChat = await prisma.chat.findUnique({
+        // const theChat = await prisma.chat.findUnique({
+        //   where: { id: chatId as string },
+        //   include: {
+        //     members: true,
+        //   },
+        // })
+        const theChat = await prisma.chat.update({
           where: { id: chatId as string },
+          data: {
+            lastMessage: msg as string,
+          },
           include: {
             members: true,
           },
