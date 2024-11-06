@@ -137,6 +137,35 @@ class Chat {
     }
   )
 
+  getChatParticipator = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      let chat = await prisma.chat.findUnique({
+        where: { id: req.params.chatId },
+        include: {
+          members: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              email: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      })
+
+      const chatParticipator = chat?.members.find(
+        (member) => member.id !== req.id
+      )
+
+      res.status(200).json({
+        success: true,
+        user: chatParticipator,
+      })
+    }
+  )
+
   getMessages = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
       const messages = await prisma.message.findMany({
@@ -145,9 +174,21 @@ class Chat {
         },
       })
 
+      const theChat = await prisma.chat.findUnique({
+        where: { id: req.params.chatId },
+        include: {
+          members: true,
+        },
+      })
+
+      const participator = theChat?.members.find(
+        (member) => member.id !== req.id
+      )
+
       res.status(200).json({
         success: true,
         messages,
+        participator,
       })
     }
   )

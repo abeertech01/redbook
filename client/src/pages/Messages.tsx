@@ -1,4 +1,5 @@
 import { useGetChatsQuery } from "@/app/api/chat"
+import ChatParticipator from "@/components/ChatParticipator"
 import Navbar from "@/components/Navbar"
 import SearchUser from "@/components/SearchUser"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,12 +16,14 @@ import useSocketEvents from "@/hooks/useSocketEvents"
 import { timeAgo } from "@/lib/helper"
 import { Chat } from "@/utility/types"
 import React from "react"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
 type MessagesProps = {}
 
 const Messages: React.FC<MessagesProps> = () => {
   const navigate = useNavigate()
+  const { chatId } = useParams()
   const { pathname } = useLocation()
   const { data, isLoading: _, refetch } = useGetChatsQuery()
 
@@ -32,8 +35,10 @@ const Messages: React.FC<MessagesProps> = () => {
 
   useSocketEvents(socket!, eventHandler)
 
-  const startChatting = (chatId: string) => {
-    navigate(`/messages/${chatId}`)
+  const startChatting = (chat: Chat) => {
+    if (chatId && chatId === chat.id) return
+
+    navigate(`/messages/${chat.id}`)
   }
 
   return (
@@ -52,7 +57,7 @@ const Messages: React.FC<MessagesProps> = () => {
                     data.chats.map((chat: Chat, i: number) => (
                       <li key={i} className="w-full">
                         <Button
-                          onClick={() => startChatting(chat.id)}
+                          onClick={() => startChatting(chat)}
                           className="w-full h-full px-3 py-3 flex gap-2 items-center justify-start bg-background hover:bg-primary-foreground text-primary"
                         >
                           <Avatar className="w-12 h-12">
@@ -68,7 +73,7 @@ const Messages: React.FC<MessagesProps> = () => {
                               </small>
                             </h3>
                             <div className="min-w-[11rem] max-w-max flex gap-2">
-                              <p className="flex-1 text-sm line-clamp-1">
+                              <p className="flex-1 text-sm line-clamp-1 text-left">
                                 {chat.lastMessage}
                               </p>
                               <small className="inline-block text-zinc-400">
@@ -84,7 +89,12 @@ const Messages: React.FC<MessagesProps> = () => {
             </div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={44} className="py-4 flex flex-col">
+          <ResizablePanel
+            defaultSize={
+              pathname === "/messages" || pathname === "/messages/" ? 72 : 44
+            }
+            className="h-full py-4 flex flex-col"
+          >
             {(pathname === "/messages" || pathname === "/messages/") && (
               <div className="w-full h-full flex justify-center items-center">
                 <h1 className="text-2xl font-bold text-zinc-500">
@@ -95,40 +105,14 @@ const Messages: React.FC<MessagesProps> = () => {
 
             <Outlet />
           </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel defaultSize={28} className="p-4">
-            <div className="w-full h-full">
-              <Avatar className="w-28 h-28 mx-auto my-5">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-
-              <div className="flex flex-col items-center gap-4">
-                <h1 className="text-2xl">John Doe</h1>
-                <div className="text-center">
-                  <h1 className="text-zinc-400 text-sm">Username</h1>
-                  <p>@johndoe</p>
-                </div>
-                <div className="text-center">
-                  <h1 className="text-zinc-400 text-sm">Email</h1>
-                  <p>johndoe@gmail.com</p>
-                </div>
-                <div className="text-center w-4/5">
-                  <h1 className="text-zinc-400 text-sm">Bio</h1>
-                  <p>
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                    Accusantium dignissimos mollitia nostrum. Ipsum, ipsam
-                    quisquam assumenda illo ut, vero iure nesciunt magnam quasi
-                    iste adipisci labore tempore dicta, fuga dignissimos.
-                  </p>
-                </div>
-                <div className="text-center">
-                  <h1 className="text-zinc-400 text-sm">Joined</h1>
-                  <p>15th June, 2024</p>
-                </div>
-              </div>
-            </div>
-          </ResizablePanel>
+          {chatId && (
+            <>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={28} className="p-4">
+                <ChatParticipator chatId={chatId} />
+              </ResizablePanel>
+            </>
+          )}
         </ResizablePanelGroup>
       </div>
     </div>
