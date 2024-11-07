@@ -15,7 +15,7 @@ import { getSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import { timeAgo } from "@/lib/helper"
 import { Chat } from "@/utility/types"
-import React from "react"
+import React, { useEffect } from "react"
 
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
@@ -40,6 +40,10 @@ const Messages: React.FC<MessagesProps> = () => {
 
     navigate(`/messages/${chat.id}`)
   }
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   return (
     <div>

@@ -92,12 +92,6 @@ class Chat {
           },
         })
 
-        // const theChat = await prisma.chat.findUnique({
-        //   where: { id: chatId as string },
-        //   include: {
-        //     members: true,
-        //   },
-        // })
         const theChat = await prisma.chat.update({
           where: { id: chatId as string },
           data: {
@@ -113,6 +107,7 @@ class Chat {
         )
 
         io.to(chatterSocket).emit(NEW_MESSAGE, { newMessage })
+        io.to(chatterSocket).emit(NEW_CHAT, theChat)
       } catch (error: any) {
         return new ErrorHandler(error.message, 500)
       }
