@@ -1,17 +1,32 @@
+import { useGet10RandomUsersQuery } from "@/app/api/user"
 import { RootState } from "@/app/store"
 import AllPosts from "@/components/AllPosts"
 import Navbar from "@/components/Navbar"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { NEW_CHAT } from "@/constants/events"
+import { getSocket } from "@/constants/SocketProvider"
 import React from "react"
 import { useSelector } from "react-redux"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 type HomeProps = {}
 
 const Home: React.FC<HomeProps> = () => {
+  const navigate = useNavigate()
   const { user } = useSelector((state: RootState) => state.user)
+  const { data: _10Users, isLoading: _ } = useGet10RandomUsersQuery()
+  const socket = getSocket()
+
+  const startChatting = (participantId: string) => {
+    socket?.emit(NEW_CHAT, {
+      participantId,
+    })
+
+    navigate("/messages")
+  }
 
   return (
     <div>
@@ -55,19 +70,29 @@ const Home: React.FC<HomeProps> = () => {
 
         <ScrollArea className="h-[calc(100vh-3.5rem)] p-2">
           <div className="min-h-full py-4 px-6 bg-secondary rounded-md shadow-md">
-            <h1 className="underline mb-4">People You may want to chat with</h1>
-            <ul className="flex flex-col gap-3">
-              {Array(10)
-                .fill(null)
-                .map((_, i: number) => (
-                  <li key={i} className="flex gap-2 items-center">
-                    <Avatar className="w-7 h-7">
+            <h1 className="underline mb-4 text-center">
+              People You may want to chat with
+            </h1>
+            <ul className="flex flex-col">
+              {_10Users?.users.map((person, i: number) => (
+                <li key={i} className="">
+                  <Button
+                    onClick={() => startChatting(person.id)}
+                    className="w-full h-full flex gap-2 justify-start px-4 py-3 bg-inherit text-primary hover:bg-background"
+                  >
+                    <Avatar className="w-12 h-12">
                       <AvatarImage src="https://github.com/shadcn.png" />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    <span>John Doe</span>
-                  </li>
-                ))}
+                    <div className="flex flex-col items-start">
+                      <h1 className="text-lg font-semibold">{person.name}</h1>
+                      <p className="text-sm text-muted-foreground">
+                        @{person.username}
+                      </p>
+                    </div>
+                  </Button>
+                </li>
+              ))}
             </ul>
           </div>
         </ScrollArea>

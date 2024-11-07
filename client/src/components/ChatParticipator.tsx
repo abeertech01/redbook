@@ -29,12 +29,7 @@ const ChatParticipator: React.FC<ChatParticipatorProps> = ({ chatId }) => {
         </div>
         <div className="text-center w-4/5">
           <h1 className="text-zinc-400 text-sm">Bio</h1>
-          <p>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-            Accusantium dignissimos mollitia nostrum. Ipsum, ipsam quisquam
-            assumenda illo ut, vero iure nesciunt magnam quasi iste adipisci
-            labore tempore dicta, fuga dignissimos.
-          </p>
+          <p>{data?.user.bio ?? "Bio is not added"}</p>
         </div>
         <div className="text-center">
           <h1 className="text-zinc-400 text-sm">Joined</h1>

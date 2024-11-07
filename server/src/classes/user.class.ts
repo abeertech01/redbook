@@ -72,7 +72,7 @@ class User {
     }
   )
 
-  addBio = TryCatch(
+  updateBio = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
       const { bio } = req.body
       const bioAddedUser = await prisma.user.update({
@@ -81,6 +81,33 @@ class User {
       })
 
       res.status(200).json({ success: true, user: bioAddedUser })
+    }
+  )
+
+  get10RandomUsers = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      // Fetch the latest 50 users
+      const recentUsers = await prisma.user.findMany({
+        where: { NOT: { id: req.id } },
+        take: 50,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          bio: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
+
+      // Randomly select 10 users from the recent 50
+      const randomUsers = recentUsers
+        .sort(() => 0.5 - Math.random()) // Shuffle the array
+        .slice(0, 10) // Take the first 10
+
+      res.status(200).json({ success: true, users: randomUsers })
     }
   )
 }

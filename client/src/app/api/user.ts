@@ -18,8 +18,15 @@ const userAPI = createApi({
         body: { bio },
       }),
     }),
+    get10RandomUsers: builder.query<UsersResponse, void>({
+      query: () => "/get-10-random-users",
+    }),
   }),
 })
 
 export { userAPI }
-export const { useLazySearchUsersQuery, useUpdateBioMutation } = userAPI
+export const {
+  useLazySearchUsersQuery,
+  useUpdateBioMutation,
+  useGet10RandomUsersQuery,
+} = userAPI

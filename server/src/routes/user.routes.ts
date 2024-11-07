@@ -1,11 +1,12 @@
 import express from "express"
 import {
-  addBio,
+  updateBio,
   loginUser,
   logoutUser,
   registerUser,
   searchUser,
   userProfile,
+  get10RandomUsers,
 } from "../controllers/user.controllers"
 import { isAuthenticated } from "../middlewares/auth"
 
@@ -20,6 +21,7 @@ router.use(isAuthenticated)
 router.delete("/logout", logoutUser)
 router.get("/profile", userProfile)
 router.get("/search-user", searchUser)
-router.put("/add-bio", addBio)
+router.put("/add-bio", updateBio)
+router.get("/get-10-random-users", get10RandomUsers)
 
 export default router
