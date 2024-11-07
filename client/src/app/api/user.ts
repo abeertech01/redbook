@@ -1,4 +1,4 @@
-import { UsersResponse } from "@/utility/types"
+import { UserResponse, UsersResponse } from "@/utility/types"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
 const userAPI = createApi({
@@ -11,8 +11,15 @@ const userAPI = createApi({
     searchUsers: builder.query<UsersResponse, string>({
       query: (name) => `/search-user?name=${name}`,
     }),
+    updateBio: builder.mutation<UserResponse, string>({
+      query: (bio) => ({
+        url: "/add-bio",
+        method: "PUT",
+        body: { bio },
+      }),
+    }),
   }),
 })
 
 export { userAPI }
-export const { useLazySearchUsersQuery } = userAPI
+export const { useLazySearchUsersQuery, useUpdateBioMutation } = userAPI

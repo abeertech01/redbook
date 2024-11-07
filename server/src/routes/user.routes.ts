@@ -1,5 +1,6 @@
 import express from "express"
 import {
+  addBio,
   loginUser,
   logoutUser,
   registerUser,
@@ -13,11 +14,12 @@ const router = express.Router()
 router.post("/register", registerUser)
 router.post("/login", loginUser)
 
-//// Authorizing the user
+// Authorizing the user
 router.use(isAuthenticated)
 
 router.delete("/logout", logoutUser)
 router.get("/profile", userProfile)
 router.get("/search-user", searchUser)
+router.put("/add-bio", addBio)
 
 export default router

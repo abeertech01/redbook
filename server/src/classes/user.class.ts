@@ -19,6 +19,7 @@ class User {
           name: user?.name,
           username: user?.username,
           email: user?.email,
+          bio: user?.bio ?? null,
           createdAt: user?.createdAt,
           updatedAt: user?.updatedAt,
         },
@@ -68,6 +69,18 @@ class User {
         success: true,
         users: allUsers,
       })
+    }
+  )
+
+  addBio = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { bio } = req.body
+      const bioAddedUser = await prisma.user.update({
+        where: { id: req.id },
+        data: { bio },
+      })
+
+      res.status(200).json({ success: true, user: bioAddedUser })
     }
   )
 }
