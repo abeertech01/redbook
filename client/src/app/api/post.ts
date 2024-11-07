@@ -4,6 +4,7 @@ import {
   FetchedPosts,
   Post,
   PostResponse,
+  User,
 } from "@/utility/types"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { RootState } from "../store"
@@ -14,7 +15,7 @@ const postAPI = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/post`,
   }),
-  tagTypes: ["Posts", "Post"],
+  tagTypes: ["Posts", "PaginatedPosts", "Post", "UserPosts"],
   endpoints: (builder) => ({
     getPosts: builder.query<FetchedPosts, void>({
       query: () => ({
@@ -23,6 +24,14 @@ const postAPI = createApi({
         credentials: "include",
       }),
       providesTags: ["Posts"],
+    }),
+    getUserPosts: builder.query<FetchedPosts, string>({
+      query: (id) => ({
+        url: `/get-user-posts/${id}`,
+        method: "GET",
+        credentials: "include",
+      }),
+      providesTags: ["UserPosts"],
     }),
     getPaginatedPosts: builder.query<FetchedPosts, number>({
       query: (page) => ({
@@ -40,7 +49,7 @@ const postAPI = createApi({
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg
       },
-      providesTags: ["Posts"],
+      providesTags: ["PaginatedPosts"],
     }),
     getPost: builder.query<FetchedPost, string>({
       query: (id) => ({
@@ -57,7 +66,34 @@ const postAPI = createApi({
         body,
         credentials: "include",
       }),
-      invalidatesTags: ["Posts"],
+      invalidatesTags: ["PaginatedPosts", "UserPosts"],
+      async onQueryStarted(body, { dispatch, queryFulfilled, getState }) {
+        const state = getState() as RootState
+        const authorId = state.user.user?.id as string
+
+        const patchResult = dispatch(
+          postAPI.util.updateQueryData("getPaginatedPosts", 1, (draft) => {
+            draft.posts.unshift({
+              id: crypto.randomUUID(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              title: body.title,
+              content: body.content,
+              upvoteIds: [],
+              downvoteIds: [],
+              authorId,
+              author: state.user.user as User,
+              comments: [],
+            })
+          })
+        )
+
+        try {
+          await queryFulfilled
+        } catch {
+          patchResult.undo()
+        }
+      },
     }),
     deletePost: builder.mutation<PostResponse, string>({
       query: (id) => ({
@@ -65,7 +101,7 @@ const postAPI = createApi({
         method: "DELETE",
         credentials: "include",
       }),
-      invalidatesTags: ["Posts"],
+      invalidatesTags: ["PaginatedPosts", "UserPosts"],
     }),
     upvotePost: builder.mutation<FetchedPost, string>({
       query: (id) => ({
@@ -90,6 +126,14 @@ const postAPI = createApi({
           )
         )
 
+        const patchResult_UserPosts = dispatch(
+          postAPI.util.updateQueryData("getUserPosts", authorId, (draft) => {
+            const post = draft.posts.find((post) => post.id === id) as Post
+
+            upvoteCacheHelper<Post>(post, authorId)
+          })
+        )
+
         const patchSinglePostResult = dispatch(
           postAPI.util.updateQueryData("getPost", id, (draft) => {
             upvoteCacheHelper<Post>(draft.post, authorId)
@@ -100,6 +144,7 @@ const postAPI = createApi({
           await queryFulfilled
         } catch {
           patchResult.undo()
+          patchResult_UserPosts.undo()
           patchSinglePostResult.undo()
         }
       },
@@ -127,6 +172,14 @@ const postAPI = createApi({
           )
         )
 
+        const patchResult_UserPosts = dispatch(
+          postAPI.util.updateQueryData("getUserPosts", authorId, (draft) => {
+            const post = draft.posts.find((post) => post.id === id) as Post
+
+            downvoteCacheHelper<Post>(post, authorId)
+          })
+        )
+
         const patchSinglePostPatch = dispatch(
           postAPI.util.updateQueryData("getPost", id, (draft) => {
             downvoteCacheHelper<Post>(draft.post, authorId)
@@ -137,6 +190,7 @@ const postAPI = createApi({
           await queryFulfilled
         } catch {
           patchResult.undo()
+          patchResult_UserPosts.undo()
           patchSinglePostPatch.undo()
         }
       },
@@ -147,6 +201,7 @@ const postAPI = createApi({
 export { postAPI }
 export const {
   useGetPostsQuery,
+  useGetUserPostsQuery,
   useGetPaginatedPostsQuery,
   useGetPostQuery,
   useCreatePostMutation,

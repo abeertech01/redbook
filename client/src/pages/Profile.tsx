@@ -1,4 +1,4 @@
-import { useGetPostsQuery } from "@/app/api/post"
+import { useGetUserPostsQuery } from "@/app/api/post"
 import { RootState } from "@/app/store"
 import Navbar from "@/components/Navbar"
 import PostCard from "@/components/PostCard"
@@ -6,8 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatHumanReadTimestamp } from "@/lib/helper"
-import { Post } from "@/utility/types"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useSelector } from "react-redux"
 
 type ProfileProps = {}
@@ -15,15 +14,8 @@ type ProfileProps = {}
 const Profile: React.FC<ProfileProps> = () => {
   const { user } = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(true)
-  const [profilePosts, setProfilePosts] = useState<Post[]>([])
 
-  const { data } = useGetPostsQuery()
-
-  useEffect(() => {
-    if (data) {
-      setProfilePosts(data.posts.filter((post) => post.authorId === user?.id))
-    }
-  }, [data])
+  const { data } = useGetUserPostsQuery(user?.id!)
 
   return (
     <div className="min-h-screen">
@@ -82,7 +74,7 @@ const Profile: React.FC<ProfileProps> = () => {
             </Card>
             <div>
               <ul className="flex flex-col gap-3">
-                {profilePosts.map((post) => (
+                {data?.posts.map((post) => (
                   <PostCard key={post.id} post={post} userId={user?.id!} />
                 ))}
               </ul>
