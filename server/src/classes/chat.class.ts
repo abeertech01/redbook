@@ -92,12 +92,6 @@ class Chat {
           },
         })
 
-        // const theChat = await prisma.chat.findUnique({
-        //   where: { id: chatId as string },
-        //   include: {
-        //     members: true,
-        //   },
-        // })
         const theChat = await prisma.chat.update({
           where: { id: chatId as string },
           data: {
@@ -113,6 +107,7 @@ class Chat {
         )
 
         io.to(chatterSocket).emit(NEW_MESSAGE, { newMessage })
+        io.to(chatterSocket).emit(NEW_CHAT, theChat)
       } catch (error: any) {
         return new ErrorHandler(error.message, 500)
       }
@@ -137,6 +132,35 @@ class Chat {
     }
   )
 
+  getChatParticipator = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      let chat = await prisma.chat.findUnique({
+        where: { id: req.params.chatId },
+        include: {
+          members: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              email: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      })
+
+      const chatParticipator = chat?.members.find(
+        (member) => member.id !== req.id
+      )
+
+      res.status(200).json({
+        success: true,
+        user: chatParticipator,
+      })
+    }
+  )
+
   getMessages = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
       const messages = await prisma.message.findMany({
@@ -145,9 +169,21 @@ class Chat {
         },
       })
 
+      const theChat = await prisma.chat.findUnique({
+        where: { id: req.params.chatId },
+        include: {
+          members: true,
+        },
+      })
+
+      const participator = theChat?.members.find(
+        (member) => member.id !== req.id
+      )
+
       res.status(200).json({
         success: true,
         messages,
+        participator,
       })
     }
   )

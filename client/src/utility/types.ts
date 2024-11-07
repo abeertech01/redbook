@@ -17,6 +17,11 @@ export interface UsersResponse {
   users: User[]
 }
 
+export interface UserResponse {
+  success: boolean
+  user: User
+}
+
 export interface AuthResult {
   success: boolean
   message: string
@@ -119,6 +124,12 @@ export interface Chat {
   creator?: User
   lastMessage: string
   theOtherUserIndex: number
+}
+
+export interface MessagesResponse {
+  success: boolean
+  messages: Message[]
+  participator: User
 }
 
 export interface Message {

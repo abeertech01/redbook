@@ -1,4 +1,4 @@
-import { ChatsResponse } from "@/utility/types"
+import { ChatsResponse, MessagesResponse, UserResponse } from "@/utility/types"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
 const chatAPI = createApi({
@@ -15,8 +15,25 @@ const chatAPI = createApi({
         method: "GET",
       }),
     }),
+    getMessages: builder.query<MessagesResponse, string>({
+      query: (chatId) => ({
+        url: `/get-messages/${chatId}`,
+        method: "GET",
+      }),
+      providesTags: ["Chat"],
+    }),
+    getChatParticipator: builder.query<UserResponse, string>({
+      query: (chatId) => ({
+        url: `/chat-participator/${chatId}`,
+        method: "GET",
+      }),
+    }),
   }),
 })
 
 export { chatAPI }
-export const { useGetChatsQuery } = chatAPI
+export const {
+  useGetChatsQuery,
+  useGetMessagesQuery,
+  useGetChatParticipatorQuery,
+} = chatAPI
