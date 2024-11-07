@@ -104,3 +104,8 @@
   opacity: 1;
   cursor: not-allowed;
 }
+
+.custom-glow {
+  box-shadow: 0 0 10px 4px rgba(244, 114, 182, 0.6),
+    /* Adjust the intensity and spread */ 0 0 20px 8px rgba(244, 114, 182, 0.4);
+}

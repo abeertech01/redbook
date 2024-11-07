@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { formatHumanReadTimestamp } from "@/lib/helper"
-import { Edit, SquareCheckBig } from "lucide-react"
+import { Camera, CameraIcon, Edit, SquareCheckBig } from "lucide-react"
 import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { updateBio as updateBioReducer } from "@/app/reducers/user"
@@ -71,12 +71,28 @@ const Profile: React.FC<ProfileProps> = () => {
             />
 
             <div className="absolute bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">
-              <Avatar className="border w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem]">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
+              <div className="relative w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] group">
+                <Avatar className="border w-full h-full md:w-[7rem] md:h-[7rem]">
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="absolute top-0 w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] shadow-md custom-glow rounded-full hidden group-hover:block">
+                  <Button className="w-full h-full rounded-full bg-transparent hover:bg-rose-500/50 text-white">
+                    <Camera className="scale-150" /> Change
+                  </Button>
+                </div>
+              </div>
 
               <h1 className="text-xl md:text-2xl font-bold">{user?.name}</h1>
+            </div>
+            <div className="absolute bottom-2 right-2 flex gap-4 items-center shadow-md custom-glow">
+              <Button
+                variant={"secondary"}
+                className="bg-rose-500 hover:bg-rose-600 text-white"
+              >
+                <CameraIcon />
+                Edit Cover Photo
+              </Button>
             </div>
           </div>
 
