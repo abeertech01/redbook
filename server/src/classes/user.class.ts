@@ -86,9 +86,29 @@ class User {
 
   get10RandomUsers = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
+      const myChats = await getAllChats(prisma, req)
+
+      // let allUsers: SearchedUser[]
+      let allUsersFromMyChats: UserType[]
+
+      //  extracting All Users from my chats means friends or people I have chatted with
+      if (myChats.length > 0) {
+        allUsersFromMyChats = myChats.flatMap((chat) => chat.members)
+        allUsersFromMyChats = allUsersFromMyChats.filter(
+          (user) => user.id !== req.id
+        )
+      } else {
+        allUsersFromMyChats = []
+      }
+
       // Fetch the latest 50 users
       const recentUsers = await prisma.user.findMany({
-        where: { NOT: { id: req.id } },
+        where: {
+          NOT: [
+            ...allUsersFromMyChats.map((u) => ({ id: u.id })),
+            { id: req.id },
+          ],
+        },
         take: 50,
         orderBy: { createdAt: "desc" },
         select: {
