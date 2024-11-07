@@ -1,21 +1,56 @@
 import { useGetUserPostsQuery } from "@/app/api/post"
-import { RootState } from "@/app/store"
+import { useUpdateBioMutation } from "@/app/api/user"
+import { AppDispatch, RootState } from "@/app/store"
 import Navbar from "@/components/Navbar"
 import PostCard from "@/components/PostCard"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Textarea } from "@/components/ui/textarea"
 import { formatHumanReadTimestamp } from "@/lib/helper"
+import { Edit, SquareCheckBig } from "lucide-react"
 import React, { useState } from "react"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import { updateBio as updateBioReducer } from "@/app/reducers/user"
+import { useToast } from "@/hooks/use-toast"
 
 type ProfileProps = {}
 
 const Profile: React.FC<ProfileProps> = () => {
+  const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(true)
+  const [isBioEditing, setIsBioEditing] = useState(false)
+  const [bioText, setBioText] = useState(user?.bio)
+  const { toast } = useToast()
 
   const { data } = useGetUserPostsQuery(user?.id!)
+  const [updateBio] = useUpdateBioMutation()
+
+  const editBio = async () => {
+    if (isBioEditing && bioText && bioText !== user?.bio) {
+      const theBioResult = await updateBio(bioText).unwrap()
+
+      await dispatch(updateBioReducer(theBioResult.user.bio))
+    }
+
+    if (isBioEditing && bioText === user?.bio) {
+      toast({
+        variant: "destructive",
+        title: "No changes made",
+      })
+    }
+
+    if (isBioEditing && !bioText) {
+      toast({
+        variant: "destructive",
+        title: "Bio cannot be empty",
+      })
+    }
+
+    setIsBioEditing((prev) => !prev)
+  }
 
   return (
     <div className="min-h-screen">
@@ -59,12 +94,35 @@ const Profile: React.FC<ProfileProps> = () => {
                   </p>
                 </li>
                 <li>
-                  <h1 className="text-lg font-semibold underline">Bio</h1>
-                  <p>
-                    Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                    Hic consequuntur, officia ea incidunt voluptas quam
-                    aspernatur numquam cupiditate excepturi animi.
-                  </p>
+                  <h1 className="text-lg font-semibold underline">
+                    Bio{" "}
+                    <Button
+                      onClick={editBio}
+                      size={"icon"}
+                      variant={"ghost"}
+                      className="hover:bg-transparent"
+                    >
+                      {!isBioEditing ? (
+                        <Edit className="text-zinc-500" />
+                      ) : (
+                        <SquareCheckBig className="text-zinc-500" />
+                      )}
+                    </Button>
+                  </h1>
+                  {!isBioEditing && (
+                    <p>
+                      {user && user.bio
+                        ? user.bio
+                        : "Add something about yourself."}
+                    </p>
+                  )}
+                  {isBioEditing && (
+                    <Textarea
+                      value={bioText}
+                      onChange={(e) => setBioText(e.target.value)}
+                      className="border"
+                    />
+                  )}
                 </li>
                 <li>
                   <h1 className="text-lg font-semibold underline">Joined</h1>

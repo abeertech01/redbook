@@ -8,6 +8,7 @@ export interface User {
   name: string
   username: string
   email: string
+  bio?: string
   createdAt: Date
   updatedAt: Date
 }

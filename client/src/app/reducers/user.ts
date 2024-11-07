@@ -19,6 +19,9 @@ const userSlice = createSlice({
       state.user = null
       state.loader = false
     },
+    updateBio(state, action) {
+      state.user!.bio = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -46,4 +49,4 @@ const userSlice = createSlice({
 })
 
 export default userSlice
-export const { userExists, userDoesntExist } = userSlice.actions
+export const { userExists, userDoesntExist, updateBio } = userSlice.actions
