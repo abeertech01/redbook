@@ -9,6 +9,8 @@ export interface User {
   username: string
   email: string
   bio?: string
+  profileImgUrl: string
+  coverImgUrl: string
   createdAt: Date
   updatedAt: Date
 }

@@ -27,6 +27,8 @@ const getAllChats = async (
           username: true,
           email: true,
           messages: true,
+          profileImgUrl: true,
+          coverImgUrl: true,
           createdAt: true,
           updatedAt: true,
         },

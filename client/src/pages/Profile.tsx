@@ -14,6 +14,7 @@ import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { updateBio as updateBioReducer } from "@/app/reducers/user"
 import { useToast } from "@/hooks/use-toast"
+import { Input } from "@/components/ui/input"
 
 type ProfileProps = {}
 
@@ -62,7 +63,7 @@ const Profile: React.FC<ProfileProps> = () => {
               <div className="absolute w-full h-full bg-gray-300 animate-pulse rounded-bl-md rounded-br-md"></div>
             )}
             <img
-              src="https://cdn.pixabay.com/photo/2021/01/01/14/29/skiing-5878729_1280.jpg"
+              src={user?.coverImgUrl}
               alt="cover photo"
               className={`absolute w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
                 isLoading ? "opacity-0" : "opacity-100"
@@ -73,13 +74,18 @@ const Profile: React.FC<ProfileProps> = () => {
             <div className="absolute bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">
               <div className="relative w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] group">
                 <Avatar className="border w-full h-full md:w-[7rem] md:h-[7rem]">
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarImage src={user?.profileImgUrl} />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
-                <div className="absolute top-0 w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] shadow-md custom-glow rounded-full hidden group-hover:block">
-                  <Button className="w-full h-full rounded-full bg-transparent hover:bg-rose-500/50 text-white">
+                <div className="absolute top-0 w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] shadow-md custom-glow rounded-full hidden group-hover:block group">
+                  <Button className="relative z-30 w-full h-full rounded-full group-hover:bg-rose-500/60 bg-transparent text-white">
                     <Camera className="scale-150" /> Change
                   </Button>
+                  <Input
+                    id="picture"
+                    type="file"
+                    className="w-full h-full rounded-full opacity-0 absolute top-0 left-0 cursor-pointer z-40"
+                  />
                 </div>
               </div>
 

@@ -5,6 +5,9 @@ CREATE TABLE "users" (
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "bio" TEXT,
+    "profileImgUrl" TEXT NOT NULL DEFAULT 'https://github.com/shadcn.png',
+    "coverImgUrl" TEXT NOT NULL DEFAULT 'https://cdn.pixabay.com/photo/2021/10/13/13/19/bmw-6706660_1280.jpg',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -45,6 +48,7 @@ CREATE TABLE "chats" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "creatorId" TEXT NOT NULL,
+    "lastMessage" TEXT NOT NULL DEFAULT 'No Messages yet...',
 
     CONSTRAINT "chats_pkey" PRIMARY KEY ("id")
 );

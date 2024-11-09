@@ -18,6 +18,8 @@ export interface User {
   password?: string
   createdAt: Date
   updatedAt: Date
+  profileImgUrl: string
+  coverImgUrl: string
 }
 
 export interface Post {

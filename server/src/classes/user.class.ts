@@ -20,6 +20,8 @@ class User {
           username: user?.username,
           email: user?.email,
           bio: user?.bio ?? null,
+          profileImgUrl: user?.profileImgUrl,
+          coverImgUrl: user?.coverImgUrl,
           createdAt: user?.createdAt,
           updatedAt: user?.updatedAt,
         },
@@ -62,6 +64,8 @@ class User {
           id: true,
           name: true,
           username: true,
+          profileImgUrl: true,
+          coverImgUrl: true,
         },
       })
 
@@ -117,6 +121,8 @@ class User {
           username: true,
           email: true,
           bio: true,
+          profileImgUrl: true,
+          coverImgUrl: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -130,6 +136,48 @@ class User {
       res.status(200).json({ success: true, users: randomUsers })
     }
   )
+
+  // uploadProfilePic = TryCatch(
+  //   async (req: IRequest, res: Response, next: NextFunction) => {
+  //     // Upload image to Cloudinary
+  //     const result = await cloudinary.uploader.upload(req.file!.path, {
+  //       folder: "redbook_avatars",
+  //     })
+
+  //     //https://github.com/shadcn.png
+
+  //     const signedInUser = await prisma.user.findUnique({
+  //       where: {
+  //         id: req.id,
+  //       },
+  //     })
+
+  //     if (signedInUser?.profileImgUrl !== "https://github.com/shadcn.png") {
+  //       await cloudinary.uploader.destroy(
+  //         signedInUser?.profileImgPId as string,
+  //         {
+  //           resource_type: "image",
+  //           invalidate: true,
+  //         }
+  //       )
+  //     }
+
+  //     const theUser = await prisma.user.update({
+  //       where: {
+  //         id: req.id,
+  //       },
+  //       data: {
+  //         profileImgUrl: result.secure_url,
+  //         profileImgPId: result.public_id,
+  //       },
+  //     })
+
+  //     res.status(200).json({
+  //       success: true,
+  //       user: theUser,
+  //     })
+  //   }
+  // )
 }
 
 export default new User()

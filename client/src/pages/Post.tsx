@@ -106,7 +106,7 @@ const Post: React.FC<PostProps> = () => {
             <CardDescription className="py-2">
               <div className="flex gap-1 items-center">
                 <Avatar className="w-[1.8rem] h-[1.8rem]">
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarImage src={data?.post.author?.profileImgUrl} />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div>{data?.post.author?.name}</div>

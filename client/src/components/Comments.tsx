@@ -67,7 +67,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, setCommentNumber }) => {
           {data.comments.map((comment) => (
             <li className="w-full flex space-x-2">
               <Avatar className="w-[2.5rem] h-[2.5rem]">
-                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarImage src={comment.author?.profileImgUrl} />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
 
