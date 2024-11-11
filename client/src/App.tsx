@@ -28,7 +28,7 @@ const App: React.FC<AppProps> = () => {
         withCredentials: true,
       })
       .then(({ data }) => {
-        if (data) {
+        if (data.success) {
           dispatch(userExists(data.user))
         }
       })

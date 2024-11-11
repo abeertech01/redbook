@@ -14,20 +14,21 @@ class User {
         where: { id: req.id },
       })
 
-      res.status(200).json({
-        success: true,
-        user: {
-          id: user?.id,
-          name: user?.name,
-          username: user?.username,
-          email: user?.email,
-          bio: user?.bio ?? null,
-          profileImgUrl: user?.profileImgUrl,
-          coverImgUrl: user?.coverImgUrl,
-          createdAt: user?.createdAt,
-          updatedAt: user?.updatedAt,
-        },
-      })
+      if (user)
+        res.status(200).json({
+          success: true,
+          user: {
+            id: user?.id,
+            name: user?.name,
+            username: user?.username,
+            email: user?.email,
+            bio: user?.bio ?? null,
+            profileImgUrl: user?.profileImgUrl,
+            coverImgUrl: user?.coverImgUrl,
+            createdAt: user?.createdAt,
+            updatedAt: user?.updatedAt,
+          },
+        })
     }
   )
 
