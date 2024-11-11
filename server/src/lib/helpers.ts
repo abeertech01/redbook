@@ -47,6 +47,10 @@ const upvotePostHelper = async (
 ) => {
   const upvoteIds = [...(post?.upvoteIds as string[])]
   const downvoteIds = [...(post?.downvoteIds as string[])]
+
+  console.log("upvoteIds", upvoteIds)
+  console.log("downvoteIds", downvoteIds)
+
   let updatedPost: typeof post | undefined
 
   if (downvoteIds.includes(authorId as string)) {

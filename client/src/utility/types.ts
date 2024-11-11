@@ -11,6 +11,8 @@ export interface User {
   bio?: string
   profileImgUrl: string
   coverImgUrl: string
+  profileImgPId?: string | null
+  coverImgPId?: string | null
   createdAt: Date
   updatedAt: Date
 }

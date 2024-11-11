@@ -12,14 +12,16 @@ import ThemeToggle from "./ThemeToggle"
 import { Menu } from "lucide-react"
 import { Button } from "./ui/button"
 import axios from "axios"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { userDoesntExist } from "@/app/reducers/user"
 import { useToast } from "@/hooks/use-toast"
 import { isAxiosError } from "@/lib/helper"
+import { RootState } from "@/app/store"
 
 type NavbarProps = {}
 
 const Navbar: React.FC<NavbarProps> = () => {
+  const { user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { toast } = useToast()
@@ -61,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = () => {
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage src={user?.profileImgUrl} className="object-cover" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
