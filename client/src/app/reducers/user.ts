@@ -22,6 +22,9 @@ const userSlice = createSlice({
     updateBio(state, action) {
       state.user!.bio = action.payload
     },
+    updateProfileImageUrl(state, action) {
+      state.user!.profileImgUrl = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -49,4 +52,5 @@ const userSlice = createSlice({
 })
 
 export default userSlice
-export const { userExists, userDoesntExist, updateBio } = userSlice.actions
+export const { userExists, userDoesntExist, updateBio, updateProfileImageUrl } =
+  userSlice.actions

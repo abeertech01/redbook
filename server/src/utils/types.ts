@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express"
+import { File } from "formidable"
 import { IncomingMessage } from "http"
 import { Socket } from "socket.io"
 
 export interface IRequest extends Request {
   id?: string
+  files?: { [key: string]: File | File[] }
 }
 
 export interface CONTROLLER_FUNC {
@@ -20,6 +22,8 @@ export interface User {
   updatedAt: Date
   profileImgUrl: string
   coverImgUrl: string
+  profileImgPId?: string | null
+  coverImgPId?: string | null
 }
 
 export interface Post {

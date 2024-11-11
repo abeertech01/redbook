@@ -1,5 +1,8 @@
 import { useGetUserPostsQuery } from "@/app/api/post"
-import { useUpdateBioMutation } from "@/app/api/user"
+import {
+  useUpdateBioMutation,
+  useUploadProfileImageMutation,
+} from "@/app/api/user"
 import { AppDispatch, RootState } from "@/app/store"
 import Navbar from "@/components/Navbar"
 import PostCard from "@/components/PostCard"
@@ -9,10 +12,19 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { formatHumanReadTimestamp } from "@/lib/helper"
-import { Camera, CameraIcon, Edit, SquareCheckBig } from "lucide-react"
-import React, { useState } from "react"
+import {
+  Camera,
+  CameraIcon,
+  Edit,
+  LoaderPinwheel,
+  SquareCheckBig,
+} from "lucide-react"
+import React, { ChangeEvent, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { updateBio as updateBioReducer } from "@/app/reducers/user"
+import {
+  updateBio as updateBioReducer,
+  updateProfileImageUrl,
+} from "@/app/reducers/user"
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 
@@ -26,8 +38,10 @@ const Profile: React.FC<ProfileProps> = () => {
   const [bioText, setBioText] = useState(user?.bio)
   const { toast } = useToast()
 
-  const { data } = useGetUserPostsQuery(user?.id!)
+  const { data: postsResult } = useGetUserPostsQuery(user?.id!)
   const [updateBio] = useUpdateBioMutation()
+  const [uploadProfileImage, { isLoading: uploading, isSuccess: uploaded }] =
+    useUploadProfileImageMutation()
 
   const editBio = async () => {
     if (isBioEditing && bioText && bioText !== user?.bio) {
@@ -53,6 +67,18 @@ const Profile: React.FC<ProfileProps> = () => {
     setIsBioEditing((prev) => !prev)
   }
 
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+
+    const formData = new FormData()
+
+    await formData.append("profileImage", files![0])
+
+    const updatedUserData = await uploadProfileImage(formData)
+
+    dispatch(updateProfileImageUrl(updatedUserData.data?.user.profileImgUrl))
+  }
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -74,19 +100,35 @@ const Profile: React.FC<ProfileProps> = () => {
             <div className="absolute bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">
               <div className="relative w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] group">
                 <Avatar className="border w-full h-full md:w-[7rem] md:h-[7rem]">
-                  <AvatarImage src={user?.profileImgUrl} />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <div className="absolute top-0 w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] shadow-md custom-glow rounded-full hidden group-hover:block group">
-                  <Button className="relative z-30 w-full h-full rounded-full group-hover:bg-rose-500/60 bg-transparent text-white">
-                    <Camera className="scale-150" /> Change
-                  </Button>
-                  <Input
-                    id="picture"
-                    type="file"
-                    className="w-full h-full rounded-full opacity-0 absolute top-0 left-0 cursor-pointer z-40"
+                  <AvatarImage
+                    src={user?.profileImgUrl}
+                    className="object-cover"
                   />
-                </div>
+                  <AvatarFallback>
+                    <div className="absolute top-0 z-40 w-full h-full rounded-full flex justify-center items-center bg-zinc-500">
+                      <LoaderPinwheel className="animate-spin" />
+                    </div>
+                  </AvatarFallback>
+                </Avatar>
+                {uploading && !uploaded ? (
+                  <div className="absolute top-0 z-40 w-full h-full rounded-full flex justify-center items-center bg-zinc-500">
+                    <LoaderPinwheel className="animate-spin" />
+                  </div>
+                ) : (
+                  <div className="absolute top-0 w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] shadow-md custom-glow rounded-full hidden group-hover:block group">
+                    <div className="relative z-30 w-full h-full rounded-full flex justify-center items-center group-hover:bg-rose-500/60 bg-transparent text-white">
+                      <Camera className="scale-150" />
+                    </div>
+                    {!uploading && (
+                      <Input
+                        id="picture"
+                        type="file"
+                        onChange={handleImageUpload}
+                        className="w-full h-full rounded-full opacity-0 absolute top-0 left-0 cursor-pointer z-40"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
 
               <h1 className="text-xl md:text-2xl font-bold">{user?.name}</h1>
@@ -154,7 +196,7 @@ const Profile: React.FC<ProfileProps> = () => {
             </Card>
             <div>
               <ul className="flex flex-col gap-3">
-                {data?.posts.map((post) => (
+                {postsResult?.posts.map((post) => (
                   <PostCard key={post.id} post={post} userId={user?.id!} />
                 ))}
               </ul>

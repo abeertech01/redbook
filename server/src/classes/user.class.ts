@@ -4,6 +4,8 @@ import { IRequest } from "../utils/types"
 import prisma from "../lib/prismadb"
 import { getAllChats } from "../lib/helpers"
 import { User as UserType } from "../utils/types"
+import { v2 as cloudinary } from "cloudinary"
+import { File } from "formidable"
 
 class User {
   userProfile = TryCatch(
@@ -137,47 +139,50 @@ class User {
     }
   )
 
-  // uploadProfilePic = TryCatch(
-  //   async (req: IRequest, res: Response, next: NextFunction) => {
-  //     // Upload image to Cloudinary
-  //     const result = await cloudinary.uploader.upload(req.file!.path, {
-  //       folder: "redbook_avatars",
-  //     })
+  uploadProfileImage = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { files } = req
+      const myFile = files!.profileImage
 
-  //     //https://github.com/shadcn.png
+      const result = await cloudinary.uploader.upload(
+        (myFile as File).filepath,
+        { folder: "redbook_avatars" }
+      )
 
-  //     const signedInUser = await prisma.user.findUnique({
-  //       where: {
-  //         id: req.id,
-  //       },
-  //     })
+      //https://github.com/shadcn.png
 
-  //     if (signedInUser?.profileImgUrl !== "https://github.com/shadcn.png") {
-  //       await cloudinary.uploader.destroy(
-  //         signedInUser?.profileImgPId as string,
-  //         {
-  //           resource_type: "image",
-  //           invalidate: true,
-  //         }
-  //       )
-  //     }
+      const signedInUser = await prisma.user.findUnique({
+        where: {
+          id: req.id,
+        },
+      })
 
-  //     const theUser = await prisma.user.update({
-  //       where: {
-  //         id: req.id,
-  //       },
-  //       data: {
-  //         profileImgUrl: result.secure_url,
-  //         profileImgPId: result.public_id,
-  //       },
-  //     })
+      if (signedInUser?.profileImgUrl !== "https://github.com/shadcn.png") {
+        await cloudinary.uploader.destroy(
+          signedInUser?.profileImgPId as string,
+          {
+            resource_type: "image",
+            invalidate: true,
+          }
+        )
+      }
 
-  //     res.status(200).json({
-  //       success: true,
-  //       user: theUser,
-  //     })
-  //   }
-  // )
+      const theUser = await prisma.user.update({
+        where: {
+          id: req.id,
+        },
+        data: {
+          profileImgUrl: result.secure_url,
+          profileImgPId: result.public_id,
+        },
+      })
+
+      res.status(200).json({
+        success: true,
+        user: theUser,
+      })
+    }
+  )
 }
 
 export default new User()
