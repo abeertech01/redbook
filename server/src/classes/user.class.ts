@@ -4,6 +4,8 @@ import { IRequest } from "../utils/types"
 import prisma from "../lib/prismadb"
 import { getAllChats } from "../lib/helpers"
 import { User as UserType } from "../utils/types"
+import { v2 as cloudinary } from "cloudinary"
+import { File } from "formidable"
 
 class User {
   userProfile = TryCatch(
@@ -20,6 +22,8 @@ class User {
           username: user?.username,
           email: user?.email,
           bio: user?.bio ?? null,
+          profileImgUrl: user?.profileImgUrl,
+          coverImgUrl: user?.coverImgUrl,
           createdAt: user?.createdAt,
           updatedAt: user?.updatedAt,
         },
@@ -62,6 +66,8 @@ class User {
           id: true,
           name: true,
           username: true,
+          profileImgUrl: true,
+          coverImgUrl: true,
         },
       })
 
@@ -86,9 +92,29 @@ class User {
 
   get10RandomUsers = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
+      const myChats = await getAllChats(prisma, req)
+
+      // let allUsers: SearchedUser[]
+      let allUsersFromMyChats: UserType[]
+
+      //  extracting All Users from my chats means friends or people I have chatted with
+      if (myChats.length > 0) {
+        allUsersFromMyChats = myChats.flatMap((chat) => chat.members)
+        allUsersFromMyChats = allUsersFromMyChats.filter(
+          (user) => user.id !== req.id
+        )
+      } else {
+        allUsersFromMyChats = []
+      }
+
       // Fetch the latest 50 users
       const recentUsers = await prisma.user.findMany({
-        where: { NOT: { id: req.id } },
+        where: {
+          NOT: [
+            ...allUsersFromMyChats.map((u) => ({ id: u.id })),
+            { id: req.id },
+          ],
+        },
         take: 50,
         orderBy: { createdAt: "desc" },
         select: {
@@ -97,6 +123,8 @@ class User {
           username: true,
           email: true,
           bio: true,
+          profileImgUrl: true,
+          coverImgUrl: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -108,6 +136,98 @@ class User {
         .slice(0, 10) // Take the first 10
 
       res.status(200).json({ success: true, users: randomUsers })
+    }
+  )
+
+  uploadProfileImage = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { files } = req
+      const myFile = files!.profileImage
+
+      const result = await cloudinary.uploader.upload(
+        (myFile as File).filepath,
+        { folder: "redbook_avatars" }
+      )
+
+      //default image = https://github.com/shadcn.png
+
+      const signedInUser = await prisma.user.findUnique({
+        where: {
+          id: req.id,
+        },
+      })
+
+      if (signedInUser?.profileImgUrl !== "https://github.com/shadcn.png") {
+        await cloudinary.uploader.destroy(
+          signedInUser?.profileImgPId as string,
+          {
+            resource_type: "image",
+            invalidate: true,
+          }
+        )
+      }
+
+      const theUser = await prisma.user.update({
+        where: {
+          id: req.id,
+        },
+        data: {
+          profileImgUrl: result.secure_url,
+          profileImgPId: result.public_id,
+        },
+      })
+
+      res.status(200).json({
+        success: true,
+        user: theUser,
+      })
+    }
+  )
+
+  uploadCoverImage = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { files } = req
+      const myFile = files!.coverImage
+
+      const result = await cloudinary.uploader.upload(
+        (myFile as File).filepath,
+        { folder: "redbook_covers" }
+      )
+
+      /**
+       * default image = https://cdn.pixabay.com/photo/2021/10/13/13/19/bmw-6706660_1280.jpg
+       */
+
+      const signedInUser = await prisma.user.findUnique({
+        where: {
+          id: req.id,
+        },
+      })
+
+      if (
+        signedInUser?.coverImgUrl !==
+        "https://cdn.pixabay.com/photo/2021/10/13/13/19/bmw-6706660_1280.jpg"
+      ) {
+        await cloudinary.uploader.destroy(signedInUser?.coverImgPId as string, {
+          resource_type: "image",
+          invalidate: true,
+        })
+      }
+
+      const theUser = await prisma.user.update({
+        where: {
+          id: req.id,
+        },
+        data: {
+          coverImgUrl: result.secure_url,
+          coverImgPId: result.public_id,
+        },
+      })
+
+      res.status(200).json({
+        success: true,
+        user: theUser,
+      })
     }
   )
 }

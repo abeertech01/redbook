@@ -104,38 +104,40 @@ const postAPI = createApi({
       invalidatesTags: ["PaginatedPosts", "UserPosts"],
     }),
     upvotePost: builder.mutation<FetchedPost, string>({
-      query: (id) => ({
-        url: `/upvote-post/${id}`,
+      query: (postId) => ({
+        url: `/upvote-post/${postId}`,
         method: "PUT",
         credentials: "include",
       }),
-      async onQueryStarted(id, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
         const state = getState() as RootState
         const authorId = state.user.user?.id as string
         const pageNumber = state.post.currentPage
 
-        const patchResult = dispatch(
+        const patchResult_pgntPosts = dispatch(
           postAPI.util.updateQueryData(
             "getPaginatedPosts",
             pageNumber,
             (draft) => {
-              const post = draft.posts.find((post) => post.id === id) as Post
+              const post = draft.posts.find(
+                (post) => post.id === postId
+              ) as Post
 
               upvoteCacheHelper<Post>(post, authorId)
             }
           )
         )
 
-        const patchResult_UserPosts = dispatch(
+        const patchResult_usersPosts = dispatch(
           postAPI.util.updateQueryData("getUserPosts", authorId, (draft) => {
-            const post = draft.posts.find((post) => post.id === id) as Post
+            const post = draft.posts.find((post) => post.id === postId) as Post
 
-            upvoteCacheHelper<Post>(post, authorId)
+            if (post) upvoteCacheHelper<Post>(post, authorId)
           })
         )
 
-        const patchSinglePostResult = dispatch(
-          postAPI.util.updateQueryData("getPost", id, (draft) => {
+        const patchResult_singlePosts = dispatch(
+          postAPI.util.updateQueryData("getPost", postId, (draft) => {
             upvoteCacheHelper<Post>(draft.post, authorId)
           })
         )
@@ -143,45 +145,47 @@ const postAPI = createApi({
         try {
           await queryFulfilled
         } catch {
-          patchResult.undo()
-          patchResult_UserPosts.undo()
-          patchSinglePostResult.undo()
+          patchResult_pgntPosts.undo()
+          patchResult_usersPosts.undo()
+          patchResult_singlePosts.undo()
         }
       },
     }),
     downvotePost: builder.mutation<FetchedPost, string>({
-      query: (id) => ({
-        url: `/downvote-post/${id}`,
+      query: (postId) => ({
+        url: `/downvote-post/${postId}`,
         method: "PUT",
         credentials: "include",
       }),
-      async onQueryStarted(id, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
         const state = getState() as RootState
         const authorId = state.user.user?.id as string
         const pageNumber = state.post.currentPage
 
-        const patchResult = dispatch(
+        const patchResult_pgntPosts = dispatch(
           postAPI.util.updateQueryData(
             "getPaginatedPosts",
             pageNumber,
             (draft) => {
-              const post = draft.posts.find((post) => post.id === id) as Post
+              const post = draft.posts.find(
+                (post) => post.id === postId
+              ) as Post
 
               downvoteCacheHelper<Post>(post, authorId)
             }
           )
         )
 
-        const patchResult_UserPosts = dispatch(
+        const patchResult_usersPosts = dispatch(
           postAPI.util.updateQueryData("getUserPosts", authorId, (draft) => {
-            const post = draft.posts.find((post) => post.id === id) as Post
+            const post = draft.posts.find((post) => post.id === postId) as Post
 
-            downvoteCacheHelper<Post>(post, authorId)
+            if (post) downvoteCacheHelper<Post>(post, authorId)
           })
         )
 
-        const patchSinglePostPatch = dispatch(
-          postAPI.util.updateQueryData("getPost", id, (draft) => {
+        const patchResult_singlePosts = dispatch(
+          postAPI.util.updateQueryData("getPost", postId, (draft) => {
             downvoteCacheHelper<Post>(draft.post, authorId)
           })
         )
@@ -189,9 +193,9 @@ const postAPI = createApi({
         try {
           await queryFulfilled
         } catch {
-          patchResult.undo()
-          patchResult_UserPosts.undo()
-          patchSinglePostPatch.undo()
+          patchResult_pgntPosts.undo()
+          patchResult_usersPosts.undo()
+          patchResult_singlePosts.undo()
         }
       },
     }),

@@ -27,6 +27,8 @@ const getAllChats = async (
           username: true,
           email: true,
           messages: true,
+          profileImgUrl: true,
+          coverImgUrl: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -45,6 +47,10 @@ const upvotePostHelper = async (
 ) => {
   const upvoteIds = [...(post?.upvoteIds as string[])]
   const downvoteIds = [...(post?.downvoteIds as string[])]
+
+  console.log("upvoteIds", upvoteIds)
+  console.log("downvoteIds", downvoteIds)
+
   let updatedPost: typeof post | undefined
 
   if (downvoteIds.includes(authorId as string)) {

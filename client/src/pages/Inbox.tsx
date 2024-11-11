@@ -14,57 +14,6 @@ import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { useLocation } from "react-router-dom"
 
-// const messages = [
-//   {
-//     name: "john",
-//     message: "hello",
-//   },
-//   {
-//     name: "smith",
-//     message: "hello buddy. What's up",
-//   },
-//   {
-//     name: "john",
-//     message: "I am good",
-//   },
-//   {
-//     name: "john",
-//     message: "hello",
-//   },
-//   {
-//     name: "smith",
-//     message: "hello buddy. What's up",
-//   },
-//   {
-//     name: "john",
-//     message: "I am good",
-//   },
-//   {
-//     name: "john",
-//     message: "hello",
-//   },
-//   {
-//     name: "smith",
-//     message: "hello buddy. What's up",
-//   },
-//   {
-//     name: "john",
-//     message: "I am good",
-//   },
-//   {
-//     name: "john",
-//     message: "hello",
-//   },
-//   {
-//     name: "smith",
-//     message: "hello buddy. What's up",
-//   },
-//   {
-//     name: "john",
-//     message: "I am good",
-//   },
-// ]
-
 type InboxProps = {}
 
 const Inbox: React.FC<InboxProps> = () => {
@@ -119,7 +68,7 @@ const Inbox: React.FC<InboxProps> = () => {
     <div className="h-full flex flex-col gap-4">
       <Card className="h-[3.5rem] bg-secondary px-4 py-2 mx-4 flex gap-3 items-center">
         <Avatar className="w-8 h-8">
-          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarImage src={messagesResult?.participator.profileImgUrl} />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
 

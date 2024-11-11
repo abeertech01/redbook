@@ -56,6 +56,7 @@ const Post: React.FC<PostProps> = () => {
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
+  const [showComments, setShowComments] = useState(false)
 
   const deletePostClick = async () => {
     if (user?.id !== data?.post.authorId) {
@@ -84,6 +85,8 @@ const Post: React.FC<PostProps> = () => {
 
     if (comment) {
       setCommentText("")
+      !showComments && setShowComments(true)
+
       toast({
         title: "Comment Added Successfully",
       })
@@ -93,6 +96,10 @@ const Post: React.FC<PostProps> = () => {
   useEffect(() => {
     if (data?.success) {
       setTimeDiff(timeAgo(data.post.createdAt as Date))
+    }
+
+    if (data?.success && data?.post.comments?.length! > 0) {
+      setShowComments(true)
     }
   }, [data])
 
@@ -106,7 +113,7 @@ const Post: React.FC<PostProps> = () => {
             <CardDescription className="py-2">
               <div className="flex gap-1 items-center">
                 <Avatar className="w-[1.8rem] h-[1.8rem]">
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarImage src={data?.post.author?.profileImgUrl} />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div>{data?.post.author?.name}</div>
@@ -185,6 +192,7 @@ const Post: React.FC<PostProps> = () => {
                 rows={1}
                 placeholder="Comment..."
                 onChange={(e) => setCommentText(e.target.value)}
+                value={commentText}
                 className="focus-visible:outline-none"
               />
               <Button
@@ -197,10 +205,12 @@ const Post: React.FC<PostProps> = () => {
             </div>
 
             {/* All Comments */}
-            <Comments
-              postId={data?.post.id!}
-              setCommentNumber={setCommentNumber}
-            />
+            {showComments && (
+              <Comments
+                postId={data?.post.id!}
+                setCommentNumber={setCommentNumber}
+              />
+            )}
           </CardFooter>
         </Card>
       </div>

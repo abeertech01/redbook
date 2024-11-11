@@ -14,6 +14,10 @@ model User {
   email             String    @unique
   password          String
   bio               String?
+  profileImgUrl     String    @default("https://github.com/shadcn.png")
+  profileImgPId     String?
+  coverImgUrl       String    @default("https://cdn.pixabay.com/photo/2021/10/13/13/19/bmw-6706660_1280.jpg")
+  coverImgPId       String?
   posts             Post[]
   comments          Comment[]
   messages          Message[]

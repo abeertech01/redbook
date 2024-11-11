@@ -65,7 +65,12 @@ const Messages: React.FC<MessagesProps> = () => {
                           className="w-full h-full px-3 py-3 flex gap-2 items-center justify-start bg-background hover:bg-primary-foreground text-primary"
                         >
                           <Avatar className="w-12 h-12">
-                            <AvatarImage src="https://github.com/shadcn.png" />
+                            <AvatarImage
+                              src={
+                                chat?.members[chat.theOtherUserIndex]
+                                  ?.profileImgUrl
+                              }
+                            />
                             <AvatarFallback>CN</AvatarFallback>
                           </Avatar>
                           <div className="w-full">

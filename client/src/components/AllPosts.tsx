@@ -31,8 +31,8 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
       onScroll={scrollHandler}
       className="flex flex-col gap-4 w-full h-full overflow-y-scroll scrollbar scrollbar-thumb-secondary scrollbar-track-transparent box-border"
     >
-      {data?.posts?.map((post) => (
-        <PostCard key={post.id} post={post as Post} userId={userId!} />
+      {data?.posts?.map((post, index) => (
+        <PostCard key={index} post={post as Post} userId={userId!} />
       ))}
       {isFetching && <p>Loading for more...</p>}
     </div>

@@ -21,6 +21,20 @@ const userAPI = createApi({
     get10RandomUsers: builder.query<UsersResponse, void>({
       query: () => "/get-10-random-users",
     }),
+    uploadProfileImage: builder.mutation<UserResponse, FormData>({
+      query: (body) => ({
+        url: "/upload-profile-image",
+        method: "PUT",
+        body,
+      }),
+    }),
+    uploadCoverImage: builder.mutation<UserResponse, FormData>({
+      query: (body) => ({
+        url: "/upload-cover-image",
+        method: "PUT",
+        body,
+      }),
+    }),
   }),
 })
 
@@ -29,4 +43,6 @@ export const {
   useLazySearchUsersQuery,
   useUpdateBioMutation,
   useGet10RandomUsersQuery,
+  useUploadProfileImageMutation,
+  useUploadCoverImageMutation,
 } = userAPI
