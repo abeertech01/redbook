@@ -33,7 +33,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, userId }) => {
         <CardDescription className="py-2">
           <div className="flex gap-1 items-center">
             <Avatar className="w-[1.8rem] h-[1.8rem]">
-              <AvatarImage src={post.author?.profileImgUrl} />
+              <AvatarImage
+                src={post.author?.profileImgUrl}
+                className="object-cover"
+              />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <div>{post.author?.name}</div>

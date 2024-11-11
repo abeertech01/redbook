@@ -70,6 +70,7 @@ const Messages: React.FC<MessagesProps> = () => {
                                 chat?.members[chat.theOtherUserIndex]
                                   ?.profileImgUrl
                               }
+                              className="object-cover"
                             />
                             <AvatarFallback>CN</AvatarFallback>
                           </Avatar>

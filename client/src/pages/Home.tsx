@@ -44,7 +44,10 @@ const Home: React.FC<HomeProps> = () => {
               Messages
             </Link>
 
-            <Link to={"#"} className="text-md hover:underline">
+            <Link
+              to={"#"}
+              className="text-md hover:underline text-zinc-500 cursor-not-allowed"
+            >
               Marketplace
             </Link>
           </div>
@@ -81,7 +84,10 @@ const Home: React.FC<HomeProps> = () => {
                     className="w-full h-full flex gap-2 justify-start px-4 py-3 bg-inherit text-primary hover:bg-background"
                   >
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src="https://github.com/shadcn.png" />
+                      <AvatarImage
+                        src={person.profileImgUrl}
+                        className="object-cover"
+                      />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
