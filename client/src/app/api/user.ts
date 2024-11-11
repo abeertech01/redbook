@@ -28,6 +28,13 @@ const userAPI = createApi({
         body,
       }),
     }),
+    uploadCoverImage: builder.mutation<UserResponse, FormData>({
+      query: (body) => ({
+        url: "/upload-cover-image",
+        method: "PUT",
+        body,
+      }),
+    }),
   }),
 })
 
@@ -37,4 +44,5 @@ export const {
   useUpdateBioMutation,
   useGet10RandomUsersQuery,
   useUploadProfileImageMutation,
+  useUploadCoverImageMutation,
 } = userAPI

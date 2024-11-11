@@ -9,3 +9,4 @@ export const searchUser = userClass.searchUser
 export const updateBio = userClass.updateBio
 export const get10RandomUsers = userClass.get10RandomUsers
 export const uploadProfileImage = userClass.uploadProfileImage
+export const uploadCoverImage = userClass.uploadCoverImage

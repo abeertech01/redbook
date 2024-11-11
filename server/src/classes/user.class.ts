@@ -149,7 +149,7 @@ class User {
         { folder: "redbook_avatars" }
       )
 
-      //https://github.com/shadcn.png
+      //default image = https://github.com/shadcn.png
 
       const signedInUser = await prisma.user.findUnique({
         where: {
@@ -174,6 +174,53 @@ class User {
         data: {
           profileImgUrl: result.secure_url,
           profileImgPId: result.public_id,
+        },
+      })
+
+      res.status(200).json({
+        success: true,
+        user: theUser,
+      })
+    }
+  )
+
+  uploadCoverImage = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { files } = req
+      const myFile = files!.coverImage
+
+      const result = await cloudinary.uploader.upload(
+        (myFile as File).filepath,
+        { folder: "redbook_covers" }
+      )
+
+      /**
+       * default image = https://cdn.pixabay.com/photo/2021/10/13/13/19/bmw-6706660_1280.jpg
+       */
+
+      const signedInUser = await prisma.user.findUnique({
+        where: {
+          id: req.id,
+        },
+      })
+
+      if (
+        signedInUser?.coverImgUrl !==
+        "https://cdn.pixabay.com/photo/2021/10/13/13/19/bmw-6706660_1280.jpg"
+      ) {
+        await cloudinary.uploader.destroy(signedInUser?.coverImgPId as string, {
+          resource_type: "image",
+          invalidate: true,
+        })
+      }
+
+      const theUser = await prisma.user.update({
+        where: {
+          id: req.id,
+        },
+        data: {
+          coverImgUrl: result.secure_url,
+          coverImgPId: result.public_id,
         },
       })
 

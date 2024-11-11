@@ -1,6 +1,7 @@
 import { useGetUserPostsQuery } from "@/app/api/post"
 import {
   useUpdateBioMutation,
+  useUploadCoverImageMutation,
   useUploadProfileImageMutation,
 } from "@/app/api/user"
 import { AppDispatch, RootState } from "@/app/store"
@@ -23,6 +24,7 @@ import React, { ChangeEvent, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   updateBio as updateBioReducer,
+  updateCoverImageUrl,
   updateProfileImageUrl,
 } from "@/app/reducers/user"
 import { useToast } from "@/hooks/use-toast"
@@ -40,8 +42,14 @@ const Profile: React.FC<ProfileProps> = () => {
 
   const { data: postsResult } = useGetUserPostsQuery(user?.id!)
   const [updateBio] = useUpdateBioMutation()
-  const [uploadProfileImage, { isLoading: uploading, isSuccess: uploaded }] =
-    useUploadProfileImageMutation()
+  const [
+    uploadProfileImage,
+    { isLoading: uploadingProfileImg, isSuccess: uploadedProfileImg },
+  ] = useUploadProfileImageMutation()
+  const [
+    uploadCoverImage,
+    { isLoading: uploadingCoverImg, isSuccess: uploadedCoverImg },
+  ] = useUploadCoverImageMutation()
 
   const editBio = async () => {
     if (isBioEditing && bioText && bioText !== user?.bio) {
@@ -70,13 +78,29 @@ const Profile: React.FC<ProfileProps> = () => {
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
 
-    const formData = new FormData()
+    if (files!.length > 0) {
+      const formData = new FormData()
 
-    await formData.append("profileImage", files![0])
+      await formData.append("profileImage", files![0])
 
-    const updatedUserData = await uploadProfileImage(formData)
+      const updatedUserData = await uploadProfileImage(formData)
 
-    dispatch(updateProfileImageUrl(updatedUserData.data?.user.profileImgUrl))
+      dispatch(updateProfileImageUrl(updatedUserData.data?.user.profileImgUrl))
+    }
+  }
+
+  const handleCoverChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+
+    if (files!.length > 0) {
+      const formData = new FormData()
+
+      await formData.append("coverImage", files![0])
+
+      const updatedUserData = await uploadCoverImage(formData)
+
+      dispatch(updateCoverImageUrl(updatedUserData.data?.user.coverImgUrl))
+    }
   }
 
   return (
@@ -85,19 +109,24 @@ const Profile: React.FC<ProfileProps> = () => {
       <ScrollArea className="w-full h-[calc(100vh-3.5rem)]">
         <div className="w-full md:w-4/6 lg:w-7/12 h-full mx-auto">
           <div className="relative w-full h-[12rem] md:h-[20rem] mb-[8rem]">
-            {isLoading && (
-              <div className="absolute w-full h-full bg-gray-300 animate-pulse rounded-bl-md rounded-br-md"></div>
+            {uploadingCoverImg && !uploadedCoverImg ? (
+              (isLoading || uploadingCoverImg) && (
+                <div className="absolute z-40 top-0 w-full h-full flex justify-center items-center bg-zinc-500 rounded-bl-md rounded-br-md">
+                  <LoaderPinwheel className="text-xl animate-spin" />
+                </div>
+              )
+            ) : (
+              <img
+                src={user?.coverImgUrl}
+                alt="cover photo"
+                className={`absolute z-30 w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
+                  isLoading ? "opacity-0" : "opacity-100"
+                }`}
+                onLoad={() => setIsLoading(false)}
+              />
             )}
-            <img
-              src={user?.coverImgUrl}
-              alt="cover photo"
-              className={`absolute w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
-                isLoading ? "opacity-0" : "opacity-100"
-              }`}
-              onLoad={() => setIsLoading(false)}
-            />
 
-            <div className="absolute bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">
+            <div className="absolute z-40 bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">
               <div className="relative w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] group">
                 <Avatar className="border w-full h-full md:w-[7rem] md:h-[7rem]">
                   <AvatarImage
@@ -110,7 +139,7 @@ const Profile: React.FC<ProfileProps> = () => {
                     </div>
                   </AvatarFallback>
                 </Avatar>
-                {uploading && !uploaded ? (
+                {uploadingProfileImg && !uploadedProfileImg ? (
                   <div className="absolute top-0 z-40 w-full h-full rounded-full flex justify-center items-center bg-zinc-500">
                     <LoaderPinwheel className="animate-spin" />
                   </div>
@@ -119,7 +148,7 @@ const Profile: React.FC<ProfileProps> = () => {
                     <div className="relative z-30 w-full h-full rounded-full flex justify-center items-center group-hover:bg-rose-500/60 bg-transparent text-white">
                       <Camera className="scale-150" />
                     </div>
-                    {!uploading && (
+                    {!uploadingProfileImg && (
                       <Input
                         id="picture"
                         type="file"
@@ -133,14 +162,16 @@ const Profile: React.FC<ProfileProps> = () => {
 
               <h1 className="text-xl md:text-2xl font-bold">{user?.name}</h1>
             </div>
-            <div className="absolute bottom-2 right-2 flex gap-4 items-center shadow-md custom-glow">
-              <Button
-                variant={"secondary"}
-                className="bg-rose-500 hover:bg-rose-600 text-white"
-              >
+            <div className="absolute z-40 bottom-2 right-2 flex gap-4 items-center shadow-md custom-glow">
+              <div className="relative bg-rose-500 hover:bg-rose-600 text-white text-sm flex justify-center items-center gap-2 px-2 py-1">
                 <CameraIcon />
-                Edit Cover Photo
-              </Button>
+                <span className="inline-block">Edit Cover Photo</span>
+                <Input
+                  type="file"
+                  onChange={handleCoverChange}
+                  className="absolute w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
             </div>
           </div>
 
