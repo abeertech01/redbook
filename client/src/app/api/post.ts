@@ -4,7 +4,6 @@ import {
   FetchedPosts,
   Post,
   PostResponse,
-  User,
 } from "@/utility/types"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { RootState } from "../store"
@@ -67,33 +66,6 @@ const postAPI = createApi({
         credentials: "include",
       }),
       invalidatesTags: ["PaginatedPosts", "UserPosts"],
-      async onQueryStarted(body, { dispatch, queryFulfilled, getState }) {
-        const state = getState() as RootState
-        const authorId = state.user.user?.id as string
-
-        const patchResult = dispatch(
-          postAPI.util.updateQueryData("getPaginatedPosts", 1, (draft) => {
-            draft.posts.unshift({
-              id: crypto.randomUUID(),
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              title: body.title,
-              content: body.content,
-              upvoteIds: [],
-              downvoteIds: [],
-              authorId,
-              author: state.user.user as User,
-              comments: [],
-            })
-          })
-        )
-
-        try {
-          await queryFulfilled
-        } catch {
-          patchResult.undo()
-        }
-      },
     }),
     deletePost: builder.mutation<PostResponse, string>({
       query: (id) => ({

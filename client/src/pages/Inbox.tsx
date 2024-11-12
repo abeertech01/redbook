@@ -68,7 +68,10 @@ const Inbox: React.FC<InboxProps> = () => {
     <div className="h-full flex flex-col gap-4">
       <Card className="h-[3.5rem] bg-secondary px-4 py-2 mx-4 flex gap-3 items-center">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={messagesResult?.participator.profileImgUrl} />
+          <AvatarImage
+            src={messagesResult?.participator.profileImgUrl}
+            className="object-cover"
+          />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
 

@@ -13,7 +13,7 @@ const ChatParticipator: React.FC<ChatParticipatorProps> = ({ chatId }) => {
   return (
     <div className="w-full h-full">
       <Avatar className="w-28 h-28 mx-auto my-5">
-        <AvatarImage src={data?.user.profileImgUrl} />
+        <AvatarImage src={data?.user.profileImgUrl} className="object-cover" />
         <AvatarFallback>CN</AvatarFallback>
       </Avatar>
 

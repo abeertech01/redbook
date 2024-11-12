@@ -8,17 +8,28 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NEW_CHAT } from "@/constants/events"
 import { getSocket } from "@/constants/SocketProvider"
-import React from "react"
+import React, { createContext, useState } from "react"
 import { useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 
 type HomeProps = {}
+
+type PgntPostsType = {
+  arePaginatedPosts: boolean
+  setArePaginatedPosts: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export const PgntPostsContext = createContext<PgntPostsType>({
+  arePaginatedPosts: false,
+  setArePaginatedPosts: (prev) => prev,
+})
 
 const Home: React.FC<HomeProps> = () => {
   const navigate = useNavigate()
   const { user } = useSelector((state: RootState) => state.user)
   const { data: _10Users, isLoading: _ } = useGet10RandomUsersQuery()
   const socket = getSocket()
+  const [arePaginatedPosts, setArePaginatedPosts] = useState(false)
 
   const startChatting = (participantId: string) => {
     socket?.emit(NEW_CHAT, {
@@ -44,7 +55,10 @@ const Home: React.FC<HomeProps> = () => {
               Messages
             </Link>
 
-            <Link to={"#"} className="text-md hover:underline">
+            <Link
+              to={"#"}
+              className="text-md hover:underline text-zinc-500 cursor-not-allowed"
+            >
               Marketplace
             </Link>
           </div>
@@ -52,9 +66,16 @@ const Home: React.FC<HomeProps> = () => {
 
         <div className="min-h-[calc(100vh-3.5rem)]">
           <div className="h-full md:px-2 lg:px-0 md:full lg:w-9/12 mx-auto flex flex-col gap-4 py-4">
-            <PostCreate />
+            <PgntPostsContext.Provider
+              value={{
+                arePaginatedPosts,
+                setArePaginatedPosts,
+              }}
+            >
+              <PostCreate />
+            </PgntPostsContext.Provider>
 
-            <div className="relative h-[calc(100vh-9.25rem)] before:w-[calc(100%-0.75rem)] before:min-h-6 before:absolute before:top-0 before:border-t before:border-t-rose-500 before:rounded-xl before:z-40 after:w-[calc(100%-0.75rem)] after:min-h-6 after:absolute after:bottom-0 after:border-b after:border-b-rose-500 after:rounded-xl after:z-40">
+            <div className="relative h-[calc(100vh-9.25rem)] before:w-[calc(100%-0.93rem)] before:min-h-6 before:absolute before:top-0 before:border-t before:border-t-rose-500 before:rounded-xl before:z-40 after:w-[calc(100%-0.93rem)] after:min-h-6 after:absolute after:bottom-0 after:border-b after:border-b-rose-500 after:rounded-xl after:z-40">
               {/* Top Corners */}
               <div className="w-[0.75rem] h-[0.75rem] absolute left-0 bg-background z-30"></div>
               <div className="w-[0.75rem] h-[0.75rem] absolute right-3 bg-background z-30"></div>
@@ -63,7 +84,14 @@ const Home: React.FC<HomeProps> = () => {
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 left-0 bg-background z-30"></div>
               <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 right-3 bg-background z-30"></div>
 
-              <AllPosts userId={user?.id!} />
+              <PgntPostsContext.Provider
+                value={{
+                  arePaginatedPosts,
+                  setArePaginatedPosts,
+                }}
+              >
+                <AllPosts userId={user?.id!} />
+              </PgntPostsContext.Provider>
             </div>
           </div>
         </div>
@@ -81,7 +109,10 @@ const Home: React.FC<HomeProps> = () => {
                     className="w-full h-full flex gap-2 justify-start px-4 py-3 bg-inherit text-primary hover:bg-background"
                   >
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src="https://github.com/shadcn.png" />
+                      <AvatarImage
+                        src={person.profileImgUrl}
+                        className="object-cover"
+                      />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">

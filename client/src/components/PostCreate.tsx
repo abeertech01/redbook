@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import {
   Dialog,
   DialogClose,
@@ -11,28 +11,48 @@ import {
 import { Button } from "./ui/button"
 import { Textarea } from "./ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { useCreatePostMutation } from "@/app/api/post"
+import { postAPI, useCreatePostMutation } from "@/app/api/post"
 import { Input } from "./ui/input"
+import { PgntPostsContext } from "@/pages/Home"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch, RootState } from "@/app/store"
+import { Post } from "@/utility/types"
 
 type PostCreateProps = {}
 
 const PostCreate: React.FC<PostCreateProps> = () => {
+  const dispatch = useDispatch<AppDispatch>()
   const { toast } = useToast()
   const [postTitle, setPostTitle] = useState("")
   const [postText, setPostText] = useState("")
+  const { currentPage } = useSelector((state: RootState) => state.post)
   const [createPost, { isSuccess, error: postCreateError }] =
     useCreatePostMutation()
+  const { arePaginatedPosts } = useContext(PgntPostsContext)
 
   const handlePost = async () => {
     try {
       if (postTitle.length > 0 && postText.length > 0) {
-        await createPost({
+        const { data: newPost } = await createPost({
           title: postTitle,
           content: postText,
         })
 
         setPostTitle("")
         setPostText("")
+
+        if (newPost?.success && arePaginatedPosts) {
+          console.log("as expected: entered")
+          dispatch(
+            postAPI.util.updateQueryData(
+              "getPaginatedPosts",
+              currentPage,
+              (draft) => {
+                draft.posts.unshift(newPost?.post as Post)
+              }
+            )
+          )
+        }
       } else {
         toast({
           title: "Post and its title both can't be empty",
@@ -56,7 +76,7 @@ const PostCreate: React.FC<PostCreateProps> = () => {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full pr-3">
+      <DialogTrigger className="w-full pr-[0.93rem]">
         <Button
           variant={"outline"}
           size={"lg"}
