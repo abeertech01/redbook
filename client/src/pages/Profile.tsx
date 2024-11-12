@@ -165,7 +165,7 @@ const Profile: React.FC<ProfileProps> = () => {
             <div className="absolute z-40 bottom-2 right-2 flex gap-4 items-center shadow-md custom-glow">
               <div className="relative bg-rose-500 hover:bg-rose-600 text-white text-sm flex justify-center items-center gap-2 px-2 py-1">
                 <CameraIcon />
-                <span className="inline-block">Edit Cover Photo</span>
+                <span className="inline-block">Upload Cover Photo</span>
                 <Input
                   type="file"
                   onChange={handleCoverChange}

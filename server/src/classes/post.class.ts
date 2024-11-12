@@ -18,6 +18,9 @@ class Post {
           content,
           authorId: req.id as string,
         },
+        include: {
+          author: true,
+        },
       })
 
       res.status(200).json({
@@ -86,6 +89,7 @@ class Post {
         orderBy: { createdAt: "desc" },
         include: {
           author: true,
+          comments: true,
         },
       })
 

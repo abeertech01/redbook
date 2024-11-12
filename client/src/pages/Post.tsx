@@ -164,28 +164,30 @@ const Post: React.FC<PostProps> = () => {
                   <MessageSquareText className="scale-125" /> {commentNumber}
                 </Button>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Button variant={"ghost"} size={"icon"}>
-                    <CircleEllipsis />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel className="text-center">
-                    More Options
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Button
-                      disabled={deleteLoading}
-                      onClick={deletePostClick}
-                      variant={"ghost"}
-                    >
-                      Delete Post <Trash />
+              {user?.id === data?.post.authorId && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button variant={"ghost"} size={"icon"}>
+                      <CircleEllipsis />
                     </Button>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel className="text-center">
+                      More Options
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Button
+                        disabled={deleteLoading}
+                        onClick={deletePostClick}
+                        variant={"ghost"}
+                      >
+                        Delete Post <Trash />
+                      </Button>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             <div className="w-full h-[1px] bg-zinc-500 mb-4"></div>
 
@@ -211,6 +213,7 @@ const Post: React.FC<PostProps> = () => {
             {showComments && (
               <Comments
                 postId={data?.post.id!}
+                userId={user?.id!}
                 setCommentNumber={setCommentNumber}
               />
             )}

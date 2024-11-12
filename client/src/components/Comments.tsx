@@ -12,6 +12,7 @@ import { timeAgo } from "@/lib/helper"
 
 type CommentsProps = {
   postId: string
+  userId: string
   setCommentNumber: (cmts: number) => void
 }
 
@@ -20,7 +21,11 @@ type LoadingState = {
   downvote: boolean
 }
 
-const Comments: React.FC<CommentsProps> = ({ postId, setCommentNumber }) => {
+const Comments: React.FC<CommentsProps> = ({
+  postId,
+  userId,
+  setCommentNumber,
+}) => {
   const { data, isLoading: _ } = useGetCommentsQuery(postId)
   const [upvoteComment] = useUpvoteCommentMutation()
   const [downvoteComment] = useDownvoteCommentMutation()
@@ -87,7 +92,11 @@ const Comments: React.FC<CommentsProps> = ({ postId, setCommentNumber }) => {
                       loadingStates[comment.id]?.upvote ||
                       loadingStates[comment.id]?.downvote
                     }
-                    variant={"secondary"}
+                    variant={
+                      comment.upvoteIds.includes(userId)
+                        ? "secondary"
+                        : "outline"
+                    }
                   >
                     <ArrowBigUp className="scale-125" />{" "}
                     {comment.upvoteIds.length}
@@ -99,7 +108,11 @@ const Comments: React.FC<CommentsProps> = ({ postId, setCommentNumber }) => {
                       loadingStates[comment.id]?.upvote ||
                       loadingStates[comment.id]?.downvote
                     }
-                    variant={"secondary"}
+                    variant={
+                      comment.downvoteIds.includes(userId)
+                        ? "secondary"
+                        : "outline"
+                    }
                   >
                     <ArrowBigDown className="scale-125" />{" "}
                     {comment.downvoteIds.length}

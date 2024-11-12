@@ -6,6 +6,7 @@ import { getAllChats } from "../lib/helpers"
 import { User as UserType } from "../utils/types"
 import { v2 as cloudinary } from "cloudinary"
 import { File } from "formidable"
+import { ErrorHandler } from "../utils/utility"
 
 class User {
   userProfile = TryCatch(
@@ -14,21 +15,24 @@ class User {
         where: { id: req.id },
       })
 
-      if (user)
-        res.status(200).json({
-          success: true,
-          user: {
-            id: user?.id,
-            name: user?.name,
-            username: user?.username,
-            email: user?.email,
-            bio: user?.bio ?? null,
-            profileImgUrl: user?.profileImgUrl,
-            coverImgUrl: user?.coverImgUrl,
-            createdAt: user?.createdAt,
-            updatedAt: user?.updatedAt,
-          },
-        })
+      console.log(user)
+
+      if (!user) return next(new ErrorHandler("User needs to log in", 404))
+
+      res.status(200).json({
+        success: true,
+        user: {
+          id: user?.id,
+          name: user?.name,
+          username: user?.username,
+          email: user?.email,
+          bio: user?.bio ?? null,
+          profileImgUrl: user?.profileImgUrl,
+          coverImgUrl: user?.coverImgUrl,
+          createdAt: user?.createdAt,
+          updatedAt: user?.updatedAt,
+        },
+      })
     }
   )
 
