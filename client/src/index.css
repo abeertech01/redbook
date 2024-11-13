@@ -98,14 +98,27 @@
   }
 }
 
-.no-color-change:disabled {
-  background-color: inherit;
-  color: inherit;
-  opacity: 1;
-  cursor: not-allowed;
+.allposts,
+.inbox-messages {
+  padding-right: 0.2rem;
+  scrollbar-width: 0.6rem; /* For Firefox  */
+  scrollbar-color: #71717a #71717a36;
 }
 
-.custom-glow {
-  box-shadow: 0 0 10px 4px rgba(244, 114, 182, 0.6),
-    /* Adjust the intensity and spread */ 0 0 20px 8px rgba(244, 114, 182, 0.4);
+/* Webkit browsers (Chrome, Edge, Safari) */
+.allposts::-webkit-scrollbar,
+.inbox-messages::-webkit-scrollbar {
+  width: 0.6rem;
+}
+
+.allposts::-webkit-scrollbar-thumb,
+.inbox-messages::-webkit-scrollbar-thumb {
+  background-color: #71717a;
+  border-radius: 1rem;
+}
+
+.allposts::-webkit-scrollbar-track,
+.inbox-messages::-webkit-scrollbar-track {
+  background-color: #71717a19;
+  border-radius: 1rem;
 }

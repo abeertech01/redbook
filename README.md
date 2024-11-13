@@ -1,6 +1,6 @@
 # Redbook
 
-**Redbook** is a social media app built with the PERN stack (PostgreSQL, Express, React, and Node.js). This README will guide you through the setup process to run the project using Docker, including necessary environment variables and migration steps.
+**Redbook** is a social media app built with the PERN stack (PostgreSQL, Express, React, and Node.js). This README will guide you through the setup process to run the project using Docker, including necessary environment variables.
 
 ## Prerequisites
 
@@ -34,25 +34,19 @@ Before running the project, you need to set up environment variables for both th
 
 Once the environment variables are set up, you can start the project using Docker Compose.
 
-1. Start the Docker Containers: <br>
-   Run the following command to build and start all services in detached mode:
+Start the Docker Containers: <br>
+Run the following command to build and start all services in detached mode:
 
-   ```bash
-   docker compose up -d
-   ```
+```bash
+docker compose up -d
+```
 
-   This command will set up the following services:
+This command will set up the following services:
 
-   - PostgreSQL: The database service with persistent volume storage.
-   - Server: The Node.js backend running on http://localhost:3030.
-   - Client: The React frontend running on http://localhost:5173.
-
-2. Run Prisma Migrations: <br>
-   After the services are up and running, run the following command to apply the Prisma migrations:
-   ```bash
-   docker exec -it server npx prisma migrate dev --name init
-   ```
-   This will set up the initial database schema in your PostgreSQL database.
+- PostgreSQL: The database service with persistent volume storage.
+- Migration: Prisma migration service. This will migrate the prisma schema to get the database ready.
+- Server: The Node.js backend running on http://localhost:3030.
+- Client: The React frontend running on http://localhost:5173.
 
 ## Accessing the Application
 
@@ -76,4 +70,4 @@ This command will stop all services and remove the associated containers.
 
 ## Contributing
 
-If you'd like to contribute to Redbook, feel free to fork the repository and submit a pull request. We welcome contributions that improve the project, fix bugs, or add new features.
+If you'd like to contribute to Redbook, feel free to fork the repository and submit a pull request. I welcome contributions that demonstrates weak points of the project.

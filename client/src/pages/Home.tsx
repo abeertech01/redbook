@@ -74,16 +74,7 @@ const Home: React.FC<HomeProps> = () => {
             >
               <PostCreate />
             </PgntPostsContext.Provider>
-
-            <div className="relative h-[calc(100vh-9.25rem)] before:w-[calc(100%-0.93rem)] before:min-h-6 before:absolute before:top-0 before:border-t before:border-t-rose-500 before:rounded-xl before:z-40 after:w-[calc(100%-0.93rem)] after:min-h-6 after:absolute after:bottom-0 after:border-b after:border-b-rose-500 after:rounded-xl after:z-40">
-              {/* Top Corners */}
-              <div className="w-[0.75rem] h-[0.75rem] absolute left-0 bg-background z-30"></div>
-              <div className="w-[0.75rem] h-[0.75rem] absolute right-3 bg-background z-30"></div>
-
-              {/* Bottom Corners */}
-              <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 left-0 bg-background z-30"></div>
-              <div className="w-[0.75rem] h-[0.75rem] absolute bottom-0 right-3 bg-background z-30"></div>
-
+            <div className="relative h-[calc(100vh-9.25rem)]">
               <PgntPostsContext.Provider
                 value={{
                   arePaginatedPosts,
