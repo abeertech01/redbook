@@ -76,7 +76,7 @@ const PostCreate: React.FC<PostCreateProps> = () => {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full pr-[0.93rem]">
+      <DialogTrigger className="w-full">
         <Button
           variant={"outline"}
           size={"lg"}

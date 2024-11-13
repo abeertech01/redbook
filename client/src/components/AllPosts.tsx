@@ -36,7 +36,7 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
   return (
     <div
       onScroll={scrollHandler}
-      className="flex flex-col gap-4 w-full h-full pr-[0.93rem] overflow-y-scroll scrollbar scrollbar-thumb-secondary scrollbar-track-transparent box-border"
+      className="allposts flex flex-col gap-4 w-full h-full overflow-y-scroll box-border border-t-2 border-b-2 border-[#f43f5e] bg-zinc"
     >
       {data?.posts?.map((post, index) => (
         <PostCard key={index} post={post as Post} userId={userId!} />
@@ -45,4 +45,5 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
     </div>
   )
 }
+
 export default AllPosts

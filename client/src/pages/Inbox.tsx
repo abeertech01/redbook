@@ -82,7 +82,7 @@ const Inbox: React.FC<InboxProps> = () => {
 
       <ul
         ref={scrollRef}
-        className="relative flex-1 flex flex-col justify-end gap-4 pl-5 pr-[0.6rem] overflow-y-scroll scroll-smooth scrollbar-thin scrollbar-thumb-secondary scrollbar-track-transparent"
+        className="inbox-messages border-t-2 border-[#f4c13f] relative flex-1 flex flex-col justify-end gap-4 w-[calc(100%-2rem)] mx-auto pr-1 overflow-y-scroll scroll-smooth"
       >
         {messagesResult &&
           messagesResult.messages.map((message: Message) => (
