@@ -2,6 +2,9 @@
 
 **Redbook** is a social media app built with the PERN stack (PostgreSQL, Express, React, and Node.js). This README will guide you through the setup process to run the project using Docker, including necessary environment variables.
 
+## Watch The App Preview
+[![Redbook Preview Thumbnail](./client/public/redbook-screenshot.png)](https://www.youtube.com/watch?v=SJKd8GhW-iE)
+
 ## Prerequisites
 
 - Ensure you have Docker and Docker Compose installed on your machine.
