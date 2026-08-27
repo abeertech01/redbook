@@ -28,7 +28,10 @@ const Messages: React.FC = () => {
   const socket = useSocket()
 
   const eventHandler = {
-    [NEW_CHAT]: () => refetch(),
+    [NEW_CHAT]: (chat: unknown) => {
+      refetch()
+      navigate(`/messages/${(chat as Chat).id}`)
+    },
   }
 
   useSocketEvents(socket!, eventHandler)
@@ -49,18 +52,18 @@ const Messages: React.FC = () => {
       <div className="h-[calc(100vh-3.5rem)]">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel defaultSize="28%">
-            <div className="py-2 pl-3 pr-2">
+            <div className="py-2 pr-2 pl-3">
               <SearchUser />
-              <h1 className="text-2xl font-semibold mt-2">Messages</h1>
+              <h1 className="mt-2 font-semibold text-2xl">Messages</h1>
 
               <ScrollArea className="w-full h-[calc(100vh-9rem)]">
-                <ul className="w-full flex flex-col mt-4">
+                <ul className="flex flex-col mt-4 w-full">
                   {data &&
                     data.chats.map((chat: Chat, i: number) => (
                       <li key={i} className="w-full">
                         <Button
                           onClick={() => startChatting(chat)}
-                          className="w-full h-full px-3 py-3 flex gap-2 items-center justify-start bg-background hover:bg-primary-foreground text-primary"
+                          className="flex justify-start items-center gap-2 bg-background hover:bg-primary-foreground px-3 py-3 w-full h-full text-primary"
                         >
                           <Avatar className="w-12 h-12">
                             <AvatarImage
@@ -73,15 +76,15 @@ const Messages: React.FC = () => {
                             <AvatarFallback>CN</AvatarFallback>
                           </Avatar>
                           <div className="w-full">
-                            <h3 className="font-semibold line-clamp-1 text-left">
+                            <h3 className="font-semibold text-left line-clamp-1">
                               {chat?.members[chat.theOtherUserIndex]?.name}{" "}
                               <small className="text-gray-400">
                                 @
                                 {chat.members[chat.theOtherUserIndex]?.username}
                               </small>
                             </h3>
-                            <div className="min-w-[11rem] max-w-max flex gap-2">
-                              <p className="flex-1 text-sm line-clamp-1 text-left">
+                            <div className="flex gap-2 min-w-44 max-w-max">
+                              <p className="flex-1 text-sm text-left line-clamp-1">
                                 {chat.lastMessage}
                               </p>
                               <small className="inline-block text-zinc-400">
@@ -103,11 +106,11 @@ const Messages: React.FC = () => {
                 ? "72%"
                 : "44%"
             }
-            className="h-full py-4 flex flex-col"
+            className="flex flex-col py-4 h-full"
           >
             {(pathname === "/messages" || pathname === "/messages/") && (
-              <div className="w-full h-full flex justify-center items-center">
-                <h1 className="text-2xl font-bold text-zinc-500">
+              <div className="flex justify-center items-center w-full h-full">
+                <h1 className="font-bold text-zinc-500 text-2xl">
                   Start A Conversation...
                 </h1>
               </div>

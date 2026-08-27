@@ -68,15 +68,15 @@ const Comments: React.FC<CommentsProps> = ({
   return (
     <>
       {data && data?.comments.length > 0 && (
-        <ul className="w-full flex flex-col gap-4">
+        <ul className="flex flex-col gap-4 w-full">
           {data.comments.map((comment) => (
-            <li className="w-full flex space-x-2">
-              <Avatar className="w-[2.5rem] h-[2.5rem]">
+            <li key={comment.id} className="flex space-x-2 w-full">
+              <Avatar className="w-10 h-10">
                 <AvatarImage src={comment.author?.profileImgUrl} />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
 
-              <Card className="w-full px-3 py-2">
+              <Card className="px-3 py-2 w-full">
                 <CardDescription>
                   <h1>
                     <span>{comment.author?.name}</span> •{" "}

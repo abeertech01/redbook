@@ -63,8 +63,8 @@ const Inbox: React.FC = () => {
   useSocketEvents(socket!, eventHandler)
 
   return (
-    <div className="h-full flex flex-col gap-4">
-      <Card className="h-[3.5rem] bg-secondary px-4 py-2 mx-4 flex gap-3 items-center">
+    <div className="flex flex-col gap-4 h-full">
+      <Card className="flex items-center gap-3 bg-secondary mx-4 px-4 py-2 h-14">
         <Avatar className="w-8 h-8">
           <AvatarImage
             src={messagesResult?.participator.profileImgUrl}
@@ -80,14 +80,15 @@ const Inbox: React.FC = () => {
 
       <ul
         ref={scrollRef}
-        className="inbox-messages border-t-2 border-[#f4c13f] relative flex-1 flex flex-col justify-end gap-4 w-[calc(100%-2rem)] mx-auto pr-1 overflow-y-scroll scroll-smooth"
+        className="relative flex flex-col flex-1 justify-end gap-4 mx-auto pr-1 border-[#f4c13f] border-t-2 w-[calc(100%-2rem)] overflow-y-scroll scroll-smooth inbox-messages"
       >
         {messagesResult &&
           messagesResult.messages.map((message: Message) => (
             <li
+              key={message.id}
               className={clsx(
                 "flex flex-col gap-1",
-                message.authorId === user?.id ? "items-end" : "items-start"
+                message.authorId === user?.id ? "items-end" : "items-start",
               )}
             >
               <div className="flex items-center gap-1 text-gray-500">
@@ -104,7 +105,7 @@ const Inbox: React.FC = () => {
                   "px-3 py-1",
                   message.authorId === user?.id
                     ? "bg-zinc-500 text-white"
-                    : "bg-rose-600 text-white dark:text-white"
+                    : "bg-rose-600 text-white dark:text-white",
                 )}
               >
                 {message.text}

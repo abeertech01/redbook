@@ -93,12 +93,12 @@ const Post: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div className="min-h-[calc(100vh-3.5rem)] w-[47rem] mx-auto py-4">
+      <div className="mx-auto py-4 w-188 min-h-[calc(100vh-3.5rem)]">
         <Card>
           <CardHeader>
             <CardTitle>{data?.post.title}</CardTitle>
             <CardDescription className="py-2">
-              <div className="flex gap-1 items-center">
+              <div className="flex items-center gap-1">
                 <Avatar className="w-[1.8rem] h-[1.8rem]">
                   <AvatarImage
                     src={data?.post.author?.profileImgUrl}
@@ -116,8 +116,8 @@ const Post: React.FC = () => {
             <p className="">{data?.post.content}</p>
           </CardContent>
           <CardFooter className="flex flex-col items-start">
-            <div className="w-full flex justify-between items-center mb-4">
-              <div className="flex gap-2 items-center">
+            <div className="flex justify-between items-center mb-4 w-full">
+              <div className="flex items-center gap-2">
                 {/* Upvote */}
                 <Button
                   disabled={uv_loading || dv_loading}
@@ -125,7 +125,7 @@ const Post: React.FC = () => {
                   variant={"outline"}
                   className={clsx(
                     data?.post.upvoteIds.includes(user!.id) &&
-                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                      "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500",
                   )}
                 >
                   <ArrowBigUp className="scale-125" />{" "}
@@ -139,7 +139,7 @@ const Post: React.FC = () => {
                   variant={"outline"}
                   className={clsx(
                     data?.post.downvoteIds.includes(user!.id) &&
-                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                      "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500",
                   )}
                 >
                   <ArrowBigDown className="scale-125" />{" "}
@@ -176,10 +176,10 @@ const Post: React.FC = () => {
                 </DropdownMenu>
               )}
             </div>
-            <div className="w-full h-[1px] bg-zinc-500 mb-4"></div>
+            <div className="bg-zinc-500 mb-4 w-full h-px"></div>
 
             {/* Comment Area */}
-            <div className="flex flex-col w-full gap-2 mb-4">
+            <div className="flex flex-col gap-2 mb-4 w-full">
               <Textarea
                 rows={1}
                 placeholder="Comment..."

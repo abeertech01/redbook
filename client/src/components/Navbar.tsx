@@ -45,9 +45,9 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <div className="bg-primary dark:bg-zinc-700 text-white py-2 px-5 flex justify-between items-center">
+    <div className="flex justify-between items-center bg-primary dark:bg-zinc-700 px-5 py-2 text-white">
       <Link to={"/"}>
-        <img src={logo} alt="Redbook Logo" className="w-[8rem]" />
+        <img src={logo} alt="Redbook Logo" className="w-32" />
       </Link>
 
       <div className="flex items-center gap-2 md:gap-5">
@@ -78,7 +78,7 @@ const Navbar: React.FC = () => {
               <Button
                 variant="secondary"
                 size="icon"
-                className="bg-zinc-800 hover:bg-zinc-800 text-white hover:text-inherit focus-visible:outline-none"
+                className="bg-zinc-800 hover:bg-zinc-800 focus-visible:outline-none text-white hover:text-inherit"
               >
                 <Menu />
               </Button>

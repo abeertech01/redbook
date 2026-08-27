@@ -49,6 +49,7 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] Confirm every component still compiles against the new Tailwind v4 theme tokens from Phase 3 — build and lint clean
 
 **Additional work that came out of the diff (not originally scoped, but necessary):**
+
 - Migrated `toast`/`toaster` (Radix-based, no longer offered by the registry for this project type) to `sonner`, updating all 12 call sites across the app
 - Fixed shadcn's generated `sonner.tsx` assuming `next-themes` (unused in this project) instead of the app's actual `ThemeProvider`
 - Fixed a pre-existing bug: `<Toaster />` was mounted twice (`main.tsx` and `App.tsx`), causing every toast to render twice
@@ -76,11 +77,11 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 Walk every feature end-to-end and confirm it behaves identically to pre-upgrade:
 
-- [ ] Register + login + logout (`AuthTabs`, `LoginForm`, `RegisterForm`, `ProtectedRoute`)
-- [ ] Feed: view posts, create a post, upvote/downvote (`AllPosts`, `PostCard`, `PostCreate`)
-- [ ] Post detail + comments (`pages/Post.tsx`, `Comments.tsx`)
-- [ ] Profile view/edit, avatar/cover image upload via Cloudinary (`pages/Profile.tsx`)
-- [ ] Search users (`SearchUser.tsx`)
+- [x] Register + login + logout (`AuthTabs`, `LoginForm`, `RegisterForm`, `ProtectedRoute`)
+- [x] Feed: view posts, create a post, upvote/downvote (`AllPosts`, `PostCard`, `PostCreate`)
+- [x] Post detail + comments (`pages/Post.tsx`, `Comments.tsx`)
+- [x] Profile view/edit, avatar/cover image upload via Cloudinary (`pages/Profile.tsx`)
+- [x] Search users (`SearchUser.tsx`)
 - [ ] Real-time chat: new chat, send/receive messages live via Socket.IO (`pages/Messages.tsx`, `Inbox.tsx`, `ChatParticipator.tsx`, `SocketProvider.tsx`, `useSocketEvents.ts`)
 - [ ] Theme toggle (light/dark) persists correctly (`ThemeProvider.tsx`, `ThemeToggle.tsx`)
 - [ ] All Radix-based UI (dialogs, dropdowns, tabs, toasts, scroll areas) opens/closes/animates correctly, including any `tailwindcss-animate` → replacement animation classes
@@ -99,4 +100,5 @@ Pure refactor, no behavior change — do last, re-run Phase 7's smoke checks aft
 - [ ] Open PR / merge
 
 ---
+
 **Ground rule for every phase:** if a step risks changing user-visible behavior (not just internals), stop and confirm before proceeding — don't bundle it silently into an "just upgrading" commit.
