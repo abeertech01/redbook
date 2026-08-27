@@ -43,10 +43,16 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 ## Phase 4 — shadcn/ui refresh
 
-- [ ] Before touching anything: diff each file in `components/ui/` against a fresh `npx shadcn@latest add <component>` output in a scratch dir, to identify which components were hand-customized (don't blindly overwrite customized ones)
-- [ ] Update `components.json` to the current schema/style options
-- [ ] Re-generate or manually update each `ui/*.tsx` component to the latest shadcn template, re-applying any customizations found above, one component at a time
-- [ ] Confirm every component still compiles against the new Tailwind v4 theme tokens from Phase 3
+- [x] Before touching anything: diff each file in `components/ui/` against a fresh `npx shadcn@latest add <component>` output in a scratch dir, to identify which components were hand-customized (don't blindly overwrite customized ones) — used `npx shadcn@latest add <component> --diff` directly instead of a manual scratch-dir diff, same result
+- [x] Update `components.json` to the current schema/style options
+- [x] Re-generate or manually update each `ui/*.tsx` component to the latest shadcn template, re-applying any customizations found above, one component at a time — 6 components had real changes (card, dropdown-menu, input, form, textarea, dialog), applied; 6 others (avatar, button, label, resizable, scroll-area, tabs) reported no changes. `toast`/`toaster` had moved to a different registry item entirely (`sonner`) — migrated separately, see below
+- [x] Confirm every component still compiles against the new Tailwind v4 theme tokens from Phase 3 — build and lint clean
+
+**Additional work that came out of the diff (not originally scoped, but necessary):**
+- Migrated `toast`/`toaster` (Radix-based, no longer offered by the registry for this project type) to `sonner`, updating all 12 call sites across the app
+- Fixed shadcn's generated `sonner.tsx` assuming `next-themes` (unused in this project) instead of the app's actual `ThemeProvider`
+- Fixed a pre-existing bug: `<Toaster />` was mounted twice (`main.tsx` and `App.tsx`), causing every toast to render twice
+- Fixed toast background colors: sonner's own CSS (`[data-sonner-toast][data-styled='true']`) was overriding our Tailwind classes via specificity; fixed by setting sonner's own CSS custom properties directly instead
 
 ## Phase 5 — Remaining dependency bumps
 

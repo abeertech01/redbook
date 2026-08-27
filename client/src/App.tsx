@@ -2,7 +2,6 @@ import React, { useEffect } from "react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Login from "./pages/Login"
 import Home from "./pages/Home"
-import { Toaster } from "./components/ui/toaster"
 import Post from "./pages/Post"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
@@ -39,7 +38,6 @@ const App: React.FC = () => {
     </div>
   ) : (
     <BrowserRouter>
-      <Toaster />
       <Routes>
         <Route
           element={

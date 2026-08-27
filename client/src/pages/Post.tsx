@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { timeAgo } from "@/lib/helper"
 import clsx from "clsx"
 import {
@@ -48,7 +48,6 @@ const Post: React.FC = () => {
   const { id } = useParams()
   const { user } = useSelector((state: RootState) => state.user)
   const { data } = useGetPostQuery(id as string)
-  const { toast } = useToast()
   const [deletePost, { isLoading: deleteLoading }] = useDeletePostMutation()
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
@@ -65,19 +64,14 @@ const Post: React.FC = () => {
 
   const deletePostClick = async () => {
     if (user?.id !== data?.post.authorId) {
-      toast({
-        title: "You are not authorized to delete this post",
-        variant: "destructive",
-      })
+      toast.error("You are not authorized to delete this post")
       return
     }
 
     const result = await deletePost(data!.post.id)
 
     if (result.data?.success) {
-      toast({
-        title: "Post Deleted Successfully",
-      })
+      toast("Post Deleted Successfully")
       navigate("/")
     }
   }
@@ -92,9 +86,7 @@ const Post: React.FC = () => {
       setCommentText("")
       if (!showComments) setShowComments(true)
 
-      toast({
-        title: "Comment Added Successfully",
-      })
+      toast("Comment Added Successfully")
     }
   }
 

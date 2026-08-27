@@ -14,7 +14,7 @@ import { Button } from "./ui/button"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { userDoesntExist } from "@/app/reducers/user"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { isAxiosError } from "@/lib/helper"
 import { RootState } from "@/app/store"
 
@@ -22,7 +22,6 @@ const Navbar: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { toast } = useToast()
 
   const logout = async () => {
     try {
@@ -34,16 +33,12 @@ const Navbar: React.FC = () => {
       navigate("/login")
     } catch (error) {
       if (isAxiosError(error)) {
-        toast({
-          title: "Logout Error",
+        toast.error("Logout Error", {
           description: error.response?.data.message,
-          variant: "destructive",
         })
       } else {
-        toast({
-          title: "Logout Error",
+        toast.error("Logout Error", {
           description: "Something went wrong",
-          variant: "destructive",
         })
       }
     }

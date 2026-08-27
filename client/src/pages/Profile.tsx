@@ -27,7 +27,7 @@ import {
   updateCoverImageUrl,
   updateProfileImageUrl,
 } from "@/app/reducers/user"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 
 const Profile: React.FC = () => {
@@ -36,7 +36,6 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isBioEditing, setIsBioEditing] = useState(false)
   const [bioText, setBioText] = useState(user?.bio)
-  const { toast } = useToast()
 
   const { data: postsResult } = useGetUserPostsQuery(user!.id)
   const [updateBio] = useUpdateBioMutation()
@@ -57,17 +56,11 @@ const Profile: React.FC = () => {
     }
 
     if (isBioEditing && bioText === user?.bio) {
-      toast({
-        variant: "destructive",
-        title: "No changes made",
-      })
+      toast.error("No changes made")
     }
 
     if (isBioEditing && !bioText) {
-      toast({
-        variant: "destructive",
-        title: "Bio cannot be empty",
-      })
+      toast.error("Bio cannot be empty")
     }
 
     setIsBioEditing((prev) => !prev)
