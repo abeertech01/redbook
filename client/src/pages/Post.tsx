@@ -153,7 +153,7 @@ const Post: React.FC = () => {
               </div>
               {user?.id === data?.post.authorId && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild>
                     <Button variant={"ghost"} size={"icon"}>
                       <CircleEllipsis />
                     </Button>

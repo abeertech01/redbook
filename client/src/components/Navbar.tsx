@@ -74,7 +74,7 @@ const Navbar: React.FC = () => {
 
         <div className="md:hidden">
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="secondary"
                 size="icon"

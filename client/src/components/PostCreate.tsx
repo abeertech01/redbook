@@ -70,7 +70,7 @@ const PostCreate: React.FC = () => {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full">
+      <DialogTrigger asChild className="w-full">
         <Button
           variant={"outline"}
           size={"lg"}
