@@ -35,11 +35,11 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 ## Phase 3 — Tailwind CSS v3 → v4
 
-- [ ] Install `tailwindcss@4` and switch the PostCSS setup: either `@tailwindcss/postcss` in `postcss.config.js`, or (preferred for Vite) swap to the `@tailwindcss/vite` plugin in `vite.config.ts` and drop `postcss.config.js`/`autoprefixer` entirely
-- [ ] Replace `@tailwind base; @tailwind components; @tailwind utilities;` in `src/index.css` with `@import "tailwindcss";`
-- [ ] Port `tailwind.config.js`'s `theme.extend` (colors, `borderRadius`) into an `@theme` block in CSS — decide whether to keep HSL CSS variables as-is (still valid) or move to OKLCH to match current shadcn defaults
-- [ ] Replace `tailwindcss-animate` with a Tailwind-v4-compatible equivalent (e.g. `tw-animate-css`) and update the import
-- [ ] Rebuild and visually verify: `darkMode` class-toggling, border radii, chart colors, and every custom color token (`background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, `ring`) still render identically in both light and dark mode
+- [x] Install `tailwindcss@4` and switch the PostCSS setup: either `@tailwindcss/postcss` in `postcss.config.js`, or (preferred for Vite) swap to the `@tailwindcss/vite` plugin in `vite.config.ts` and drop `postcss.config.js`/`autoprefixer` entirely
+- [x] Replace `@tailwind base; @tailwind components; @tailwind utilities;` in `src/index.css` with `@import "tailwindcss";`
+- [x] Port `tailwind.config.js`'s `theme.extend` (colors, `borderRadius`) into an `@theme` block in CSS — kept HSL CSS variables as-is (still valid) rather than moving to OKLCH, to keep visual output identical
+- [x] Replace `tailwindcss-animate` with a Tailwind-v4-compatible equivalent (e.g. `tw-animate-css`) and update the import
+- [x] Rebuild and visually verify: `darkMode` class-toggling, border radii, chart colors, and every custom color token (`background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, `ring`) still render identically in both light and dark mode
 
 ## Phase 4 — shadcn/ui refresh
 
