@@ -8,7 +8,7 @@ type ChatParticipatorProps = {
 }
 
 const ChatParticipator: React.FC<ChatParticipatorProps> = ({ chatId }) => {
-  const { data, isLoading: _ } = useGetChatParticipatorQuery(chatId)
+  const { data } = useGetChatParticipatorQuery(chatId)
 
   return (
     <div className="w-full h-full">

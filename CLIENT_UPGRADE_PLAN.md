@@ -14,24 +14,24 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 ## Phase 0 — Setup
 
-- [ ] Confirm current app still runs cleanly via `docker compose up` (last verified working)
-- [ ] Create a dedicated branch for this work
-- [ ] Record current versions as a rollback reference (`react@18.3.1`, `tailwindcss@3.4.14`, etc. — full snapshot via `npm ls --depth=0` in `client/`)
+- [x] Confirm current app still runs cleanly via `docker compose up` (last verified working)
+- [x] Create a dedicated branch for this work
+- [x] Record current versions as a rollback reference (`react@18.3.1`, `tailwindcss@3.4.14`, etc. — full snapshot via `npm ls --depth=0` in `client/`)
 
 ## Phase 1 — Full dependency audit
 
-- [ ] Run `npm outdated` in `client/` to get the real current-vs-latest table for every dependency and devDependency
-- [ ] Sort into three buckets: (a) safe patch/minor bumps, (b) majors needing peer-compat verification only (React 19 support), (c) majors with actual breaking-change migration work (Tailwind v4, possibly `react-router-dom` v7, `zod` v4, `vite`)
-- [ ] For bucket (b), check each package's latest version peer-declares React 19 support: `react-redux`, `react-hook-form`, `@hookform/resolvers`, `react-resizable-panels`, `@uidotdev/usehooks`, all `@radix-ui/react-*`
-- [ ] Decide, per bucket-(c) package, whether to upgrade now or defer (e.g. `react-router-dom` v7 is a bigger lift — confirm before including it in this pass)
+- [x] Run `npm outdated` in `client/` to get the real current-vs-latest table for every dependency and devDependency
+- [x] Sort into three buckets: (a) safe patch/minor bumps, (b) majors needing peer-compat verification only (React 19 support), (c) majors with actual breaking-change migration work (Tailwind v4, possibly `react-router-dom` v7, `zod` v4, `vite`)
+- [x] For bucket (b), check each package's latest version peer-declares React 19 support: `react-redux`, `react-hook-form`, `@hookform/resolvers`, `react-resizable-panels`, `@uidotdev/usehooks`, all `@radix-ui/react-*`
+- [x] Decide, per bucket-(c) package, whether to upgrade now or defer (e.g. `react-router-dom` v7 is a bigger lift — confirm before including it in this pass)
 
 ## Phase 2 — React 18 → 19
 
-- [ ] Bump `react`, `react-dom` to `^19.x`; bump `@types/react`, `@types/react-dom` to `^19.x`
-- [ ] Bump the React-19-verified packages from Phase 1
-- [ ] Bump `eslint-plugin-react-hooks` if a newer major is needed for React 19's lint rules
-- [ ] `npm install`, resolve peer-dependency conflicts
-- [ ] `npm run build` and `npm run lint` clean
+- [x] Bump `react`, `react-dom` to `^19.x`; bump `@types/react`, `@types/react-dom` to `^19.x`
+- [x] Bump the React-19-verified packages from Phase 1
+- [x] Bump `eslint-plugin-react-hooks` if a newer major is needed for React 19's lint rules
+- [x] `npm install`, resolve peer-dependency conflicts
+- [x] `npm run build` and `npm run lint` clean
 
 ## Phase 3 — Tailwind CSS v3 → v4
 

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NEW_CHAT } from "@/constants/events"
-import { getSocket } from "@/constants/SocketProvider"
+import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import { timeAgo } from "@/lib/helper"
 import { Chat } from "@/utility/types"
@@ -19,18 +19,16 @@ import React, { useEffect } from "react"
 
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
-type MessagesProps = {}
-
-const Messages: React.FC<MessagesProps> = () => {
+const Messages: React.FC = () => {
   const navigate = useNavigate()
   const { chatId } = useParams()
   const { pathname } = useLocation()
-  const { data, isLoading: _, refetch } = useGetChatsQuery()
+  const { data, refetch } = useGetChatsQuery()
 
-  const socket = getSocket()
+  const socket = useSocket()
 
   const eventHandler = {
-    [NEW_CHAT]: (_: string) => refetch(),
+    [NEW_CHAT]: () => refetch(),
   }
 
   useSocketEvents(socket!, eventHandler)

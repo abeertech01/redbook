@@ -9,9 +9,7 @@ import {
 import { Button } from "./ui/button"
 import { Moon, Sun } from "lucide-react"
 
-type ThemeToggleProps = {}
-
-const ThemeToggle: React.FC<ThemeToggleProps> = () => {
+const ThemeToggle: React.FC = () => {
   const { setTheme } = useTheme()
   return (
     <DropdownMenu>

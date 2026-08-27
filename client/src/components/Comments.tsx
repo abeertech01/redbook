@@ -26,7 +26,7 @@ const Comments: React.FC<CommentsProps> = ({
   userId,
   setCommentNumber,
 }) => {
-  const { data, isLoading: _ } = useGetCommentsQuery(postId)
+  const { data } = useGetCommentsQuery(postId)
   const [upvoteComment] = useUpvoteCommentMutation()
   const [downvoteComment] = useDownvoteCommentMutation()
   const [loadingStates, setLoadingStates] = useState<
@@ -34,28 +34,28 @@ const Comments: React.FC<CommentsProps> = ({
   >({})
 
   const handleUpvote = async (commentId: string) => {
-    setLoadingStates((prev: any) => ({
+    setLoadingStates((prev: Record<string, LoadingState>) => ({
       ...prev,
       [commentId]: { upvote: true, downvote: true },
     }))
 
     await upvoteComment({ commentId, postId })
 
-    setLoadingStates((prev: any) => ({
+    setLoadingStates((prev: Record<string, LoadingState>) => ({
       ...prev,
       [commentId]: { upvote: false, downvote: false },
     }))
   }
 
   const handleDownvote = async (commentId: string) => {
-    setLoadingStates((prev: any) => ({
+    setLoadingStates((prev: Record<string, LoadingState>) => ({
       ...prev,
       [commentId]: { downvote: true, upvote: true },
     }))
 
     await downvoteComment({ commentId, postId })
 
-    setLoadingStates((prev: any) => ({
+    setLoadingStates((prev: Record<string, LoadingState>) => ({
       ...prev,
       [commentId]: { downvote: false, upvote: false },
     }))

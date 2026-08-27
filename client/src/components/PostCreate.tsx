@@ -18,9 +18,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/app/store"
 import { Post } from "@/utility/types"
 
-type PostCreateProps = {}
-
-const PostCreate: React.FC<PostCreateProps> = () => {
+const PostCreate: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { toast } = useToast()
   const [postTitle, setPostTitle] = useState("")

@@ -7,7 +7,7 @@ type SocketProviderProps = {
 
 const SocketContext = createContext<Socket | null>(null)
 
-const getSocket = () => useContext(SocketContext)
+const useSocket = () => useContext(SocketContext)
 
 const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const socket = useMemo(
@@ -23,4 +23,4 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   )
 }
 
-export { SocketProvider, getSocket }
+export { SocketProvider, useSocket }

@@ -60,9 +60,7 @@ const formSchema = z
     path: ["confirmPassword"],
   })
 
-type RegisterFormProps = {}
-
-const RegisterForm: React.FC<RegisterFormProps> = () => {
+const RegisterForm: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
 

@@ -37,16 +37,13 @@ import {
   MessageSquareText,
   Trash,
 } from "lucide-react"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
-type PostProps = {}
-
-const Post: React.FC<PostProps> = () => {
+const Post: React.FC = () => {
   const [commentText, setCommentText] = useState("")
   const [commentNumber, setCommentNumber] = useState<number>(0)
-  const [timeDiff, setTimeDiff] = useState("")
   const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useSelector((state: RootState) => state.user)
@@ -57,6 +54,14 @@ const Post: React.FC<PostProps> = () => {
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
   const [showComments, setShowComments] = useState(false)
+  const [prevData, setPrevData] = useState(data)
+
+  const timeDiff = data?.success ? timeAgo(data.post.createdAt as Date) : ""
+
+  if (data !== prevData) {
+    setPrevData(data)
+    setShowComments(!!data?.success && (data.post.comments?.length ?? 0) > 0)
+  }
 
   const deletePostClick = async () => {
     if (user?.id !== data?.post.authorId) {
@@ -67,7 +72,7 @@ const Post: React.FC<PostProps> = () => {
       return
     }
 
-    const result = await deletePost(data?.post.id!)
+    const result = await deletePost(data!.post.id)
 
     if (result.data?.success) {
       toast({
@@ -85,23 +90,13 @@ const Post: React.FC<PostProps> = () => {
 
     if (comment) {
       setCommentText("")
-      !showComments && setShowComments(true)
+      if (!showComments) setShowComments(true)
 
       toast({
         title: "Comment Added Successfully",
       })
     }
   }
-
-  useEffect(() => {
-    if (data?.success) {
-      setTimeDiff(timeAgo(data.post.createdAt as Date))
-    }
-
-    if (data?.success && data?.post.comments?.length! > 0) {
-      setShowComments(true)
-    }
-  }, [data])
 
   return (
     <div>
@@ -134,10 +129,10 @@ const Post: React.FC<PostProps> = () => {
                 {/* Upvote */}
                 <Button
                   disabled={uv_loading || dv_loading}
-                  onClick={() => upvotePost(data?.post.id!)}
+                  onClick={() => upvotePost(data!.post.id)}
                   variant={"outline"}
                   className={clsx(
-                    data?.post.upvoteIds.includes(user?.id!) &&
+                    data?.post.upvoteIds.includes(user!.id) &&
                       "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
                   )}
                 >
@@ -148,10 +143,10 @@ const Post: React.FC<PostProps> = () => {
                 {/* Downvote */}
                 <Button
                   disabled={uv_loading || dv_loading}
-                  onClick={() => downvotePost(data?.post.id!)}
+                  onClick={() => downvotePost(data!.post.id)}
                   variant={"outline"}
                   className={clsx(
-                    data?.post.downvoteIds.includes(user?.id!) &&
+                    data?.post.downvoteIds.includes(user!.id) &&
                       "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
                   )}
                 >
@@ -212,8 +207,8 @@ const Post: React.FC<PostProps> = () => {
             {/* All Comments */}
             {showComments && (
               <Comments
-                postId={data?.post.id!}
-                userId={user?.id!}
+                postId={data!.post.id}
+                userId={user!.id}
                 setCommentNumber={setCommentNumber}
               />
             )}

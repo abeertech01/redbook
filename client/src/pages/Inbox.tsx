@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { NEW_MESSAGE } from "@/constants/events"
-import { getSocket } from "@/constants/SocketProvider"
+import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import { timeAgo } from "@/lib/helper"
 import { Message } from "@/utility/types"
@@ -14,15 +14,13 @@ import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { useLocation } from "react-router-dom"
 
-type InboxProps = {}
-
-const Inbox: React.FC<InboxProps> = () => {
+const Inbox: React.FC = () => {
   const [text, setText] = useState<string>()
   const { user } = useSelector((state: RootState) => state.user)
   const { pathname } = useLocation()
   // const reversedMessages = messages.reverse()
   const scrollRef = useRef<HTMLUListElement>(null)
-  const socket = getSocket()
+  const socket = useSocket()
 
   const chatId = pathname.match(/\/messages\/(.*)/)![1]
 
@@ -57,7 +55,7 @@ const Inbox: React.FC<InboxProps> = () => {
     //     refetch()
     //   }
     // },]
-    [NEW_MESSAGE]: (_: unknown) => {
+    [NEW_MESSAGE]: () => {
       refetch()
     },
   }

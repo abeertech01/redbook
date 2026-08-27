@@ -1,8 +1,6 @@
 import React from "react"
 
-type LayoutLoaderProps = {}
-
-const LayoutLoader: React.FC<LayoutLoaderProps> = () => {
+const LayoutLoader: React.FC = () => {
   return <div className="loader"></div>
 }
 export default LayoutLoader

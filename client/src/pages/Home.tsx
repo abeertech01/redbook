@@ -7,12 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NEW_CHAT } from "@/constants/events"
-import { getSocket } from "@/constants/SocketProvider"
+import { useSocket } from "@/constants/SocketProvider"
 import React, { createContext, useState } from "react"
 import { useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
-
-type HomeProps = {}
 
 type PgntPostsType = {
   arePaginatedPosts: boolean
@@ -24,11 +22,11 @@ export const PgntPostsContext = createContext<PgntPostsType>({
   setArePaginatedPosts: (prev) => prev,
 })
 
-const Home: React.FC<HomeProps> = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useSelector((state: RootState) => state.user)
-  const { data: _10Users, isLoading: _ } = useGet10RandomUsersQuery()
-  const socket = getSocket()
+  const { data: _10Users } = useGet10RandomUsersQuery()
+  const socket = useSocket()
   const [arePaginatedPosts, setArePaginatedPosts] = useState(false)
 
   const startChatting = (participantId: string) => {
@@ -81,7 +79,7 @@ const Home: React.FC<HomeProps> = () => {
                   setArePaginatedPosts,
                 }}
               >
-                <AllPosts userId={user?.id!} />
+                <AllPosts userId={user!.id} />
               </PgntPostsContext.Provider>
             </div>
           </div>

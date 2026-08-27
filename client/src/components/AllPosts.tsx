@@ -28,7 +28,7 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
   }
 
   useEffect(() => {
-    if (data?.posts.length! > 0) {
+    if ((data?.posts.length ?? 0) > 0) {
       setArePaginatedPosts(true)
     }
   }, [data, setArePaginatedPosts])

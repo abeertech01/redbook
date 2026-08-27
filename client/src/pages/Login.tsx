@@ -6,9 +6,7 @@ import { RootState } from "@/app/store"
 import { Navigate } from "react-router-dom"
 import ThemeToggle from "@/components/ThemeToggle"
 
-type LoginProps = {}
-
-const Login: React.FC<LoginProps> = () => {
+const Login: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.user)
 
   if (user) return <Navigate to={"/"} />

@@ -18,9 +18,7 @@ import { useToast } from "@/hooks/use-toast"
 import { isAxiosError } from "@/lib/helper"
 import { RootState } from "@/app/store"
 
-type NavbarProps = {}
-
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()

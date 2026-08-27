@@ -30,9 +30,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 
-type ProfileProps = {}
-
-const Profile: React.FC<ProfileProps> = () => {
+const Profile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(true)
@@ -40,7 +38,7 @@ const Profile: React.FC<ProfileProps> = () => {
   const [bioText, setBioText] = useState(user?.bio)
   const { toast } = useToast()
 
-  const { data: postsResult } = useGetUserPostsQuery(user?.id!)
+  const { data: postsResult } = useGetUserPostsQuery(user!.id)
   const [updateBio] = useUpdateBioMutation()
   const [
     uploadProfileImage,
@@ -228,7 +226,7 @@ const Profile: React.FC<ProfileProps> = () => {
             <div>
               <ul className="flex flex-col gap-3">
                 {postsResult?.posts.map((post) => (
-                  <PostCard key={post.id} post={post} userId={user?.id!} />
+                  <PostCard key={post.id} post={post} userId={user!.id} />
                 ))}
               </ul>
             </div>

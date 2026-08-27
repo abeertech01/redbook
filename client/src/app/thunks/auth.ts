@@ -29,7 +29,7 @@ export const loginUser = createAsyncThunk(
 
 export const registerUser = createAsyncThunk(
   "auth/register",
-  async (formData: SignupData, _) => {
+  async (formData: SignupData) => {
     try {
       const result = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/user/register`,

@@ -16,9 +16,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 import LayoutLoader from "./components/LayoutLoader"
 import { SocketProvider } from "./constants/SocketProvider"
 
-type AppProps = {}
-
-const App: React.FC<AppProps> = () => {
+const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user, loader } = useSelector((state: RootState) => state.user)
 
@@ -32,7 +30,7 @@ const App: React.FC<AppProps> = () => {
           dispatch(userExists(data.user))
         }
       })
-      .catch((_) => dispatch(userDoesntExist()))
+      .catch(() => dispatch(userDoesntExist()))
   }, [dispatch])
 
   return loader ? (

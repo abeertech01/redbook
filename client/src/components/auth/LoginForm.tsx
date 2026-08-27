@@ -30,9 +30,7 @@ const formSchema = z.object({
   password: z.string().min(1, { message: "Password is required!" }),
 })
 
-type LoginFormProps = {}
-
-const LoginForm: React.FC<LoginFormProps> = () => {
+const LoginForm: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
   const { toast } = useToast()

@@ -34,7 +34,7 @@ export interface AuthResult {
 }
 
 export interface SocketEventHandlers {
-  [key: string]: (...args: any) => void
+  [key: string]: (...args: unknown[]) => void
 }
 
 export interface LoginData {
