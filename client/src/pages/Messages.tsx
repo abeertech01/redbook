@@ -47,8 +47,8 @@ const Messages: React.FC = () => {
     <div>
       <Navbar />
       <div className="h-[calc(100vh-3.5rem)]">
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={28}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="28%">
             <div className="py-2 pl-3 pr-2">
               <SearchUser />
               <h1 className="text-2xl font-semibold mt-2">Messages</h1>
@@ -99,7 +99,9 @@ const Messages: React.FC = () => {
           <ResizableHandle />
           <ResizablePanel
             defaultSize={
-              pathname === "/messages" || pathname === "/messages/" ? 72 : 44
+              pathname === "/messages" || pathname === "/messages/"
+                ? "72%"
+                : "44%"
             }
             className="h-full py-4 flex flex-col"
           >
@@ -116,7 +118,7 @@ const Messages: React.FC = () => {
           {chatId && (
             <>
               <ResizableHandle />
-              <ResizablePanel defaultSize={28} className="p-4">
+              <ResizablePanel defaultSize="28%" className="p-4">
                 <ChatParticipator chatId={chatId} />
               </ResizablePanel>
             </>
