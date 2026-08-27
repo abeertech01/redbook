@@ -60,8 +60,8 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [ ] Apply the deferred bucket (c) majors one at a time — each gets its own commit and its own check against usage sites, since these have real API changes:
   - [x] `lucide-react` 0.x → 1.x — verified every icon name we use (22 across 10 files) still exists unchanged; no source changes needed, version bump only
   - [x] `react-resizable-panels` 2.x → 4.x — `PanelGroup`/`PanelResizeHandle` renamed to `Group`/`Separator`, `direction` prop renamed to `orientation`, and critically `defaultSize` as a raw number now means pixels instead of percent (was silently going to shrink the layout to slivers); fixed by switching to explicit `"28%"`-style strings. Verified live: drag-resize confirmed working
-  - [ ] `react-router-dom` 6.x → 7.x
-  - [ ] `zod` 3.x → 4.x + `@hookform/resolvers` 3.x → 5.x (tracks zod)
+  - [x] `react-router-dom` 6.x → 7.x — app only uses declarative routing (`BrowserRouter`/`Routes`/`Route`/`Navigate`/`Outlet`/`Link`/`useNavigate`/`useParams`/`useLocation`), no splat routes, no relative navigation, no data-router APIs (`loader`/`action`/`createBrowserRouter`) — none of v7's actual breaking changes apply, so this was a clean version bump with zero source changes. Build and lint clean. Verified live: navigation confirmed working
+  - [x] `zod` 3.x → 4.x + `@hookform/resolvers` 3.x → 5.x (tracks zod) — verified every zod method used (`.object`, `.string`, `.min`, `.max`, `.email`, `.regex`, `.refine`, all with `{ message: "..." }`) still works in v4 by reading zod's source directly; `message` param is deprecated in favor of `error` but still fully supported. `@hookform/resolvers@5` explicitly peers on `zod ^4.0.0`. Build and lint clean. Verified live: Login and Register forms (validation + submit) confirmed working
   - [ ] `typescript` 5.x → 7.x
   - [ ] `eslint` 9.x → 10.x + `globals` 15.x → 17.x (surfaced during bucket (a): eslint 9 flagged itself as EOL/unsupported)
 - [ ] Re-run `npm outdated` to confirm the tree is current
