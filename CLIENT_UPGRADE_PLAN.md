@@ -68,9 +68,9 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 ## Phase 6 — Build & type-check
 
-- [ ] `npm run build` (`tsc -b && vite build`) clean
-- [ ] `npm run lint` clean
-- [ ] `npm run dev` boots with no console errors/warnings
+- [x] `npm run build` (`tsc -b && vite build`) clean
+- [x] `npm run lint` clean
+- [x] `npm run dev` boots with no console errors/warnings — found and fixed 3 pre-existing (not caused by this upgrade) nested-`<button>` DOM violations surfaced by checking the browser console carefully: Navbar's mobile menu, PostCreate's "Create A Post" dialog trigger, and Post's options menu. Root cause: Radix's `DropdownMenuTrigger`/`DialogTrigger` render their own `<button>` by default, so wrapping our own `<Button>` inside them without `asChild` nested a button inside a button (invalid HTML). Fixed by adding `asChild` to each. Verified live: console clean on hard reload of Home and on a self-authored Post page
 
 ## Phase 7 — Behavioral regression check (manual, in-browser)
 
