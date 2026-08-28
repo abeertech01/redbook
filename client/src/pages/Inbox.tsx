@@ -15,7 +15,7 @@ import { useSelector } from "react-redux"
 import { useLocation } from "react-router-dom"
 
 const Inbox: React.FC = () => {
-  const [text, setText] = useState<string>()
+  const [text, setText] = useState("")
   const { user } = useSelector((state: RootState) => state.user)
   const { pathname } = useLocation()
   // const reversedMessages = messages.reverse()

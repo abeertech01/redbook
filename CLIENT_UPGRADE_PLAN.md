@@ -82,9 +82,9 @@ Walk every feature end-to-end and confirm it behaves identically to pre-upgrade:
 - [x] Post detail + comments (`pages/Post.tsx`, `Comments.tsx`)
 - [x] Profile view/edit, avatar/cover image upload via Cloudinary (`pages/Profile.tsx`)
 - [x] Search users (`SearchUser.tsx`)
-- [ ] Real-time chat: new chat, send/receive messages live via Socket.IO (`pages/Messages.tsx`, `Inbox.tsx`, `ChatParticipator.tsx`, `SocketProvider.tsx`, `useSocketEvents.ts`)
-- [ ] Theme toggle (light/dark) persists correctly (`ThemeProvider.tsx`, `ThemeToggle.tsx`)
-- [ ] All Radix-based UI (dialogs, dropdowns, tabs, toasts, scroll areas) opens/closes/animates correctly, including any `tailwindcss-animate` → replacement animation classes
+- [ ] Real-time chat: new chat, send/receive messages live via Socket.IO (`pages/Messages.tsx`, `Inbox.tsx`, `ChatParticipator.tsx`, `SocketProvider.tsx`, `useSocketEvents.ts`) — **known bug, under investigation**: messages don't appear live, a page reload is needed to see them. User confirmed this predates this upgrade branch; about to verify against `main` to confirm it's not a regression from this work before digging further (server-side, out of scope for this branch's dependency work, but tracked here since it blocks Phase 7)
+- [x] Theme toggle (light/dark) persists correctly (`ThemeProvider.tsx`, `ThemeToggle.tsx`)
+- [x] All Radix-based UI (dialogs, dropdowns, tabs, toasts, scroll areas) opens/closes/animates correctly, including any `tailwindcss-animate` → replacement animation classes
 
 ## Phase 8 — Best-practices cleanup (optional, do only after Phase 7 passes clean)
 
