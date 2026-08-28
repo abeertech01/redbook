@@ -93,8 +93,8 @@ const Inbox: React.FC = () => {
             >
               <div className="flex items-center gap-1 text-gray-500">
                 <small>
-                  {messagesResult.participator.id === user?.id
-                    ? user.name
+                  {message.authorId === user?.id
+                    ? user?.name
                     : messagesResult.participator.name}
                 </small>
                 <div>•</div>
