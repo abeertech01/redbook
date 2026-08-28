@@ -1,19 +1,33 @@
 import { SocketEventHandlers } from "@/utility/types"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { Socket } from "socket.io-client"
 
-const useSocketEvents = (socket: Socket, handlers: SocketEventHandlers) => {
+const useSocketEvents = (
+  socket: Socket | null | undefined,
+  handlers: SocketEventHandlers
+) => {
+  const handlersRef = useRef(handlers)
+
   useEffect(() => {
-    Object.entries(handlers).forEach(([event, handler]) => {
-      socket.on(event, handler)
-    })
+    handlersRef.current = handlers
+  })
+
+  useEffect(() => {
+    if (!socket) return
+
+    const events = Object.keys(handlersRef.current)
+    const stableHandlers = events.map(
+      (event) =>
+        (...args: unknown[]) =>
+          handlersRef.current[event](...args)
+    )
+
+    events.forEach((event, i) => socket.on(event, stableHandlers[i]))
 
     return () => {
-      Object.entries(handlers).forEach(([event, handler]) => {
-        socket.off(event, handler)
-      })
+      events.forEach((event, i) => socket.off(event, stableHandlers[i]))
     }
-  }, [socket, handlers])
+  }, [socket])
 }
 
 export default useSocketEvents

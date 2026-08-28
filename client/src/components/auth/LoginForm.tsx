@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -23,19 +23,16 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/app/store"
 import { loginUser as loginUserThunk } from "@/app/thunks/auth"
 import { useNavigate } from "react-router-dom"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 const formSchema = z.object({
   userAddress: z.string().min(1, { message: "Username/Email is required!" }),
   password: z.string().min(1, { message: "Password is required!" }),
 })
 
-type LoginFormProps = {}
-
-const LoginForm: React.FC<LoginFormProps> = () => {
+const LoginForm = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
-  const { toast } = useToast()
   const { user, loader } = useSelector((state: RootState) => state.user)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,8 +47,7 @@ const LoginForm: React.FC<LoginFormProps> = () => {
     if (user) {
       navigate("/")
 
-      toast({
-        title: `Welcome back ${user.name}`,
+      toast(`Welcome back ${user.name}`, {
         description: "User has been logged in Successfully!!",
       })
     }

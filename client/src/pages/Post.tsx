@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { timeAgo } from "@/lib/helper"
 import clsx from "clsx"
 import {
@@ -37,42 +37,41 @@ import {
   MessageSquareText,
   Trash,
 } from "lucide-react"
-import React, { useEffect, useState } from "react"
+import { useState } from "react"
 import { useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
-type PostProps = {}
-
-const Post: React.FC<PostProps> = () => {
+const Post = () => {
   const [commentText, setCommentText] = useState("")
   const [commentNumber, setCommentNumber] = useState<number>(0)
-  const [timeDiff, setTimeDiff] = useState("")
   const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useSelector((state: RootState) => state.user)
   const { data } = useGetPostQuery(id as string)
-  const { toast } = useToast()
   const [deletePost, { isLoading: deleteLoading }] = useDeletePostMutation()
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
   const [showComments, setShowComments] = useState(false)
+  const [prevData, setPrevData] = useState(data)
+
+  const timeDiff = data?.success ? timeAgo(data.post.createdAt as Date) : ""
+
+  if (data !== prevData) {
+    setPrevData(data)
+    setShowComments(!!data?.success && (data.post.comments?.length ?? 0) > 0)
+  }
 
   const deletePostClick = async () => {
     if (user?.id !== data?.post.authorId) {
-      toast({
-        title: "You are not authorized to delete this post",
-        variant: "destructive",
-      })
+      toast.error("You are not authorized to delete this post")
       return
     }
 
-    const result = await deletePost(data?.post.id!)
+    const result = await deletePost(data!.post.id)
 
     if (result.data?.success) {
-      toast({
-        title: "Post Deleted Successfully",
-      })
+      toast("Post Deleted Successfully")
       navigate("/")
     }
   }
@@ -85,33 +84,21 @@ const Post: React.FC<PostProps> = () => {
 
     if (comment) {
       setCommentText("")
-      !showComments && setShowComments(true)
+      if (!showComments) setShowComments(true)
 
-      toast({
-        title: "Comment Added Successfully",
-      })
+      toast("Comment Added Successfully")
     }
   }
-
-  useEffect(() => {
-    if (data?.success) {
-      setTimeDiff(timeAgo(data.post.createdAt as Date))
-    }
-
-    if (data?.success && data?.post.comments?.length! > 0) {
-      setShowComments(true)
-    }
-  }, [data])
 
   return (
     <div>
       <Navbar />
-      <div className="min-h-[calc(100vh-3.5rem)] w-[47rem] mx-auto py-4">
+      <div className="mx-auto py-4 w-188 min-h-[calc(100vh-3.5rem)]">
         <Card>
           <CardHeader>
             <CardTitle>{data?.post.title}</CardTitle>
             <CardDescription className="py-2">
-              <div className="flex gap-1 items-center">
+              <div className="flex items-center gap-1">
                 <Avatar className="w-[1.8rem] h-[1.8rem]">
                   <AvatarImage
                     src={data?.post.author?.profileImgUrl}
@@ -129,16 +116,16 @@ const Post: React.FC<PostProps> = () => {
             <p className="">{data?.post.content}</p>
           </CardContent>
           <CardFooter className="flex flex-col items-start">
-            <div className="w-full flex justify-between items-center mb-4">
-              <div className="flex gap-2 items-center">
+            <div className="flex justify-between items-center mb-4 w-full">
+              <div className="flex items-center gap-2">
                 {/* Upvote */}
                 <Button
                   disabled={uv_loading || dv_loading}
-                  onClick={() => upvotePost(data?.post.id!)}
+                  onClick={() => upvotePost(data!.post.id)}
                   variant={"outline"}
                   className={clsx(
-                    data?.post.upvoteIds.includes(user?.id!) &&
-                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                    data?.post.upvoteIds.includes(user!.id) &&
+                      "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500",
                   )}
                 >
                   <ArrowBigUp className="scale-125" />{" "}
@@ -148,11 +135,11 @@ const Post: React.FC<PostProps> = () => {
                 {/* Downvote */}
                 <Button
                   disabled={uv_loading || dv_loading}
-                  onClick={() => downvotePost(data?.post.id!)}
+                  onClick={() => downvotePost(data!.post.id)}
                   variant={"outline"}
                   className={clsx(
-                    data?.post.downvoteIds.includes(user?.id!) &&
-                      "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                    data?.post.downvoteIds.includes(user!.id) &&
+                      "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500",
                   )}
                 >
                   <ArrowBigDown className="scale-125" />{" "}
@@ -166,7 +153,7 @@ const Post: React.FC<PostProps> = () => {
               </div>
               {user?.id === data?.post.authorId && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild>
                     <Button variant={"ghost"} size={"icon"}>
                       <CircleEllipsis />
                     </Button>
@@ -189,10 +176,10 @@ const Post: React.FC<PostProps> = () => {
                 </DropdownMenu>
               )}
             </div>
-            <div className="w-full h-[1px] bg-zinc-500 mb-4"></div>
+            <div className="bg-zinc-500 mb-4 w-full h-px"></div>
 
             {/* Comment Area */}
-            <div className="flex flex-col w-full gap-2 mb-4">
+            <div className="flex flex-col gap-2 mb-4 w-full">
               <Textarea
                 rows={1}
                 placeholder="Comment..."
@@ -212,8 +199,8 @@ const Post: React.FC<PostProps> = () => {
             {/* All Comments */}
             {showComments && (
               <Comments
-                postId={data?.post.id!}
-                userId={user?.id!}
+                postId={data!.post.id}
+                userId={user!.id}
                 setCommentNumber={setCommentNumber}
               />
             )}

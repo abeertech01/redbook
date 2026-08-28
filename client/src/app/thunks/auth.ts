@@ -29,7 +29,7 @@ export const loginUser = createAsyncThunk(
 
 export const registerUser = createAsyncThunk(
   "auth/register",
-  async (formData: SignupData, _) => {
+  async (formData: SignupData) => {
     try {
       const result = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/user/register`,
@@ -42,9 +42,9 @@ export const registerUser = createAsyncThunk(
       if (isAxiosError(error)) {
         const errorMessage =
           error.response?.data?.message || "An error occurred"
-        throw new Error(errorMessage)
+        throw new Error(errorMessage, { cause: error })
       } else {
-        throw new Error("An unknown error occurred")
+        throw new Error("An unknown error occurred", { cause: error })
       }
     }
   }

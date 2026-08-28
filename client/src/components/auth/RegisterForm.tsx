@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import React from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import {
@@ -60,9 +59,7 @@ const formSchema = z
     path: ["confirmPassword"],
   })
 
-type RegisterFormProps = {}
-
-const RegisterForm: React.FC<RegisterFormProps> = () => {
+const RegisterForm = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
 

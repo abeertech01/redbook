@@ -1,5 +1,4 @@
 import { Post } from "@/utility/types"
-import React from "react"
 import {
   Card,
   CardContent,
@@ -21,7 +20,7 @@ type PostCardProps = {
   userId: string
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, userId }) => {
+const PostCard = ({ post, userId }: PostCardProps) => {
   const navigate = useNavigate()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
@@ -58,7 +57,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, userId }) => {
               variant={"outline"}
               className={clsx(
                 post.upvoteIds.includes(userId) &&
-                  "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
               )}
             >
               <ArrowBigUp className="scale-125" /> {post.upvoteIds.length}
@@ -71,7 +70,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, userId }) => {
               variant={"outline"}
               className={clsx(
                 post.downvoteIds.includes(userId) &&
-                  "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
               )}
             >
               <ArrowBigDown className="scale-125" /> {post.downvoteIds.length}

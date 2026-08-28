@@ -1,4 +1,3 @@
-import React from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { formatHumanReadTimestamp } from "@/lib/helper"
 import { useGetChatParticipatorQuery } from "@/app/api/chat"
@@ -7,8 +6,8 @@ type ChatParticipatorProps = {
   chatId: string
 }
 
-const ChatParticipator: React.FC<ChatParticipatorProps> = ({ chatId }) => {
-  const { data, isLoading: _ } = useGetChatParticipatorQuery(chatId)
+const ChatParticipator = ({ chatId }: ChatParticipatorProps) => {
+  const { data } = useGetChatParticipatorQuery(chatId)
 
   return (
     <div className="w-full h-full">

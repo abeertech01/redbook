@@ -1,13 +1,10 @@
 import { AxiosError } from "@/utility/types"
-import { createContext, useContext } from "react"
-import { Socket, io } from "socket.io-client"
 
-function isAxiosError(error: any): error is AxiosError {
-  return (
-    error.response &&
-    error.response.data &&
-    typeof error.response.data.message === "string"
-  )
+function isAxiosError(error: unknown): error is AxiosError {
+  if (typeof error !== "object" || error === null) return false
+
+  const err = error as { response?: { data?: { message?: unknown } } }
+  return typeof err.response?.data?.message === "string"
 }
 
 function upvoteCacheHelper<

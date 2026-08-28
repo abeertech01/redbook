@@ -1,5 +1,4 @@
 import { useTheme } from "@/constants/ThemeProvider"
-import React from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +8,7 @@ import {
 import { Button } from "./ui/button"
 import { Moon, Sun } from "lucide-react"
 
-type ThemeToggleProps = {}
-
-const ThemeToggle: React.FC<ThemeToggleProps> = () => {
+const ThemeToggle = () => {
   const { setTheme } = useTheme()
   return (
     <DropdownMenu>

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import {
   Dialog,
   DialogClose,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "./ui/button"
 import { Textarea } from "./ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { postAPI, useCreatePostMutation } from "@/app/api/post"
 import { Input } from "./ui/input"
 import { PgntPostsContext } from "@/pages/Home"
@@ -18,11 +18,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/app/store"
 import { Post } from "@/utility/types"
 
-type PostCreateProps = {}
-
-const PostCreate: React.FC<PostCreateProps> = () => {
+const PostCreate = () => {
   const dispatch = useDispatch<AppDispatch>()
-  const { toast } = useToast()
   const [postTitle, setPostTitle] = useState("")
   const [postText, setPostText] = useState("")
   const { currentPage } = useSelector((state: RootState) => state.post)
@@ -54,29 +51,26 @@ const PostCreate: React.FC<PostCreateProps> = () => {
           )
         }
       } else {
-        toast({
-          title: "Post and its title both can't be empty",
-          variant: "destructive",
-        })
+        toast.error("Post and its title both can't be empty")
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast({ title: error.message, variant: "destructive" })
+        toast.error(error.message)
       } else {
-        toast({ title: "An unexpected error occurred", variant: "destructive" })
+        toast.error("An unexpected error occurred")
       }
     }
   }
 
   useEffect(() => {
     if (isSuccess) {
-      toast({ title: "Post Created Successfully" })
+      toast("Post Created Successfully")
     }
   }, [isSuccess, postCreateError])
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full">
+      <DialogTrigger asChild className="w-full">
         <Button
           variant={"outline"}
           size={"lg"}
