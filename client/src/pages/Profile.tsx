@@ -20,7 +20,7 @@ import {
   LoaderPinwheel,
   SquareCheckBig,
 } from "lucide-react"
-import React, { ChangeEvent, useState } from "react"
+import { ChangeEvent, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   updateBio as updateBioReducer,
@@ -30,7 +30,7 @@ import {
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 
-const Profile: React.FC = () => {
+const Profile = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(true)

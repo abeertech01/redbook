@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Login from "./pages/Login"
 import Home from "./pages/Home"
@@ -15,7 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 import LayoutLoader from "./components/LayoutLoader"
 import { SocketProvider } from "./constants/SocketProvider"
 
-const App: React.FC = () => {
+const App = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user, loader } = useSelector((state: RootState) => state.user)
 

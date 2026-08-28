@@ -90,8 +90,8 @@ Walk every feature end-to-end and confirm it behaves identically to pre-upgrade:
 
 Pure refactor, no behavior change — do last, re-run Phase 7's smoke checks after.
 
-- [ ] Remove `forwardRef` wrappers in `components/ui/*` now that `ref` can be a normal prop in React 19
-- [ ] Review `React.FC` typing usage (21 occurrences) — simplify where it clearly helps (style choice, discuss before doing broadly)
+- [x] Remove `forwardRef` wrappers in `components/ui/*` now that `ref` can be a normal prop in React 19 — converted all 9 remaining files (`button`, `label`, `avatar`, `card`, `scroll-area`, `tabs`, `dialog`, `dropdown-menu`, `form`; `input`/`textarea` were already done in Phase 4). Build and lint clean. Verified live: full click-through of login/register tabs, navbar dropdowns, post-create dialog, and post options dropdown confirmed working
+- [x] Review `React.FC` typing usage (21 occurrences) — discussed with user; converted all 21 to plain typed function components (`React.FC` provides no real benefit over a typed function, used to implicitly add an often-wrong `children` prop, and doesn't play well with generics — the `components/ui/*` files already used the plain style after the `forwardRef` removal above, so this makes the codebase consistent with itself). Also removed the resulting unused `React` default imports in 16 files (kept named imports like `useState`/`useEffect` where still needed). Build and lint clean. Verified live: full click-through confirmed working
 
 ## Phase 9 — Wrap-up
 

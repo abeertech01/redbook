@@ -11,7 +11,7 @@ type AllPostsProps = {
   userId: string
 }
 
-const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
+const AllPosts = ({ userId }: AllPostsProps) => {
   const dispatch = useDispatch<AppDispatch>()
   const { currentPage } = useSelector((state: RootState) => state.post)
   const { data, isFetching } = useGetPaginatedPostsQuery(currentPage)

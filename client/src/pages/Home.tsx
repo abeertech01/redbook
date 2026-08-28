@@ -22,7 +22,7 @@ export const PgntPostsContext = createContext<PgntPostsType>({
   setArePaginatedPosts: (prev) => prev,
 })
 
-const Home: React.FC = () => {
+const Home = () => {
   const navigate = useNavigate()
   const { user } = useSelector((state: RootState) => state.user)
   const { data: _10Users } = useGet10RandomUsersQuery()

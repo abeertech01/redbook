@@ -1,9 +1,8 @@
-import React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import LoginForm from "./LoginForm"
 import RegisterForm from "./RegisterForm"
 
-const AuthTabs: React.FC = () => {
+const AuthTabs = () => {
   return (
     <Tabs defaultValue="login" className="w-[400px]">
       <TabsList className="grid w-full grid-cols-2">

@@ -10,11 +10,11 @@ import useSocketEvents from "@/hooks/useSocketEvents"
 import { timeAgo } from "@/lib/helper"
 import { Message } from "@/utility/types"
 import clsx from "clsx"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { useLocation } from "react-router-dom"
 
-const Inbox: React.FC = () => {
+const Inbox = () => {
   const [text, setText] = useState("")
   const { user } = useSelector((state: RootState) => state.user)
   const { pathname } = useLocation()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,11 +21,7 @@ type LoadingState = {
   downvote: boolean
 }
 
-const Comments: React.FC<CommentsProps> = ({
-  postId,
-  userId,
-  setCommentNumber,
-}) => {
+const Comments = ({ postId, userId, setCommentNumber }: CommentsProps) => {
   const { data } = useGetCommentsQuery(postId)
   const [upvoteComment] = useUpvoteCommentMutation()
   const [downvoteComment] = useDownvoteCommentMutation()

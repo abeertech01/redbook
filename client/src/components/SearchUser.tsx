@@ -6,7 +6,7 @@ import { Button } from "./ui/button"
 import { useSocket } from "@/constants/SocketProvider"
 import { NEW_CHAT } from "@/constants/events"
 
-const SearchUser: React.FC = () => {
+const SearchUser = () => {
   const [query, setQuery] = useState("")
   const deferredQuery = useDebounce(query, 500)
   const [triggerSearch, { data, isFetching, isUninitialized }] =

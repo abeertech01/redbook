@@ -15,11 +15,11 @@ import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import { timeAgo } from "@/lib/helper"
 import { Chat } from "@/utility/types"
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
-const Messages: React.FC = () => {
+const Messages = () => {
   const navigate = useNavigate()
   const { chatId } = useParams()
   const { pathname } = useLocation()

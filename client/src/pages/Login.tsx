@@ -1,4 +1,3 @@
-import React from "react"
 import logo from "../assets/RedBook.svg"
 import AuthTabs from "@/components/auth/AuthTabs"
 import { useSelector } from "react-redux"
@@ -6,7 +5,7 @@ import { RootState } from "@/app/store"
 import { Navigate } from "react-router-dom"
 import ThemeToggle from "@/components/ThemeToggle"
 
-const Login: React.FC = () => {
+const Login = () => {
   const { user } = useSelector((state: RootState) => state.user)
 
   if (user) return <Navigate to={"/"} />

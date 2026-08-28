@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -30,7 +30,7 @@ const formSchema = z.object({
   password: z.string().min(1, { message: "Password is required!" }),
 })
 
-const LoginForm: React.FC = () => {
+const LoginForm = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
   const { user, loader } = useSelector((state: RootState) => state.user)

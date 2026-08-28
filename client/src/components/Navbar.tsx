@@ -1,4 +1,3 @@
-import React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logo from "@/assets/RedBook.svg"
 import {
@@ -18,7 +17,7 @@ import { toast } from "sonner"
 import { isAxiosError } from "@/lib/helper"
 import { RootState } from "@/app/store"
 
-const Navbar: React.FC = () => {
+const Navbar = () => {
   const { user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()

@@ -1,5 +1,4 @@
 import { Post } from "@/utility/types"
-import React from "react"
 import {
   Card,
   CardContent,
@@ -21,7 +20,7 @@ type PostCardProps = {
   userId: string
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, userId }) => {
+const PostCard = ({ post, userId }: PostCardProps) => {
   const navigate = useNavigate()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()

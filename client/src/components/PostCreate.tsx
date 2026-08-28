@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import {
   Dialog,
   DialogClose,
@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/app/store"
 import { Post } from "@/utility/types"
 
-const PostCreate: React.FC = () => {
+const PostCreate = () => {
   const dispatch = useDispatch<AppDispatch>()
   const [postTitle, setPostTitle] = useState("")
   const [postText, setPostText] = useState("")

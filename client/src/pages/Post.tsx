@@ -37,11 +37,11 @@ import {
   MessageSquareText,
   Trash,
 } from "lucide-react"
-import React, { useState } from "react"
+import { useState } from "react"
 import { useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
-const Post: React.FC = () => {
+const Post = () => {
   const [commentText, setCommentText] = useState("")
   const [commentNumber, setCommentNumber] = useState<number>(0)
   const navigate = useNavigate()
