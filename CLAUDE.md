@@ -36,7 +36,7 @@ Prisma (`server/prisma/schema.prisma`) targets PostgreSQL. `server/src/lib/prism
 ### Realtime (Socket.IO)
 The Socket.IO server is created in `server/src/index.ts` on the same HTTP server as Express. Socket auth runs through `socketAuthenticator` (`server/src/middlewares/auth.ts`), reusing the same JWT cookie/verification path as HTTP requests. Connected users are tracked in an in-memory `userSocketIDs` Map (userId → socketId) in `index.ts` — not persisted, so it resets on restart and doesn't scale past one server instance. Chat events (`NEW_CHAT`, `NEW_MESSAGE`) are registered per-connection in `chat.class.ts`.
 
-On the client, `SocketProvider` (`client/src/constants/SocketProvider.tsx`) owns the socket connection, and `useSocketEvents` (`client/src/hooks/useSocketEvents.ts`) is a generic hook for subscribing a map of event→handler pairs with automatic cleanup on unmount.
+On the client, `SocketProvider` (`client/src/constants/SocketProvider.tsx`) owns the socket connection, created inside a `useEffect` (with a real `socket.disconnect()` cleanup) rather than `useMemo` — `useMemo` is documented by React as never guaranteed to run exactly once, and under React 19 + StrictMode's dev-mode double-invoke this previously opened two real connections per page load, with the server sometimes registering the orphaned, unlistened one as "current" for a user, silently breaking real-time delivery. `useSocketEvents` (`client/src/hooks/useSocketEvents.ts`) is a generic hook for subscribing a map of event→handler pairs with automatic cleanup on unmount; it holds the handlers map in a ref so it only (re)subscribes when the `socket` instance itself changes, not on every render (callers pass a fresh object literal each render, which would otherwise tear down and resubscribe constantly).
 
 Event name constants are hand-duplicated in both packages (`server/src/constants/events.ts` and `client/src/constants/events.ts`) since there's no shared package — keep both in sync when adding a new event.
 
@@ -51,6 +51,9 @@ JWT is stored in an httpOnly cookie and verified in `server/src/middlewares/auth
 
 ### Path alias
 Client code uses `@/*` → `client/src/*`, configured in both `client/tsconfig.json` and `client/vite.config.ts`.
+
+### Styling and UI components
+Tailwind CSS v4, configured CSS-first: theme tokens (colors, radii) live in an `@theme` block in `client/src/index.css`, not a `tailwind.config.js` (deleted — v4 doesn't use one here). The `@tailwindcss/vite` plugin in `client/vite.config.ts` replaces the old PostCSS pipeline. `client/components.json` drives the shadcn/ui CLI (`npx shadcn@latest add <component> --diff` to check a component against upstream before regenerating it, since files under `client/src/components/ui/` may be hand-customized). Toasts use `sonner` (`client/src/components/ui/sonner.tsx`), not the Radix `toast`/`toaster` primitives — the shadcn registry no longer offers those for this project type. All `components/ui/*` primitives use React 19's plain `ref` prop (`{ ref, ...props }: ComponentProps & { ref?: React.Ref<...> }`) instead of `React.forwardRef`, and the app avoids `React.FC` in favor of plain typed function components.
 
 ### Docker startup order
 `docker-compose.yaml` chains services with `depends_on` conditions: `db` (Postgres, `service_healthy`) → `migration` (one-shot `prisma migrate deploy`, must exit 0 via `service_completed_successfully`) → `server` → `client`. Each service loads env vars from `client/.env` or `server/.env`, which are gitignored and not committed.
