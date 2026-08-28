@@ -97,7 +97,7 @@ Pure refactor, no behavior change — do last, re-run Phase 7's smoke checks aft
 
 - [x] Update `CLAUDE.md` if React/Tailwind version or any architectural pattern changed — added a "Styling and UI components" section (Tailwind v4 CSS-first config, shadcn/sonner, forwardRef/React.FC conventions) and updated the Realtime section with the Socket.IO `useMemo`→`useEffect` lesson. Also found and fixed a real bug while reviewing this section: the `pgdata` Docker volume was mounted at the wrong path and never actually persisted data (see git history) — corrected both the bug and the doc
 - [x] Final full manual pass through Phase 7's checklist — user confirmed extensive manual testing throughout the branch's work; final `npm run build`/`npm run lint` clean (0 errors) on a fresh full Docker rebuild
-- [ ] Open PR / merge
+- [x] Open PR / merge — opened against `dev`: https://github.com/abeertech01/redbook/pull/7 (merge is the user's call)
 
 ---
 
