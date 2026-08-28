@@ -11,7 +11,7 @@ type AllPostsProps = {
   userId: string
 }
 
-const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
+const AllPosts = ({ userId }: AllPostsProps) => {
   const dispatch = useDispatch<AppDispatch>()
   const { currentPage } = useSelector((state: RootState) => state.post)
   const { data, isFetching } = useGetPaginatedPostsQuery(currentPage)
@@ -28,7 +28,7 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
   }
 
   useEffect(() => {
-    if (data?.posts.length! > 0) {
+    if ((data?.posts.length ?? 0) > 0) {
       setArePaginatedPosts(true)
     }
   }, [data, setArePaginatedPosts])
@@ -36,7 +36,7 @@ const AllPosts: React.FC<AllPostsProps> = ({ userId }) => {
   return (
     <div
       onScroll={scrollHandler}
-      className="allposts flex flex-col gap-4 w-full h-full overflow-y-scroll box-border border-t-2 border-b-2 border-[#f43f5e] bg-zinc"
+      className="allposts flex flex-col gap-4 w-full h-full overflow-y-scroll box-border border-t-2 border-b-2 border-rose-500 bg-zinc"
     >
       {data?.posts?.map((post, index) => (
         <PostCard key={index} post={post as Post} userId={userId!} />

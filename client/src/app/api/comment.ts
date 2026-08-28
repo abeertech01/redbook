@@ -55,7 +55,7 @@ const commentAPI = createApi({
         )
         try {
           await queryFulfilled
-        } catch (error) {
+        } catch {
           patchResult.undo()
         }
       },

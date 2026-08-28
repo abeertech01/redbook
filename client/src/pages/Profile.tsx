@@ -20,27 +20,24 @@ import {
   LoaderPinwheel,
   SquareCheckBig,
 } from "lucide-react"
-import React, { ChangeEvent, useState } from "react"
+import { ChangeEvent, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   updateBio as updateBioReducer,
   updateCoverImageUrl,
   updateProfileImageUrl,
 } from "@/app/reducers/user"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 
-type ProfileProps = {}
-
-const Profile: React.FC<ProfileProps> = () => {
+const Profile = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(true)
   const [isBioEditing, setIsBioEditing] = useState(false)
-  const [bioText, setBioText] = useState(user?.bio)
-  const { toast } = useToast()
+  const [bioText, setBioText] = useState(user?.bio ?? "")
 
-  const { data: postsResult } = useGetUserPostsQuery(user?.id!)
+  const { data: postsResult } = useGetUserPostsQuery(user!.id)
   const [updateBio] = useUpdateBioMutation()
   const [
     uploadProfileImage,
@@ -59,17 +56,11 @@ const Profile: React.FC<ProfileProps> = () => {
     }
 
     if (isBioEditing && bioText === user?.bio) {
-      toast({
-        variant: "destructive",
-        title: "No changes made",
-      })
+      toast.error("No changes made")
     }
 
     if (isBioEditing && !bioText) {
-      toast({
-        variant: "destructive",
-        title: "Bio cannot be empty",
-      })
+      toast.error("Bio cannot be empty")
     }
 
     setIsBioEditing((prev) => !prev)
@@ -107,11 +98,11 @@ const Profile: React.FC<ProfileProps> = () => {
     <div className="min-h-screen">
       <Navbar />
       <ScrollArea className="w-full h-[calc(100vh-3.5rem)]">
-        <div className="w-full md:w-4/6 lg:w-7/12 h-full mx-auto">
-          <div className="relative w-full h-[12rem] md:h-[20rem] mb-[8rem]">
+        <div className="mx-auto w-full md:w-4/6 lg:w-7/12 h-full">
+          <div className="relative mb-32 w-full h-48 md:h-80">
             {uploadingCoverImg && !uploadedCoverImg ? (
               (isLoading || uploadingCoverImg) && (
-                <div className="absolute z-40 top-0 w-full h-full flex justify-center items-center bg-zinc-500 rounded-bl-md rounded-br-md">
+                <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-bl-md rounded-br-md w-full h-full">
                   <LoaderPinwheel className="text-xl animate-spin" />
                 </div>
               )
@@ -126,26 +117,26 @@ const Profile: React.FC<ProfileProps> = () => {
               />
             )}
 
-            <div className="absolute z-40 bottom-0 left-[3rem] translate-y-3/4 flex gap-4 items-center">
-              <div className="relative w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] group">
-                <Avatar className="border w-full h-full md:w-[7rem] md:h-[7rem]">
+            <div className="bottom-0 left-12 z-40 absolute flex items-center gap-4 translate-y-3/4">
+              <div className="group relative w-20 md:w-28 h-20 md:h-28">
+                <Avatar className="border w-full md:w-28 h-full md:h-28">
                   <AvatarImage
                     src={user?.profileImgUrl}
                     className="object-cover"
                   />
                   <AvatarFallback>
-                    <div className="absolute top-0 z-40 w-full h-full rounded-full flex justify-center items-center bg-zinc-500">
+                    <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-full w-full h-full">
                       <LoaderPinwheel className="animate-spin" />
                     </div>
                   </AvatarFallback>
                 </Avatar>
                 {uploadingProfileImg && !uploadedProfileImg ? (
-                  <div className="absolute top-0 z-40 w-full h-full rounded-full flex justify-center items-center bg-zinc-500">
+                  <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-full w-full h-full">
                     <LoaderPinwheel className="animate-spin" />
                   </div>
                 ) : (
-                  <div className="absolute top-0 w-[5rem] h-[5rem] md:w-[7rem] md:h-[7rem] shadow-md custom-glow rounded-full hidden group-hover:block group">
-                    <div className="relative z-30 w-full h-full rounded-full flex justify-center items-center group-hover:bg-rose-500/60 bg-transparent text-white">
+                  <div className="group hidden group-hover:block top-0 absolute shadow-md rounded-full w-20 md:w-28 h-20 md:h-28 custom-glow">
+                    <div className="z-30 relative flex justify-center items-center bg-transparent group-hover:bg-rose-500/60 rounded-full w-full h-full text-white">
                       <Camera className="scale-150" />
                     </div>
                     {!uploadingProfileImg && (
@@ -153,43 +144,43 @@ const Profile: React.FC<ProfileProps> = () => {
                         id="picture"
                         type="file"
                         onChange={handleImageUpload}
-                        className="w-full h-full rounded-full opacity-0 absolute top-0 left-0 cursor-pointer z-40"
+                        className="top-0 left-0 z-40 absolute opacity-0 rounded-full w-full h-full cursor-pointer"
                       />
                     )}
                   </div>
                 )}
               </div>
 
-              <h1 className="text-xl md:text-2xl font-bold">{user?.name}</h1>
+              <h1 className="font-bold text-xl md:text-2xl">{user?.name}</h1>
             </div>
-            <div className="absolute z-40 bottom-2 right-2 flex gap-4 items-center shadow-md custom-glow">
-              <div className="relative bg-rose-500 hover:bg-rose-600 text-white text-sm flex justify-center items-center gap-2 px-2 py-1">
+            <div className="right-2 bottom-2 z-40 absolute flex items-center gap-4 shadow-md custom-glow">
+              <div className="relative flex justify-center items-center gap-2 bg-rose-500 hover:bg-rose-600 px-2 py-1 text-white text-sm">
                 <CameraIcon />
                 <span className="inline-block">Upload Cover Photo</span>
                 <Input
                   type="file"
                   onChange={handleCoverChange}
-                  className="absolute w-full h-full opacity-0 cursor-pointer"
+                  className="absolute opacity-0 w-full h-full cursor-pointer"
                 />
               </div>
             </div>
           </div>
 
-          <div className="w-full grid md:grid-rows-[auto_auto] lg:grid-cols-[34%_auto] gap-3 items-start p-3 md:p-0">
+          <div className="items-start gap-3 grid lg:grid-cols-[34%_auto] md:grid-rows-[auto_auto] p-3 md:p-0 w-full">
             <Card className="p-4">
               <ul className="flex flex-col gap-3 overflow-x-hidden">
                 <li>
-                  <h1 className="text-lg font-semibold underline">Username</h1>
+                  <h1 className="font-semibold text-lg underline">Username</h1>
                   <p>@{user?.username}</p>
                 </li>
                 <li>
-                  <h1 className="text-lg font-semibold underline">Email</h1>
-                  <p className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                  <h1 className="font-semibold text-lg underline">Email</h1>
+                  <p className="overflow-hidden truncate text-ellipsis whitespace-nowrap">
                     {user?.email}
                   </p>
                 </li>
                 <li>
-                  <h1 className="text-lg font-semibold underline">
+                  <h1 className="font-semibold text-lg underline">
                     Bio{" "}
                     <Button
                       onClick={editBio}
@@ -220,7 +211,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   )}
                 </li>
                 <li>
-                  <h1 className="text-lg font-semibold underline">Joined</h1>
+                  <h1 className="font-semibold text-lg underline">Joined</h1>
                   <p>{formatHumanReadTimestamp(user?.createdAt as Date)}</p>
                 </li>
               </ul>
@@ -228,7 +219,7 @@ const Profile: React.FC<ProfileProps> = () => {
             <div>
               <ul className="flex flex-col gap-3">
                 {postsResult?.posts.map((post) => (
-                  <PostCard key={post.id} post={post} userId={user?.id!} />
+                  <PostCard key={post.id} post={post} userId={user!.id} />
                 ))}
               </ul>
             </div>

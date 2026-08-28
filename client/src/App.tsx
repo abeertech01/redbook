@@ -1,8 +1,7 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Login from "./pages/Login"
 import Home from "./pages/Home"
-import { Toaster } from "./components/ui/toaster"
 import Post from "./pages/Post"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
@@ -16,9 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 import LayoutLoader from "./components/LayoutLoader"
 import { SocketProvider } from "./constants/SocketProvider"
 
-type AppProps = {}
-
-const App: React.FC<AppProps> = () => {
+const App = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user, loader } = useSelector((state: RootState) => state.user)
 
@@ -32,7 +29,7 @@ const App: React.FC<AppProps> = () => {
           dispatch(userExists(data.user))
         }
       })
-      .catch((_) => dispatch(userDoesntExist()))
+      .catch(() => dispatch(userDoesntExist()))
   }, [dispatch])
 
   return loader ? (
@@ -41,7 +38,6 @@ const App: React.FC<AppProps> = () => {
     </div>
   ) : (
     <BrowserRouter>
-      <Toaster />
       <Routes>
         <Route
           element={

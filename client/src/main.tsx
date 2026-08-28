@@ -5,7 +5,7 @@ import App from "./App.tsx"
 import { Provider } from "react-redux"
 import store from "./app/store.ts"
 import { ThemeProvider } from "./constants/ThemeProvider.tsx"
-import { Toaster } from "@/components/ui/toaster.tsx"
+import { Toaster } from "@/components/ui/sonner.tsx"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -1,4 +1,3 @@
-import React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logo from "@/assets/RedBook.svg"
 import {
@@ -14,17 +13,14 @@ import { Button } from "./ui/button"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { userDoesntExist } from "@/app/reducers/user"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { isAxiosError } from "@/lib/helper"
 import { RootState } from "@/app/store"
 
-type NavbarProps = {}
-
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar = () => {
   const { user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { toast } = useToast()
 
   const logout = async () => {
     try {
@@ -36,25 +32,21 @@ const Navbar: React.FC<NavbarProps> = () => {
       navigate("/login")
     } catch (error) {
       if (isAxiosError(error)) {
-        toast({
-          title: "Logout Error",
+        toast.error("Logout Error", {
           description: error.response?.data.message,
-          variant: "destructive",
         })
       } else {
-        toast({
-          title: "Logout Error",
+        toast.error("Logout Error", {
           description: "Something went wrong",
-          variant: "destructive",
         })
       }
     }
   }
 
   return (
-    <div className="bg-primary dark:bg-zinc-700 text-white py-2 px-5 flex justify-between items-center">
+    <div className="flex justify-between items-center bg-primary dark:bg-zinc-700 px-5 py-2 text-white">
       <Link to={"/"}>
-        <img src={logo} alt="Redbook Logo" className="w-[8rem]" />
+        <img src={logo} alt="Redbook Logo" className="w-32" />
       </Link>
 
       <div className="flex items-center gap-2 md:gap-5">
@@ -81,11 +73,11 @@ const Navbar: React.FC<NavbarProps> = () => {
 
         <div className="md:hidden">
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="secondary"
                 size="icon"
-                className="bg-zinc-800 hover:bg-zinc-800 text-white hover:text-inherit focus-visible:outline-none"
+                className="bg-zinc-800 hover:bg-zinc-800 focus-visible:outline-none text-white hover:text-inherit"
               >
                 <Menu />
               </Button>

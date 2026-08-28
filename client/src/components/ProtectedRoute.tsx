@@ -8,11 +8,11 @@ type ProtectedRouteProps = {
   redirect?: string
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+const ProtectedRoute = ({
   children,
   user,
   redirect = "/login",
-}) => {
+}: ProtectedRouteProps) => {
   if (!user) return <Navigate to={redirect} />
 
   return children ? children : <Outlet />
