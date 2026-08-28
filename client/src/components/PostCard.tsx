@@ -57,7 +57,7 @@ const PostCard = ({ post, userId }: PostCardProps) => {
               variant={"outline"}
               className={clsx(
                 post.upvoteIds.includes(userId) &&
-                  "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
               )}
             >
               <ArrowBigUp className="scale-125" /> {post.upvoteIds.length}
@@ -70,7 +70,7 @@ const PostCard = ({ post, userId }: PostCardProps) => {
               variant={"outline"}
               className={clsx(
                 post.downvoteIds.includes(userId) &&
-                  "bg-gradient-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
+                  "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500"
               )}
             >
               <ArrowBigDown className="scale-125" /> {post.downvoteIds.length}

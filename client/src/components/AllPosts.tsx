@@ -36,7 +36,7 @@ const AllPosts = ({ userId }: AllPostsProps) => {
   return (
     <div
       onScroll={scrollHandler}
-      className="allposts flex flex-col gap-4 w-full h-full overflow-y-scroll box-border border-t-2 border-b-2 border-[#f43f5e] bg-zinc"
+      className="allposts flex flex-col gap-4 w-full h-full overflow-y-scroll box-border border-t-2 border-b-2 border-rose-500 bg-zinc"
     >
       {data?.posts?.map((post, index) => (
         <PostCard key={index} post={post as Post} userId={userId!} />
