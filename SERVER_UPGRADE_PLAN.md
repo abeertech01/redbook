@@ -43,8 +43,8 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] Bump `@types/node` to the `24.x` line (currently `22.9.0`) — tracks the actual runtime, not the client's `@types/node` (see corrected reasoning in the baseline audit above)
 - [x] Add a `server/.nvmrc` containing `24`, so local `nvm use` (from `server/`) picks the matching version automatically for anyone running `npm run dev`/Prisma CLI commands directly on the host instead of through Docker
 - [x] On the local machine: install Node 24 via `nvm install 24` (already using nvm, so this is fully isolated from the existing `v22.18.0` default — confirmed no risk to other projects/tools)
-- [ ] Rebuild the `server`/`migration` images clean (`docker compose build --no-cache server migration`) and confirm `npx prisma generate`, `npm install`, and `bcrypt`'s native binding still succeed inside the new base image
-- [ ] Confirm `docker compose up` still boots server → migration → server → client cleanly end to end
+- [x] Rebuild the `server`/`migration` images clean (`docker compose build --no-cache server migration`) and confirm `npx prisma generate`, `npm install`, and `bcrypt`'s native binding still succeed inside the new base image
+- [x] Confirm `docker compose up` still boots server → migration → server → client cleanly end to end — verified `db` (healthy) → `migration` (exited 0) → `server` (up, `node -v` inside the container reports `v24.20.0`, `GET /` returns `HTTP 200`) → `client` (up, Vite serving on 5173)
 
 ## Phase 2 — Full dependency audit confirmation
 
