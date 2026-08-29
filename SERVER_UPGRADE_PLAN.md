@@ -1,0 +1,121 @@
+# Server Upgrade Plan
+
+Scope: `server/` only (this branch, `feat/server-upgrade`, is server-side exclusively — no client changes). Goal: bring every server dependency, the Node runtime, and the Docker images to a current, stable, 2026-appropriate baseline — `express` 4 → 5, `prisma`/`@prisma/client` 5 → 7, `zod` 3 → 4, `typescript` 5 → latest viable, plus every other outdated package — all **without losing any existing feature or behavior**, mirroring how [CLIENT_UPGRADE_PLAN.md](CLIENT_UPGRADE_PLAN.md) was run.
+
+Work through phases in order; check items off as completed. Each phase = one commit, so a regression can be bisected/reverted without dragging unrelated changes with it. We will not pre-write exact code diffs here — each phase gets scoped and implemented when we get to it, sequentially.
+
+## Baseline audit (already done, informing this plan)
+
+**Current versions** (`server/`, via `npm ls --depth=0` on 2026-08-29):
+`express@4.21.1`, `@prisma/client@5.22.0` + `prisma@5.22.0`, `zod@3.23.8`, `typescript@5.6.3`, `ts-node@10.9.2`, `socket.io@4.8.1`, `bcrypt@5.1.1`, `jsonwebtoken@9.0.2`, `cloudinary@2.5.1`, `cors@2.8.5`, `dotenv@16.4.5`, `formidable@3.5.2`, `cookie-parser@1.4.7`, `@faker-js/faker@9.2.0`, plus matching `@types/*`. `tsconfig.json` targets `es2016`/`commonjs`. Both `server.dockerfile` and `migration.dockerfile` pin `FROM node:20` — locally installed Node is `v22.18.0`, so dev and container already diverge, and **Node 20 is past its EOL window as of this plan's date**, making a base-image bump a real (not cosmetic) fix, not just a version bump.
+
+**Real breaking-change majors waiting** (confirmed via `npm outdated` + `npm view <pkg> dist-tags`):
+- `express` 4 → 5 (dist-tags: `latest` is `5.2.1`, `4.x` line frozen at `latest-4: 4.22.2`) — genuine breaking changes (error-forwarding for async handlers built into core now, some route-pattern/query-parsing defaults changed). Routes in `post.routes.ts`/`chat.routes.ts`/`user.routes.ts` only use plain `:param` segments (no `?`-optional or `*`-wildcard patterns), which is the pattern most likely to break under Express 5's new `path-to-regexp` — a good sign, but needs confirming per-route in Phase 3, not assumed clean.
+- `prisma`/`@prisma/client` — **tag mismatch worth deciding deliberately, not blindly bumping to whatever `npm outdated` calls "Latest."** `@prisma/client`'s `latest` dist-tag is `7.10.0`, but the `prisma` CLI package's `latest` dist-tag currently points at `8.0.0-rc.12` (a release candidate) with `7.10.0` only reachable via its `prev` tag. Pulling in a same-named "latest" for both would silently land one of them on an RC. Plan is to target the two in lockstep at `7.10.0` (the real stable line) unless we deliberately decide otherwise when we get to that phase. Separately, Prisma 7 removed `datasource { url }` from `schema.prisma` in favor of `prisma.config.ts` + passing a driver `adapter` (or `accelerateUrl`) to the `PrismaClient` constructor — this is a required migration step, not optional, and touches `server/src/lib/prismadb.ts` and how `DATABASE_URL` is read.
+- `zod` 3 → 4 (`latest: 4.5.2`) — same migration shape we already did on the client (`.min`/`.max`/`.email`/`.regex` with `{ message: ... }` still supported, deprecated in favor of `{ error: ... }`), applied here to `server/src/lib/zod/*.ts` instead.
+- `typescript` 5 → 7 (`latest: 7.0.2`) — unlike the client, **`server/` has no ESLint setup at all**, so the `typescript-eslint` incompatibility that forced the client to stop at TS 6.0.3 doesn't apply here. The real constraint instead is `ts-node@10.9.2`, which runs `npm run dev` via `nodemon` — its TS 7 compatibility (TS 7 is the Go-based compiler rewrite, a much bigger jump than a normal major) needs verifying before committing to latest; may also be a good point to evaluate `tsx` as a `ts-node` replacement, decided in that phase, not pre-decided here.
+- `bcrypt` 5 → 6 — native-binding package; needs a clean `npm install`/rebuild check inside the `node:20`-or-whatever-we-land-on Docker image, not just locally.
+- `dotenv` 16 → 17, `@faker-js/faker` 9 → 10 — majors, but both low-risk (env loading and fake-data-seeding respectively); confirm no API surface we use actually changed.
+
+**Client-compatibility constraint (user directive):** any dependency that exists on both sides must land on a version compatible with what the client already runs — server's choice is not independent. Checked by diffing `client/package.json` against `server/package.json`:
+- `zod` — client is on `^4.4.3` (post client-upgrade). Server must land on that same `4.4.x` line in Phase 5, not independently chase whatever `npm outdated` calls latest (`4.5.2`) — align first, then only move both together in a future pass if ever needed.
+- `typescript` — client is pinned to `6.0.3` specifically *because* `typescript-eslint` hard-crashes on TS 7 (a client-only constraint — `server/` has no ESLint). Even though server has no technical blocker, this directive means Phase 6 targets `6.0.3` to match the client rather than independently pushing to `7.0.2` — keeps one TypeScript language version across the whole repo.
+- `@types/node` — client is on `^22.20.1`. Server's Phase 1 Node-runtime decision should default to staying on the Node 22 line to match, rather than jumping to a newer major (`26.x`) independently; if a newer Node LTS later becomes necessary for the server specifically, that's a discussion to have explicitly, not a silent divergence.
+- `socket.io` (server) ↔ `socket.io-client` (client) — different package names, but the same protocol pairing, so the same rule applies in spirit: client already runs `socket.io-client@^4.8.3`, so server's Phase 7 bump targets `socket.io@4.8.3` to match exactly rather than drifting apart, even though both are currently `4.x` and would technically interoperate across patch versions.
+
+**Bugs found while auditing** (pre-existing, not caused by any upgrade — confirmed fixes, scheduled into their own phase below rather than fixed now):
+- `server/src/middlewares/error.ts`'s `errorMiddleware` is declared as `(err, req, res) => {...}` — **three** parameters. Express identifies error-handling middleware purely by function arity (`fn.length === 4`); confirmed via a direct Node check that this function's arity is `3`. That means Express does **not** register this as an error handler at all — it's silently dead code, and every thrown/`next(err)`-forwarded error today falls through to Express's own default HTML error page instead of this app's intended JSON `{ success: false, message, error }` shape. Worth confirming against actual client-visible error toasts before fixing.
+- `server/src/middlewares/auth.ts`'s `socketAuthenticator` calls `prisma?.user.findUnique(...)` but never imports `prisma` in that file — it relies on the ambient `global.prisma` that `lib/prismadb.ts` only assigns when `NODE_ENV !== "production"`. In an actual production boot, `prisma` is `undefined` there, `prisma?.user` short-circuits to `undefined`, and `.findUnique` on `undefined` throws — meaning **every Socket.IO connection attempt would currently crash in production**, breaking realtime chat entirely outside of dev. High-priority fix candidate.
+- Uncommitted local change on this branch (not something I made): `server/src/classes/chat.class.ts` currently has debug `console.log`/`console.error` statements added around the `NEW_MESSAGE` handler, plus some Prettier-style trailing-comma reformatting. Left as-is for now — flag when we get there so it doesn't get bundled silently into an unrelated commit.
+- `chat.class.ts`'s socket event handlers (`newChat`, `newMessage`) catch errors and `return new ErrorHandler(...)` — this constructs an error object and immediately discards it (no `throw`, no `socket.emit` of the failure) — effectively a silent swallow. Same bucket as the two bugs above: real, pre-existing, not something this plan is scoped to introduce, but worth a deliberate fix pass since we're already touching this file for other reasons.
+
+## Phase 0 — Setup
+
+- [x] Confirm current app still runs as-is (baseline behavior established across the whole `feat/client-upgrade` regression pass already merged into `dev`; server side untouched since)
+- [x] Create a dedicated branch for this work (`feat/server-upgrade`, off `dev`)
+- [x] Record current versions as a rollback reference (`npm ls --depth=0` snapshot captured above)
+
+## Phase 1 — Node runtime & Docker base image
+
+- [ ] Decide the target Node LTS line for both `server.dockerfile` and `migration.dockerfile` (currently `FROM node:20`, which is past EOL) — confirm against the official Node.js release schedule at implementation time rather than assuming a version here
+- [ ] Bump `@types/node` to match whatever major we land on (currently `22.9.0`; client is pinned to `^22.20.1` — default to staying on the Node 22 line per the client-compatibility directive above, not blindly to the `26.4.0` latest `npm outdated` shows)
+- [ ] Rebuild the `server`/`migration` images clean (`docker compose build --no-cache server migration`) and confirm `npx prisma generate`, `npm install`, and `bcrypt`'s native binding still succeed inside the new base image
+- [ ] Confirm `docker compose up` still boots server → migration → server → client cleanly end to end
+
+## Phase 2 — Full dependency audit confirmation
+
+- [ ] Re-run `npm outdated` at implementation time (versions above are a 2026-08-29 snapshot and may have moved)
+- [ ] Confirm the three buckets: (a) safe patch/minor bumps, (b) majors needing only peer/API-surface verification, (c) majors with real migration work (`express`, `prisma`, `zod`, `typescript`)
+- [ ] Lock the `prisma`/`@prisma/client` version decision (7.10.0-line vs. whatever is stable by then) before starting Phase 4
+
+## Phase 3 — Express 4 → 5
+
+- [ ] Bump `express`, `@types/express`
+- [ ] Audit every route file (`user.routes.ts`, `post.routes.ts`, `chat.routes.ts`) against Express 5's routing changes — params are plain `:id`-style today, no optional/wildcard syntax, but confirm per-route rather than assuming
+- [ ] Review whether Express 5's native async-rejection-to-`next()` forwarding changes anything about the existing `TryCatch` wrapper (`middlewares/error.ts`) — likely stays as a harmless-but-now-partially-redundant pattern, decide whether to keep for consistency or simplify
+- [ ] `npm run build` clean; boot and smoke-test every REST route
+
+## Phase 4 — Prisma 5 → 7 (or whatever the locked-in Phase 2 target is)
+
+- [ ] Bump `prisma` + `@prisma/client` together, in lockstep
+- [ ] Migrate `prisma/schema.prisma`'s `datasource { url = env("DATABASE_URL") }` to the new `prisma.config.ts`-based configuration, and update `server/src/lib/prismadb.ts` to pass the driver `adapter` (or `accelerateUrl`) to the `PrismaClient` constructor as required by the new major
+- [ ] Update `docker-compose.yaml`/`.dockerfile`s and `DATABASE_URL` env wiring if the new config approach changes how/where the connection string is read
+- [ ] `npx prisma generate` / `npx prisma migrate dev` clean; confirm the `migration` service's `prisma migrate deploy` step still exits 0 in Docker
+- [ ] Full data-layer smoke test: every model (`User`, `Post`, `Comment`, `Chat`, `Message`) read/write path exercised
+
+## Phase 5 — Zod 3 → 4
+
+- [ ] Bump `zod` to match the client's exact `4.4.x` line (currently `^4.4.3`), not independently to whatever's newest at implementation time
+- [ ] Verify every method used in `server/src/lib/zod/*.ts` (`.object`, `.string`, `.min`, `.max`, `.email`, `.regex`, `{ message: ... }`) against v4's API, same verification approach as the client's zod bump
+- [ ] Confirm validation error responses (shape, messages) are unchanged from the client's point of view
+
+## Phase 6 — TypeScript & dev tooling
+
+- [ ] Bump `typescript` to match the client's `6.0.3` per the client-compatibility directive — not independently to `7.0.2`, even though `server/` has no `typescript-eslint` blocker forcing that ceiling
+- [ ] Verify `ts-node@10.9.2`/`nodemon` are happy on `6.0.3` (should be a smaller jump than TS 7 would have been); if `ts-node` still can't keep up even at this version, evaluate switching `npm run dev`'s `nodemon src/index.ts` to `tsx` (or another modern TS runner) as part of this phase, not silently
+- [ ] `npm run build` (`npx tsc`) and `npm run dev` both clean
+
+## Phase 7 — Remaining dependency bumps
+
+- [ ] Apply the safe bucket-(a) bumps identified in Phase 2 (`@types/cookie-parser`, `@types/cors`, `@types/express` patch, `@types/formidable`, `@types/jsonwebtoken`, `cloudinary`, `cors`, `formidable`, `jsonwebtoken`, `socket.io` — pin exactly to `4.8.3` to match the client's `socket.io-client` version, per the client-compatibility directive, not just "whatever's newest")
+- [ ] Apply the remaining deferred majors one at a time, each its own commit: `bcrypt` 5→6 (+ `@types/bcrypt`), `dotenv` 16→17, `@faker-js/faker` 9→10
+- [ ] Re-run `npm outdated` to confirm the tree is current at the end of this phase
+
+## Phase 8 — Build & type-check
+
+- [ ] `npm run build` (`npx tsc`) clean
+- [ ] `npm run dev` boots with no console errors/warnings
+- [ ] Full `docker compose up --build` clean end to end
+
+## Phase 9 — Behavioral regression check (manual)
+
+Walk every server-touching feature end-to-end and confirm identical behavior to pre-upgrade:
+
+- [ ] Register + login + logout, including the "already logged in" and "user not found"/"invalid credentials" error paths
+- [ ] Post CRUD: create, get all, get paginated, get by id, get by user, delete, upvote/downvote
+- [ ] Comment CRUD: add, get, delete, upvote/downvote
+- [ ] Profile: bio update, profile/cover image upload via Cloudinary + `formidable`
+- [ ] Search users, get 10 random users
+- [ ] Realtime chat end to end (both REST fallback and live Socket.IO path): new chat creation, live message delivery, `userSocketIDs` behavior — re-verify the Socket.IO auth handshake specifically, since Phase 4's Prisma changes touch the same `prismadb.ts` that `socketAuthenticator` depends on
+- [ ] Error responses: confirm shape/status codes for at least one validation error (Zod), one not-found error, and one auth error
+
+## Phase 10 — Confirmed bug fixes (required, do only after Phase 9 passes clean)
+
+These are real, currently-existing bugs found during the baseline audit — not optional polish. Each gets its own commit, done one at a time with the actual client-visible behavior checked before and after, per the ground rule below:
+
+- [ ] Fix `errorMiddleware`'s arity so Express actually registers it as an error handler (add the missing `next` parameter) — confirm current client-visible error behavior first (what does a thrown error look like today, e.g. in a toast) so we know exactly what changes once this starts firing for real
+- [ ] Fix `socketAuthenticator`'s missing `prisma` import — this is the production-breaking one: every Socket.IO connection currently crashes outside of dev because `global.prisma` is only set when `NODE_ENV !== "production"`
+- [ ] Decide what to do with the `chat.class.ts` socket handlers' swallowed errors (`return new ErrorHandler(...)` without throwing/emitting) — likely `socket.emit` a failure event the client can react to, decided concretely in this phase
+- [ ] Revisit unconditional `generateFakeUsers(100)` / `generateFakePosts()` on every boot (gate behind an env check, e.g. only seed if `NODE_ENV !== "production"` or the DB is empty)
+- [ ] Add a `socket.on("disconnect", ...)` handler to clean up stale entries in `userSocketIDs`
+- [ ] Re-run Phase 9's full regression checklist after this phase, since it's the one phase most likely to visibly change existing behavior (error responses, socket auth)
+
+## Phase 11 — Wrap-up
+
+- [ ] Update `CLAUDE.md` if any architectural pattern changed (Prisma config location, Express version, dev-server tooling)
+- [ ] Final full manual pass through Phase 9's checklist on a fresh full Docker rebuild
+- [ ] Open PR against `dev` (merge is the user's call)
+
+---
+
+**Ground rule for every phase:** if a step risks changing user-visible behavior (not just internals), stop and confirm before proceeding — don't bundle it silently into an "just upgrading" commit.
