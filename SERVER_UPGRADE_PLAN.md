@@ -48,9 +48,9 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 ## Phase 2 — Full dependency audit confirmation
 
-- [ ] Re-run `npm outdated` at implementation time (versions above are a 2026-08-29 snapshot and may have moved)
-- [ ] Confirm the three buckets: (a) safe patch/minor bumps, (b) majors needing only peer/API-surface verification, (c) majors with real migration work (`express`, `prisma`, `zod`, `typescript`)
-- [ ] Lock the `prisma`/`@prisma/client` version decision (7.10.0-line vs. whatever is stable by then) before starting Phase 4
+- [x] Re-run `npm outdated` at implementation time (2026-08-30) — barely moved since the Aug 29 snapshot: only `zod`'s "Latest" ticked from `4.5.2` to `4.5.4` (irrelevant anyway, we're pinning to the client's `4.4.x`); `@types/node` now correctly shows `24.13.3` current, confirming Phase 1's bump. Everything else identical.
+- [x] Confirm the three buckets: (a) safe patch/minor — `@types/cookie-parser`, `@types/cors`, `@types/express` patch, `@types/formidable`, `@types/jsonwebtoken`, `cloudinary`, `cors`, `formidable`, `jsonwebtoken`, `socket.io`; (b) majors needing peer/API-surface verification only — `bcrypt`, `dotenv`, `@faker-js/faker`; (c) majors with real migration work — `express` 4→5, `prisma`/`@prisma/client` 5→7, `zod` 3→4, `typescript` 5→6 (matching client). Unchanged from the baseline audit.
+- [x] Lock the `prisma`/`@prisma/client` version decision — re-checked `npm view prisma dist-tags` and `npm view @prisma/client dist-tags` on 2026-08-30: `prisma` CLI's `latest` tag is still `8.0.0-rc.12` (an RC), `@prisma/client`'s `latest` is `7.10.0`. **Locked: both `prisma` and `@prisma/client` target `7.10.0`** via `prisma`'s `prev` tag, not `latest` — avoids landing on the v8 release candidate.
 
 ## Phase 3 — Express 4 → 5
 
