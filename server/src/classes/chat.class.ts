@@ -12,7 +12,7 @@ import { getAllChats } from "../lib/helpers"
 class Chat {
   private getSockets = (userIds: string[] = []) => {
     const sockets = userIds.map((id: string) =>
-      userSocketIDs.get(id.toString())
+      userSocketIDs.get(id.toString()),
     )
 
     return sockets
@@ -20,7 +20,7 @@ class Chat {
 
   newChat = (
     socket: ExtendedSocket,
-    io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+    io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   ) => {
     socket.on(NEW_CHAT, async ({ participantId }) => {
       const chatterSocket = this.getSockets([participantId, socket.user?.id])
@@ -82,9 +82,14 @@ class Chat {
 
   newMessage = (
     socket: ExtendedSocket,
-    io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+    io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   ) => {
     socket.on(NEW_MESSAGE, async ({ chatId, message: msg }) => {
+      console.log("[DEBUG] NEW_MESSAGE received", {
+        chatId,
+        msg,
+        from: socket.user?.id,
+      })
       try {
         const newMessage = await prisma.message.create({
           data: {
@@ -105,12 +110,18 @@ class Chat {
         })
 
         const chatterSocket = this.getSockets(
-          theChat?.members?.map((member) => member.id)
+          theChat?.members?.map((member) => member.id),
+        )
+
+        console.log(
+          "[DEBUG] NEW_MESSAGE broadcasting to sockets",
+          chatterSocket,
         )
 
         io.to(chatterSocket).emit(NEW_MESSAGE, { newMessage })
         io.to(chatterSocket).emit(NEW_CHAT, theChat)
       } catch (error: any) {
+        console.error("[DEBUG] NEW_MESSAGE error", error)
         return new ErrorHandler(error.message, 500)
       }
     })
@@ -123,7 +134,7 @@ class Chat {
       const mappedChats = chats.map((chat) => ({
         ...chat,
         theOtherUserIndex: chat.members.findIndex(
-          (member) => member.id !== req.id
+          (member) => member.id !== req.id,
         ),
       }))
 
@@ -131,7 +142,7 @@ class Chat {
         success: true,
         chats: mappedChats,
       })
-    }
+    },
   )
 
   getChatParticipator = TryCatch(
@@ -155,14 +166,14 @@ class Chat {
       })
 
       const chatParticipator = chat?.members.find(
-        (member) => member.id !== req.id
+        (member) => member.id !== req.id,
       )
 
       res.status(200).json({
         success: true,
         user: chatParticipator,
       })
-    }
+    },
   )
 
   getMessages = TryCatch(
@@ -181,7 +192,7 @@ class Chat {
       })
 
       const participator = theChat?.members.find(
-        (member) => member.id !== req.id
+        (member) => member.id !== req.id,
       )
 
       res.status(200).json({
@@ -189,7 +200,7 @@ class Chat {
         messages,
         participator,
       })
-    }
+    },
   )
 }
 

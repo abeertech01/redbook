@@ -39,7 +39,7 @@ Work through phases in order; check items off as completed. Each phase = one com
 
 **Decided (2026-08-29):** target **Node 24** (current Active LTS, EOL April 2028) for both `server.dockerfile` and `migration.dockerfile`, replacing `FROM node:20` (EOL'd April 30, 2026 — confirmed against nodejs.org's official EOL schedule). Node 22 (Maintenance LTS, EOL April 2027, and what the host machine/client both currently run) was the more conservative option, but 24 was chosen deliberately for more runway. Docker fully isolates the container runtime from the host and from the client, so this doesn't need to match either of those.
 
-- [ ] Bump `server.dockerfile` and `migration.dockerfile` from `FROM node:20` to `FROM node:24`
+- [x] Bump `server.dockerfile` and `migration.dockerfile` from `FROM node:20` to `FROM node:24`
 - [ ] Bump `@types/node` to the `24.x` line (currently `22.9.0`) — tracks the actual runtime, not the client's `@types/node` (see corrected reasoning in the baseline audit above)
 - [ ] Add a `server/.nvmrc` containing `24`, so local `nvm use` (from `server/`) picks the matching version automatically for anyone running `npm run dev`/Prisma CLI commands directly on the host instead of through Docker
 - [ ] On the local machine: install Node 24 via `nvm install 24` (already using nvm, so this is fully isolated from the existing `v22.18.0` default — confirmed no risk to other projects/tools)
