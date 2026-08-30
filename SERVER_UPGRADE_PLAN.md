@@ -79,11 +79,11 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] Verify `ts-node@10.9.2`/`nodemon` are happy on `6.0.3` — confirmed live in the rebuilt container: `nodemon` restarts and `ts-node` compiles/boots cleanly, no runner swap needed
 - [x] `npm run build` (`npx tsc`) and `npm run dev` both clean — one fix required for `build`: TS 6.0 makes `moduleResolution: "Node"` (classic/node10) an error by default (deprecated, removed in TS 7). Migrating to `NodeNext`/`Node16` would be a real behavioral change to import resolution, too big to bundle silently into a version bump, so added `"ignoreDeprecations": "6.0"` to `tsconfig.json` instead — TypeScript's own suggested interim escape hatch, changes nothing about actual resolution behavior. `npm run dev` confirmed clean via the live container (`node -v` → `v24.20.0`, `GET /` → `HTTP 200`).
 
-## Phase 7 — Remaining dependency bumps
+## Phase 7 — Remaining dependency bumps ✅ complete (2026-08-30)
 
-- [ ] Apply the safe bucket-(a) bumps identified in Phase 2 (`@types/cookie-parser`, `@types/cors`, `@types/express` patch, `@types/formidable`, `@types/jsonwebtoken`, `cloudinary`, `cors`, `formidable`, `jsonwebtoken`, `socket.io` — pin exactly to `4.8.3` to match the client's `socket.io-client` version, per the client-compatibility directive, not just "whatever's newest")
-- [ ] Apply the remaining deferred majors one at a time, each its own commit: `bcrypt` 5→6 (+ `@types/bcrypt`), `dotenv` 16→17, `@faker-js/faker` 9→10
-- [ ] Re-run `npm outdated` to confirm the tree is current at the end of this phase
+- [x] Applied the safe bucket-(a) bumps: `@types/cookie-parser@1.4.10`, `@types/cors@2.8.19`, `@types/formidable@3.5.1`, `@types/jsonwebtoken@9.0.10`, `cloudinary@2.11.0`, `cors@2.8.6`, `formidable@3.5.4`, `jsonwebtoken@9.0.3`, `socket.io@4.8.3` (pinned exactly to match the client's `socket.io-client@4.8.3` — confirmed via `npm run build` clean and a real end-to-end Socket.IO test: two `socket.io-client@4.8.3` connections, one full `NEW_CHAT` → `NEW_MESSAGE` round trip, both sides received both events correctly). `@types/express` was already current, nothing to bump.
+- [x] Applied the deferred majors: `bcrypt@6.0.0` + `@types/bcrypt@6.0.0` (native binding rebuilt cleanly under Node 24 — `node-gyp-build` replaced the old `node-pre-gyp` install mechanism; verified via direct hash/compare test and a full register→login→wrong-password-rejected HTTP flow), `dotenv@17.4.2` (env vars confirmed still loading correctly on boot), `@faker-js/faker@10.6.0` (build clean, confirmed no crash across several boots that exercise the unconditional fake-data seeding IIFE — all faker methods used are already on the modern modular API, e.g. `faker.person.fullName()`, not the deprecated pre-v6 style)
+- [x] Re-ran `npm outdated` — everything left outstanding is a previously locked-in deliberate decision, not an oversight: `@types/node` (pinned to the 24.x runtime line, not `26.x`), `prisma` (locked to `7.10.0`, not the `8.0.0` RC), `typescript`/`zod` (matching the client's exact versions, not their own latest patches)
 
 ## Phase 8 — Build & type-check
 
