@@ -1,9 +1,8 @@
-import { Prisma, PrismaClient } from "@prisma/client"
-import { DefaultArgs } from "@prisma/client/runtime/library"
+import { PrismaClient } from "@prisma/client"
 import { Comment, IRequest, Post } from "../utils/types"
 
 const getAllChats = async (
-  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  prisma: PrismaClient,
   req: IRequest
 ) => {
   const myChats = await prisma.chat.findMany({
@@ -41,7 +40,7 @@ const getAllChats = async (
 
 const upvotePostHelper = async (
   post: Post,
-  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  prisma: PrismaClient,
   authorId: string,
   postId: string
 ) => {
@@ -81,7 +80,7 @@ const upvotePostHelper = async (
 
 const downvotePostHelper = async (
   post: Post,
-  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  prisma: PrismaClient,
   authorId: string,
   postId: string
 ) => {
@@ -118,7 +117,7 @@ const downvotePostHelper = async (
 const upvoteCommentHelper = async (
   comment: Comment,
   authorId: string,
-  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
+  prisma: PrismaClient
 ) => {
   const upvoteIds = comment.upvoteIds
   const downvoteIds = comment.downvoteIds
@@ -160,7 +159,7 @@ const upvoteCommentHelper = async (
 const downvoteCommentHelper = async (
   comment: Comment,
   authorId: string,
-  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
+  prisma: PrismaClient
 ) => {
   const upvoteIds = comment.upvoteIds
   const downvoteIds = comment.downvoteIds
