@@ -52,12 +52,12 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] Confirm the three buckets: (a) safe patch/minor — `@types/cookie-parser`, `@types/cors`, `@types/express` patch, `@types/formidable`, `@types/jsonwebtoken`, `cloudinary`, `cors`, `formidable`, `jsonwebtoken`, `socket.io`; (b) majors needing peer/API-surface verification only — `bcrypt`, `dotenv`, `@faker-js/faker`; (c) majors with real migration work — `express` 4→5, `prisma`/`@prisma/client` 5→7, `zod` 3→4, `typescript` 5→6 (matching client). Unchanged from the baseline audit.
 - [x] Lock the `prisma`/`@prisma/client` version decision — re-checked `npm view prisma dist-tags` and `npm view @prisma/client dist-tags` on 2026-08-30: `prisma` CLI's `latest` tag is still `8.0.0-rc.12` (an RC), `@prisma/client`'s `latest` is `7.10.0`. **Locked: both `prisma` and `@prisma/client` target `7.10.0`** via `prisma`'s `prev` tag, not `latest` — avoids landing on the v8 release candidate.
 
-## Phase 3 — Express 4 → 5
+## Phase 3 — Express 4 → 5 ✅ complete (2026-08-30)
 
-- [ ] Bump `express`, `@types/express`
-- [ ] Audit every route file (`user.routes.ts`, `post.routes.ts`, `chat.routes.ts`) against Express 5's routing changes — params are plain `:id`-style today, no optional/wildcard syntax, but confirm per-route rather than assuming
-- [ ] Review whether Express 5's native async-rejection-to-`next()` forwarding changes anything about the existing `TryCatch` wrapper (`middlewares/error.ts`) — likely stays as a harmless-but-now-partially-redundant pattern, decide whether to keep for consistency or simplify
-- [ ] `npm run build` clean; boot and smoke-test every REST route
+- [x] Bump `express`, `@types/express` — landed on `express@^5.2.1`, `@types/express@^5.0.6` (the `@types/express` package was already pinned to the `5.x` line even while `express` itself was still `4.21.1` — a pre-existing mismatch this bump resolves)
+- [x] Audit every route file (`user.routes.ts`, `post.routes.ts`, `chat.routes.ts`) against Express 5's routing changes — confirmed via grep: no `?`-optional or `*`-wildcard route patterns, no deprecated Express 4 APIs (`res.send(status, body)`, `req.param()`, `app.del`), and every `req.query` usage is a flat string value (no nested/array query syntax that Express 5's default parser change would affect)
+- [x] Review the `TryCatch` wrapper against Express 5's native async-rejection forwarding — decided to leave `TryCatch` as-is: it already explicitly calls `next(error)`, so it's correct either way, just slightly redundant now. Not simplifying it now (out of scope, avoids an unnecessary refactor mixed into a dependency-bump commit)
+- [x] `npm run build` clean; booted the real Docker container (rebuilt `node_modules` inside it, confirmed `bcrypt`'s native binding still works via a direct functional test after an "install-scripts not covered" npm warning turned out to be informational noise, not an actual skip) and smoke-tested every REST route with `curl`: register/login/logout (including the 401 after logout), profile, search-user, get-10-random-users, add-bio, create/get/upvote/delete-post, paginated posts, comments (add/get/upvote/delete), get-chats — all returned expected status codes with no route-matching failures or crashes. Noted a pre-existing, Express-unrelated oddity (`upvote-post`/comment-upvote return an empty `{}` object) for Phase 9's regression pass, not investigated now.
 
 ## Phase 4 — Prisma 5 → 7 (or whatever the locked-in Phase 2 target is)
 
