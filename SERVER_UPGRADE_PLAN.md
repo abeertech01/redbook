@@ -67,11 +67,11 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] `npx prisma generate` / `migrate status` clean (tested inside the running `server` container, since `DATABASE_URL` uses the Docker-network hostname `db:5432`, unreachable from the host directly). Rebuilt the `migration` image from scratch (`docker compose build migration`) and ran it standalone (`docker compose run --rm migration`) — `No pending migrations to apply`, exit code `0`, confirmed explicitly.
 - [x] Full data-layer smoke test via `curl` against the live adapter-based client: `User` (register/login/profile), `Post` (create/read/delete), `Comment` (create), `Chat` (read) all confirmed working end to end. `Message` only writes via Socket.IO (not REST), so it needs a real socket client to exercise properly — deferred to Phase 9's full regression pass, which already specifically re-checks the Socket.IO auth handshake against this same `prismadb.ts` change.
 
-## Phase 5 — Zod 3 → 4
+## Phase 5 — Zod 3 → 4 ✅ complete (2026-08-30)
 
-- [ ] Bump `zod` to match the client's exact `4.4.x` line (currently `^4.4.3`), not independently to whatever's newest at implementation time
-- [ ] Verify every method used in `server/src/lib/zod/*.ts` (`.object`, `.string`, `.min`, `.max`, `.email`, `.regex`, `{ message: ... }`) against v4's API, same verification approach as the client's zod bump
-- [ ] Confirm validation error responses (shape, messages) are unchanged from the client's point of view
+- [x] Bump `zod` to match the client's exact `4.4.x` line — installed `zod@4.4.3` (the exact resolved version from `client/package-lock.json`), landing on `"zod": "^4.4.3"` in `server/package.json`, identical to the client
+- [x] Verify every method used in `server/src/lib/zod/*.ts` (`.object`, `.string`, `.min`, `.max`, `.email`, `.regex`, `{ message: ... }`) against v4's API — `npm run build` clean, no type errors; all methods still exist and behave the same
+- [x] Confirm validation error responses unchanged — tested live against the rebuilt container: `registerSchema` (bad email, weak password), `loginSchema` (missing field), and `createPostSchema` (empty title) all still raise `ZodError` with the exact custom `{ message: "..." }` strings intact (e.g. "Password must contain at least one uppercase letter"), same deprecated-but-supported pattern the client already confirmed. Also reconfirmed the pre-existing `errorMiddleware` arity bug surfacing as a raw HTML 500 instead of JSON — same bug as Phase 3, not new, scheduled for Phase 10. Happy-path register/create-post also confirmed still working.
 
 ## Phase 6 — TypeScript & dev tooling
 
