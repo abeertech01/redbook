@@ -65,11 +65,22 @@ io.use((socket, next) => {
 
 io.on("connection", (socket: ExtendedSocket) => {
   const user = socket.user
-  userSocketIDs.set(user?.id.toString(), socket.id)
+  const userId = user?.id.toString()
+  userSocketIDs.set(userId, socket.id)
 
   chatClass.newChat(socket, io)
 
   chatClass.newMessage(socket, io)
+
+  socket.on("disconnect", () => {
+    // Only remove the mapping if it still points at this socket - a newer
+    // connection from the same user (another tab/reconnect) may have
+    // already overwritten it, and that entry must not be wiped out by an
+    // older socket's disconnect event arriving after the fact.
+    if (userId && userSocketIDs.get(userId) === socket.id) {
+      userSocketIDs.delete(userId)
+    }
+  })
 })
 
 app.use(errorMiddleware)

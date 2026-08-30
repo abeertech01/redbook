@@ -75,7 +75,7 @@ class Comment {
         return next(new ErrorHandler("Comment not found", 404))
       }
 
-      const updatedComment = upvoteCommentHelper(comment, req.id!, prisma)
+      const updatedComment = await upvoteCommentHelper(comment, req.id!, prisma)
 
       res.status(200).json({
         success: true,
@@ -97,7 +97,7 @@ class Comment {
         return next(new ErrorHandler("Comment not found", 404))
       }
 
-      const updatedComment = downvoteCommentHelper(comment, req.id!, prisma)
+      const updatedComment = await downvoteCommentHelper(comment, req.id!, prisma)
 
       res.status(200).json({
         success: true,

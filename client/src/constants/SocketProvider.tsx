@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
+import { toast } from "sonner"
+import { CHAT_ERROR } from "./events"
+import useSocketEvents from "@/hooks/useSocketEvents"
 
 type SocketProviderProps = {
   children: React.ReactNode
@@ -26,6 +29,14 @@ const SocketProvider = ({ children }: SocketProviderProps) => {
       newSocket.disconnect()
     }
   }, [])
+
+  useSocketEvents(socket, {
+    [CHAT_ERROR]: (data: unknown) => {
+      const message =
+        (data as { message?: string })?.message || "Something went wrong"
+      toast.error(message)
+    },
+  })
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
