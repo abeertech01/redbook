@@ -59,6 +59,8 @@ const upvotePostHelper = async (
       where: { id: postId },
       data: { upvoteIds, downvoteIds },
     })
+
+    return updatedPost
   } else if (upvoteIds.includes(authorId as string)) {
     upvoteIds.splice(upvoteIds.indexOf(authorId as string), 1)
     updatedPost = await prisma.post.update({
@@ -95,6 +97,8 @@ const downvotePostHelper = async (
       where: { id: postId },
       data: { upvoteIds, downvoteIds },
     })
+
+    return updatedPost
   } else if (downvoteIds.includes(authorId as string)) {
     downvoteIds.splice(downvoteIds.indexOf(authorId as string), 1)
     updatedPost = await prisma.post.update({
@@ -131,6 +135,8 @@ const upvoteCommentHelper = async (
         upvoteIds: upvoteIds.filter((id) => id !== authorId),
       },
     })
+
+    return updatedComment
   } else {
     if (downvoteIds.includes(authorId as string)) {
       //  remove the downvote
@@ -173,6 +179,8 @@ const downvoteCommentHelper = async (
         downvoteIds: downvoteIds.filter((id) => id !== authorId),
       },
     })
+
+    return updatedComment
   } else {
     if (upvoteIds.includes(authorId as string)) {
       // remove the upvote

@@ -154,7 +154,7 @@ class Post {
         where: { id: postId },
       })
 
-      const updatedPost = upvotePostHelper(post!, prisma, req.id!, postId)
+      const updatedPost = await upvotePostHelper(post!, prisma, req.id!, postId)
 
       res.status(200).json({
         success: true,
@@ -172,7 +172,7 @@ class Post {
         where: { id: postId },
       })
 
-      const updatedPost = downvotePostHelper(post!, prisma, req.id!, postId)
+      const updatedPost = await downvotePostHelper(post!, prisma, req.id!, postId)
 
       res.status(200).json({
         success: true,
