@@ -119,8 +119,8 @@ These are real, currently-existing bugs found during the baseline audit — not 
 
 ## Phase 11 — Wrap-up
 
-- [ ] Update `CLAUDE.md` if any architectural pattern changed (Prisma config location, Express version, dev-server tooling)
-- [ ] Final full manual pass through Phase 9's checklist on a fresh full Docker rebuild
+- [x] Updated `CLAUDE.md`: Data layer section rewritten for Prisma 7's `prisma.config.ts` + driver adapter; Realtime section updated with the `socketAuthenticator` prisma-import fix, the disconnect-cleanup handler, and the new `CHAT_ERROR` event; the "Server: routes → controllers → classes" section now documents the `errorMiddleware` arity requirement; corrected an inaccuracy in the Fake data seeding section (it already guarded against re-seeding, and the no-`NODE_ENV`-gate is confirmed intentional); Docker startup order section notes the Node 24 bump and the still-outstanding `client.dockerfile` follow-up.
+- [x] Final full manual pass on a genuinely fresh Docker rebuild — hit a real infrastructure snag along the way: Docker Desktop's virtual disk ran out of space (`no space left on device`, `db` failed its healthcheck) from ~21GB of accumulated build cache across this session's many rebuilds; cleared it with `docker builder prune` (pure reconstructable cache, not data — `pgdata` untouched) and retried successfully. `docker compose down` → `docker compose build --no-cache server migration` → `docker compose up -d`: clean single-pass boot, `db` healthy → `migration` exited `0` → `server`/`client` both `HTTP 200`, server confirmed on Node `v24.20.0`, and the `pgdata` volume correctly persisted through the cycle. Re-ran the complete Phase 9 checklist against this fresh boot: auth (all paths), post CRUD (including confirming the vote fix returns real objects), comment CRUD, profile/image upload, search, error response shapes (including the Zod `errors` array), and a full two-user realtime chat round trip — every check passed.
 - [ ] Open PR against `dev` (merge is the user's call)
 
 ---
