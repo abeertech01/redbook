@@ -1,4 +1,4 @@
-import { NEW_CHAT, NEW_MESSAGE } from "../constants/events"
+import { NEW_CHAT, NEW_MESSAGE, CHAT_ERROR } from "../constants/events"
 import { ExtendedSocket } from "../utils/types"
 import { ErrorHandler } from "../utils/utility"
 import prisma from "../lib/prismadb"
@@ -26,8 +26,14 @@ class Chat {
       const chatterSocket = this.getSockets([participantId, socket.user?.id])
 
       try {
-        if (participantId === socket.user?.id)
-          return new ErrorHandler("You cannot chat with yourself", 400)
+        if (participantId === socket.user?.id) {
+          const err = new ErrorHandler("You cannot chat with yourself", 400)
+          console.error(err.message)
+          return socket.emit(CHAT_ERROR, {
+            message: err.message,
+            statusCode: err.statusCode,
+          })
+        }
 
         const record = await prisma.chat.findFirst({
           where: {
@@ -48,7 +54,14 @@ class Chat {
           },
         })
 
-        if (record) return new ErrorHandler("Chat already exists", 400)
+        if (record) {
+          const err = new ErrorHandler("Chat already exists", 400)
+          console.error(err.message)
+          return socket.emit(CHAT_ERROR, {
+            message: err.message,
+            statusCode: err.statusCode,
+          })
+        }
 
         const newChat = await prisma.chat.create({
           data: {
@@ -75,7 +88,12 @@ class Chat {
 
         io.to(chatterSocket).emit(NEW_CHAT, newChat)
       } catch (error: any) {
-        return new ErrorHandler(error.message, 500)
+        const err = new ErrorHandler(error.message, 500)
+        console.error(err.message)
+        socket.emit(CHAT_ERROR, {
+          message: err.message,
+          statusCode: err.statusCode,
+        })
       }
     })
   }
@@ -122,7 +140,11 @@ class Chat {
         io.to(chatterSocket).emit(NEW_CHAT, theChat)
       } catch (error: any) {
         console.error("[DEBUG] NEW_MESSAGE error", error)
-        return new ErrorHandler(error.message, 500)
+        const err = new ErrorHandler(error.message, 500)
+        socket.emit(CHAT_ERROR, {
+          message: err.message,
+          statusCode: err.statusCode,
+        })
       }
     })
   }
