@@ -73,11 +73,11 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] Verify every method used in `server/src/lib/zod/*.ts` (`.object`, `.string`, `.min`, `.max`, `.email`, `.regex`, `{ message: ... }`) against v4's API — `npm run build` clean, no type errors; all methods still exist and behave the same
 - [x] Confirm validation error responses unchanged — tested live against the rebuilt container: `registerSchema` (bad email, weak password), `loginSchema` (missing field), and `createPostSchema` (empty title) all still raise `ZodError` with the exact custom `{ message: "..." }` strings intact (e.g. "Password must contain at least one uppercase letter"), same deprecated-but-supported pattern the client already confirmed. Also reconfirmed the pre-existing `errorMiddleware` arity bug surfacing as a raw HTML 500 instead of JSON — same bug as Phase 3, not new, scheduled for Phase 10. Happy-path register/create-post also confirmed still working.
 
-## Phase 6 — TypeScript & dev tooling
+## Phase 6 — TypeScript & dev tooling ✅ complete (2026-08-30)
 
-- [ ] Bump `typescript` to match the client's `6.0.3` per the client-compatibility directive — not independently to `7.0.2`, even though `server/` has no `typescript-eslint` blocker forcing that ceiling
-- [ ] Verify `ts-node@10.9.2`/`nodemon` are happy on `6.0.3` (should be a smaller jump than TS 7 would have been); if `ts-node` still can't keep up even at this version, evaluate switching `npm run dev`'s `nodemon src/index.ts` to `tsx` (or another modern TS runner) as part of this phase, not silently
-- [ ] `npm run build` (`npx tsc`) and `npm run dev` both clean
+- [x] Bump `typescript` to match the client's `6.0.3` — installed the exact same resolved version as `client/package-lock.json`
+- [x] Verify `ts-node@10.9.2`/`nodemon` are happy on `6.0.3` — confirmed live in the rebuilt container: `nodemon` restarts and `ts-node` compiles/boots cleanly, no runner swap needed
+- [x] `npm run build` (`npx tsc`) and `npm run dev` both clean — one fix required for `build`: TS 6.0 makes `moduleResolution: "Node"` (classic/node10) an error by default (deprecated, removed in TS 7). Migrating to `NodeNext`/`Node16` would be a real behavioral change to import resolution, too big to bundle silently into a version bump, so added `"ignoreDeprecations": "6.0"` to `tsconfig.json` instead — TypeScript's own suggested interim escape hatch, changes nothing about actual resolution behavior. `npm run dev` confirmed clean via the live container (`node -v` → `v24.20.0`, `GET /` → `HTTP 200`).
 
 ## Phase 7 — Remaining dependency bumps
 
