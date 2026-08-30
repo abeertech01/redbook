@@ -85,11 +85,11 @@ Work through phases in order; check items off as completed. Each phase = one com
 - [x] Applied the deferred majors: `bcrypt@6.0.0` + `@types/bcrypt@6.0.0` (native binding rebuilt cleanly under Node 24 — `node-gyp-build` replaced the old `node-pre-gyp` install mechanism; verified via direct hash/compare test and a full register→login→wrong-password-rejected HTTP flow), `dotenv@17.4.2` (env vars confirmed still loading correctly on boot), `@faker-js/faker@10.6.0` (build clean, confirmed no crash across several boots that exercise the unconditional fake-data seeding IIFE — all faker methods used are already on the modern modular API, e.g. `faker.person.fullName()`, not the deprecated pre-v6 style)
 - [x] Re-ran `npm outdated` — everything left outstanding is a previously locked-in deliberate decision, not an oversight: `@types/node` (pinned to the 24.x runtime line, not `26.x`), `prisma` (locked to `7.10.0`, not the `8.0.0` RC), `typescript`/`zod` (matching the client's exact versions, not their own latest patches)
 
-## Phase 8 — Build & type-check
+## Phase 8 — Build & type-check ✅ complete (2026-08-30)
 
-- [ ] `npm run build` (`npx tsc`) clean
-- [ ] `npm run dev` boots with no console errors/warnings
-- [ ] Full `docker compose up --build` clean end to end
+- [x] `npm run build` (`npx tsc`) clean — re-ran from a wiped `dist/`, no errors
+- [x] `npm run dev` boots with no console errors/warnings — confirmed as part of the full stack test below
+- [x] Full `docker compose up --build` clean end to end — ran `docker compose down` then a genuinely fresh `docker compose up --build` (not just individual service rebuilds like Phase 1's check): all four services (`db`, `migration`, `server`, `client`) built and booted correctly in order on the first try, zero errors or warnings in any service's logs, migration exited `0` ("No pending migrations to apply"), server confirmed on Node `v24.20.0`, both `server` (`:3030`) and `client` (`:5173`) returned `HTTP 200`
 
 ## Phase 9 — Behavioral regression check (manual)
 
