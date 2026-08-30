@@ -4,6 +4,7 @@ import { TryCatch } from "./error"
 import { ErrorHandler } from "../utils/utility"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import express from "express"
+import prisma from "../lib/prismadb"
 
 interface CustomJwtPayload extends JwtPayload {
   id: string
