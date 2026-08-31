@@ -8,6 +8,7 @@ import {
 } from "./ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import ThemeToggle from "./ThemeToggle"
+import NotificationBell from "./NotificationBell"
 import { Menu } from "lucide-react"
 import { Button } from "./ui/button"
 import axios from "axios"
@@ -51,6 +52,8 @@ const Navbar = () => {
 
       <div className="flex items-center gap-2 md:gap-5">
         <ThemeToggle />
+
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger>

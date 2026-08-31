@@ -79,14 +79,14 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 5 — Client data layer
 
-- [ ] `client/src/app/api/notification.ts` — new RTK Query slice (`notificationAPI`) with `getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead`, tags wired so marking read invalidates the count
-- [ ] Register it in `client/src/app/store.ts` (reducer + middleware, same pattern as the other three API slices)
+- [x] `client/src/app/api/notification.ts` — new RTK Query slice (`notificationAPI`) with `getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead`, tags wired so marking read invalidates the count
+- [x] Register it in `client/src/app/store.ts` (reducer + middleware, same pattern as the other three API slices)
 
 ## Phase 6 — Notification bell + dropdown (client UI)
 
-- [ ] Add a bell icon (lucide `Bell`) to `Navbar.tsx`, left of the existing avatar dropdown, with an unread-count badge from `useGetUnreadCountQuery`
-- [ ] Dropdown (shadcn `DropdownMenu`, the same primitive already used for the avatar menu) listing the last 30 notifications — each row rendering `{actor.name} {verb for type} {your post | you}` plus a relative timestamp, unread rows visually distinct
-- [ ] "Mark all as read" action in the dropdown header
+- [x] Add a bell icon (lucide `Bell`) to `Navbar.tsx`, left of the existing avatar dropdown, with an unread-count badge from `useGetUnreadCountQuery`
+- [x] Dropdown (shadcn `DropdownMenu`, the same primitive already used for the avatar menu) listing the last 30 notifications — each row rendering `{actor.name} {verb for type} {your post | you}` plus a relative timestamp, unread rows visually distinct
+- [x] "Mark all as read" action in the dropdown header
 
 ## Phase 7 — Realtime listener + click-to-navigate
 

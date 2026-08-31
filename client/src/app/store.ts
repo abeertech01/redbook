@@ -5,6 +5,7 @@ import { postAPI } from "./api/post"
 import { commentAPI } from "./api/comment"
 import { userAPI } from "./api/user"
 import { chatAPI } from "./api/chat"
+import { notificationAPI } from "./api/notification"
 
 const store = configureStore({
   reducer: {
@@ -14,13 +15,15 @@ const store = configureStore({
     [postAPI.reducerPath]: postAPI.reducer,
     [commentAPI.reducerPath]: commentAPI.reducer,
     [chatAPI.reducerPath]: chatAPI.reducer,
+    [notificationAPI.reducerPath]: notificationAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(userAPI.middleware)
       .concat(postAPI.middleware)
       .concat(commentAPI.middleware)
-      .concat(chatAPI.middleware),
+      .concat(chatAPI.middleware)
+      .concat(notificationAPI.middleware),
   devTools: true,
 })
 
