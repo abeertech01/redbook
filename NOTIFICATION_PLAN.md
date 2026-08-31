@@ -101,3 +101,34 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 - [x] Manual matrix with two logged-in browser sessions: trigger a chat message, a comment, an upvote, and a downvote — confirm the DB row, the realtime badge/toast update while both users are online, and correct persisted state (unread count, dropdown contents) when the recipient logs in later instead of being online at trigger time
 - [x] Confirm self-notification suppression (commenting/voting on your own post creates no row)
 - [x] Confirm click-through lands on the right post/chat and marks the row read
+
+## Phase 9 — Split message count (sidebar) from activity count (bell)
+
+Correction to the v1 scope: the bell was showing a raw unread-notification count that mixed messages in with comments/votes. The actual design has two separate counters with two separate counting rules:
+
+- **Sidebar "Messages" link** (`client/src/pages/Home.tsx`, next to the existing `Messages` link): a literal, non-deduplicated count of unseen individual messages. Bob sends 4 messages + Carol sends 2 → `Messages(6)`.
+- **Bell icon badge**: excludes the raw message count entirely. Instead it counts distinct `(actorId, type)` pairs with unread notifications, across all four types including `NEW_MESSAGE` — so a person still shows up on the bell when they message you, just deduplicated by person+type rather than by raw volume. Bob sending 4 messages contributes `1`; if Dave and Eve each comment once, that's `+2` more, independent of Bob's message count. Same person + same type again (Bob sends 3 more messages) → no change, already counted. Same person doing a *different* type (Bob also upvotes your post) → `+1` more, since dedup key is `(actorId, type)`, not `actorId` alone.
+- The bell's **dropdown list** (last 30) is unaffected by this — it keeps showing one row per individual notification, unchanged from Phase 6. Only the **badge number** uses the deduplicated logic.
+- No schema change needed — every message send already creates one `NEW_MESSAGE` notification row per recipient (Phase 2), so the sidebar count is just `count(unread NEW_MESSAGE notifications)` for the current user.
+- New behavior required: opening a chat currently only marks things read via the bell's row click. It needs to also mark that chat's `NEW_MESSAGE` notifications as read on open, so the sidebar count decrements correctly.
+
+### Server
+
+- [x] `notification.class.ts`: add `getUnreadMessageCount` — `prisma.notification.count({ where: { recipientId: req.id, type: "NEW_MESSAGE", isRead: false } })`, for the sidebar.
+- [x] `notification.class.ts`: change `getUnreadCount` to exclude the raw-count semantics and instead return the deduplicated activity count — `prisma.notification.findMany({ where: { recipientId: req.id, isRead: false }, distinct: ["actorId", "type"], select: { actorId: true, type: true } })`, and respond with `.length`. (Note: this changes existing behavior from Phase 3 — the bell's count endpoint now dedupes across *all* types including `NEW_MESSAGE`, rather than counting every unread row 1:1.)
+- [x] `notification.class.ts`: add `markChatNotificationsAsRead` — `PUT /chat/:chatId/read`, scoped to `recipientId: req.id`, `chatId`, `type: "NEW_MESSAGE"`, `isRead: false` → `updateMany(... isRead: true)`.
+- [x] Wire the new method through `notification.controllers.ts` and `notification.routes.ts`, same pattern as the rest of Phase 3.
+
+### Client
+
+- [x] `client/src/app/api/notification.ts`: add `getUnreadMessageCount` query and `markChatNotificationsAsRead` mutation (invalidating the same tags `getUnreadCount`/`getUnreadMessageCount` depend on).
+- [x] `client/src/pages/Home.tsx`: render `Messages (N)` next to the existing "Messages" link using `useGetUnreadMessageCountQuery`, hiding the `(N)` when it's 0.
+- [x] `client/src/pages/Inbox.tsx`: on mount / `chatId` change, call `markChatNotificationsAsRead(chatId)` so the sidebar count decrements once the recipient actually opens that chat.
+- [x] Realtime: `SocketProvider.tsx`'s `NEW_NOTIFICATION` handler bumps `getUnreadMessageCount`'s cache by 1 when the incoming notification is a `NEW_MESSAGE` (safe — it's a raw, non-deduplicated count). For `getUnreadCount` (the bell), a manual increment isn't safe since the dedup key depends on *all* of a user's unread notifications, not just the last 30 held in the `getNotifications` cache — so instead it calls `notificationAPI.util.invalidateTags(["UnreadCount"])` to force a fresh authoritative count from the server. Deliberate deviation from the original "bump" wording above.
+
+### Verification
+
+- [x] Two senders each message the same recipient (4 + 2) → sidebar shows `Messages(6)`; bell shows `2` (one per distinct sender).
+- [x] Same sender sends more messages → sidebar count keeps climbing (raw), bell's contribution from that sender stays at `1` (already counted).
+- [x] A comment + a message from two different people → bell shows `2`.
+- [x] Opening the chat marks that chat's message notifications read → sidebar count drops accordingly; bell's dedup count for that sender's `NEW_MESSAGE` entry also clears once all their message notifications are read.

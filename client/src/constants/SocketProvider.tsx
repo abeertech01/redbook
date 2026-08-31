@@ -54,15 +54,23 @@ const SocketProvider = ({ children }: SocketProviderProps) => {
         )
       )
 
-      dispatch(
-        notificationAPI.util.updateQueryData(
-          "getUnreadCount",
-          undefined,
-          (draft) => {
-            draft.count += 1
-          }
+      // The bell's count is deduplicated by (actor, type) across every
+      // unread notification, not just the last 30 held in the list cache
+      // above - so it can't be safely bumped by 1 here. Invalidating
+      // forces a fresh authoritative count from the server instead.
+      dispatch(notificationAPI.util.invalidateTags(["UnreadCount"]))
+
+      if (notification.type === "NEW_MESSAGE") {
+        dispatch(
+          notificationAPI.util.updateQueryData(
+            "getUnreadMessageCount",
+            undefined,
+            (draft) => {
+              draft.count += 1
+            }
+          )
         )
-      )
+      }
     },
   })
 

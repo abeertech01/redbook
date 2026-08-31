@@ -1,4 +1,5 @@
 import { useGetMessagesQuery } from "@/app/api/chat"
+import { useMarkChatNotificationsAsReadMutation } from "@/app/api/notification"
 import { RootState } from "@/app/store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ const Inbox = () => {
     isLoading,
     refetch,
   } = useGetMessagesQuery(chatId)
+  const [markChatNotificationsAsRead] = useMarkChatNotificationsAsReadMutation()
 
   const handleSendMessage = () => {
     if (!text) return
@@ -49,14 +51,18 @@ const Inbox = () => {
     }
   }, [messagesResult])
 
+  useEffect(() => {
+    markChatNotificationsAsRead(chatId)
+  }, [chatId])
+
   const eventHandler = {
-    // [NEW_MESSAGE]: (data: { newMessage: Message }) => {
-    //   if (data.newMessage.chatId === chatId) {
-    //     refetch()
-    //   }
-    // },]
-    [NEW_MESSAGE]: () => {
+    [NEW_MESSAGE]: (data: unknown) => {
       refetch()
+
+      const newMessage = (data as { newMessage: Message }).newMessage
+      if (newMessage.chatId === chatId) {
+        markChatNotificationsAsRead(chatId)
+      }
     },
   }
 

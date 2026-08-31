@@ -26,13 +26,49 @@ class Notification {
 
   getUnreadCount = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      const count = await prisma.notification.count({
+      const distinctActivities = await prisma.notification.findMany({
         where: { recipientId: req.id, isRead: false },
+        distinct: ["actorId", "type"],
+        select: { actorId: true, type: true },
+      })
+
+      res.status(200).json({
+        success: true,
+        count: distinctActivities.length,
+      })
+    }
+  )
+
+  getUnreadMessageCount = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const count = await prisma.notification.count({
+        where: { recipientId: req.id, type: "NEW_MESSAGE", isRead: false },
       })
 
       res.status(200).json({
         success: true,
         count,
+      })
+    }
+  )
+
+  markChatNotificationsAsRead = TryCatch(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      const { chatId } = req.params
+
+      const notifications = await prisma.notification.updateMany({
+        where: {
+          chatId,
+          recipientId: req.id,
+          type: "NEW_MESSAGE",
+          isRead: false,
+        },
+        data: { isRead: true },
+      })
+
+      res.status(200).json({
+        success: true,
+        notifications,
       })
     }
   )

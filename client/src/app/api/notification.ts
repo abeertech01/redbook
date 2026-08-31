@@ -11,7 +11,7 @@ const notificationAPI = createApi({
     baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/notification`,
     credentials: "include",
   }),
-  tagTypes: ["Notifications", "UnreadCount"],
+  tagTypes: ["Notifications", "UnreadCount", "UnreadMessageCount"],
   endpoints: (builder) => ({
     getNotifications: builder.query<NotificationsResponse, void>({
       query: () => ({
@@ -27,19 +27,36 @@ const notificationAPI = createApi({
       }),
       providesTags: ["UnreadCount"],
     }),
+    getUnreadMessageCount: builder.query<UnreadCountResponse, void>({
+      query: () => ({
+        url: "/unread-message-count",
+        method: "GET",
+      }),
+      providesTags: ["UnreadMessageCount"],
+    }),
     markAsRead: builder.mutation<NotificationMutationResponse, string>({
       query: (id) => ({
         url: `/${id}/read`,
         method: "PUT",
       }),
-      invalidatesTags: ["Notifications", "UnreadCount"],
+      invalidatesTags: ["Notifications", "UnreadCount", "UnreadMessageCount"],
     }),
     markAllAsRead: builder.mutation<NotificationMutationResponse, void>({
       query: () => ({
         url: "/read-all",
         method: "PUT",
       }),
-      invalidatesTags: ["Notifications", "UnreadCount"],
+      invalidatesTags: ["Notifications", "UnreadCount", "UnreadMessageCount"],
+    }),
+    markChatNotificationsAsRead: builder.mutation<
+      NotificationMutationResponse,
+      string
+    >({
+      query: (chatId) => ({
+        url: `/chat/${chatId}/read`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Notifications", "UnreadCount", "UnreadMessageCount"],
     }),
   }),
 })
@@ -48,6 +65,8 @@ export { notificationAPI }
 export const {
   useGetNotificationsQuery,
   useGetUnreadCountQuery,
+  useGetUnreadMessageCountQuery,
   useMarkAsReadMutation,
   useMarkAllAsReadMutation,
+  useMarkChatNotificationsAsReadMutation,
 } = notificationAPI
