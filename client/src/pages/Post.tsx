@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-import { timeAgo } from "@/lib/helper"
+import TimeAgo from "@/components/TimeAgo"
 import clsx from "clsx"
 import {
   ArrowBigDown,
@@ -52,8 +52,6 @@ const Post = () => {
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
-
-  const timeDiff = data?.success ? timeAgo(data.post.createdAt as Date) : ""
 
   const deletePostClick = async () => {
     if (user?.id !== data?.post.authorId) {
@@ -100,7 +98,7 @@ const Post = () => {
                 </Avatar>
                 <div>{data?.post.author?.name}</div>
                 <div>•</div>
-                <div>{timeDiff}</div>
+                <div>{data && <TimeAgo timestamp={data.post.createdAt} />}</div>
               </div>
             </CardDescription>
           </CardHeader>

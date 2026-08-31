@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { NEW_CHAT } from "@/constants/events"
 import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
-import { timeAgo } from "@/lib/helper"
+import TimeAgo from "@/components/TimeAgo"
 import { Chat } from "@/utility/types"
 import { useEffect } from "react"
 
@@ -88,7 +88,7 @@ const Messages = () => {
                                 {chat.lastMessage}
                               </p>
                               <small className="inline-block text-zinc-400">
-                                {timeAgo(chat.updatedAt)}
+                                <TimeAgo timestamp={chat.updatedAt} />
                               </small>
                             </div>
                           </div>

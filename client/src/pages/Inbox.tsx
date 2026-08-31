@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { NEW_MESSAGE } from "@/constants/events"
 import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
-import { timeAgo } from "@/lib/helper"
+import TimeAgo from "@/components/TimeAgo"
 import { Message } from "@/utility/types"
 import clsx from "clsx"
 import { useEffect, useRef, useState } from "react"
@@ -103,7 +103,9 @@ const Inbox = () => {
                     : messagesResult.participator.name}
                 </small>
                 <div>•</div>
-                <small>{timeAgo(message.createdAt)}</small>
+                <small>
+                  <TimeAgo timestamp={message.createdAt} />
+                </small>
               </div>
               <Card
                 className={clsx(

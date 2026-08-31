@@ -13,7 +13,7 @@ import { ArrowBigDown, ArrowBigUp, MessageSquareText } from "lucide-react"
 import { useDownvotePostMutation, useUpvotePostMutation } from "@/app/api/post"
 import clsx from "clsx"
 import { useNavigate } from "react-router-dom"
-import { timeAgo } from "@/lib/helper"
+import TimeAgo from "./TimeAgo"
 
 type PostCardProps = {
   post: Post
@@ -40,7 +40,9 @@ const PostCard = ({ post, userId }: PostCardProps) => {
             </Avatar>
             <div>{post.author?.name}</div>
             <div>•</div>
-            <div>{timeAgo(post.createdAt)}</div>
+            <div>
+              <TimeAgo timestamp={post.createdAt} />
+            </div>
           </div>
         </CardDescription>
       </CardHeader>

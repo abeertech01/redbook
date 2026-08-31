@@ -18,8 +18,8 @@ import {
   useMarkAsReadMutation,
 } from "@/app/api/notification"
 import { Notification, NotificationType } from "@/utility/types"
-import { timeAgo } from "@/lib/helper"
 import { cn } from "@/lib/utils"
+import TimeAgo from "./TimeAgo"
 
 const notificationVerb: Record<NotificationType, string> = {
   NEW_COMMENT: "commented on your post",
@@ -63,7 +63,7 @@ const NotificationRow = ({ notification }: { notification: Notification }) => {
           {notificationVerb[notification.type]}
         </p>
         <span className="text-xs text-muted-foreground">
-          {timeAgo(notification.createdAt)}
+          <TimeAgo timestamp={notification.createdAt} />
         </span>
       </div>
     </DropdownMenuItem>
