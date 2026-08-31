@@ -50,9 +50,9 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 1 — Schema & migration
 
-- [ ] Add the model/enum/relations above to `schema.prisma`
-- [ ] `npx prisma migrate dev --name add_notifications`
-- [ ] `npx prisma generate`
+- [x] Add the model/enum/relations above to `schema.prisma`
+- [x] `npx prisma migrate dev --name add_notifications`
+- [x] `npx prisma generate`
 
 ## Phase 2 — Notification creation helper (server)
 
