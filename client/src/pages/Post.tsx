@@ -52,15 +52,8 @@ const Post = () => {
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
-  const [showComments, setShowComments] = useState(false)
-  const [prevData, setPrevData] = useState(data)
 
   const timeDiff = data?.success ? timeAgo(data.post.createdAt as Date) : ""
-
-  if (data !== prevData) {
-    setPrevData(data)
-    setShowComments(!!data?.success && (data.post.comments?.length ?? 0) > 0)
-  }
 
   const deletePostClick = async () => {
     if (user?.id !== data?.post.authorId) {
@@ -84,7 +77,6 @@ const Post = () => {
 
     if (comment) {
       setCommentText("")
-      if (!showComments) setShowComments(true)
 
       toast("Comment Added Successfully")
     }
@@ -197,9 +189,9 @@ const Post = () => {
             </div>
 
             {/* All Comments */}
-            {showComments && (
+            {data && (
               <Comments
-                postId={data!.post.id}
+                postId={data.post.id}
                 userId={user!.id}
                 setCommentNumber={setCommentNumber}
               />
