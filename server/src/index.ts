@@ -8,7 +8,7 @@ import chatRoutes from "./routes/chat.routes"
 import cookieParser from "cookie-parser"
 import { errorMiddleware } from "./middlewares/error"
 import { createServer } from "http"
-import { Server } from "socket.io"
+import { Server as SocketServer } from "socket.io"
 import { ExtendedSocket } from "./utils/types"
 import { socketAuthenticator } from "./middlewares/auth"
 import chatClass from "./classes/chat.class"
@@ -20,7 +20,7 @@ const userSocketIDs = new Map()
 const app: Express = express()
 const PORT = process.env.PORT || 3000
 const server = createServer(app)
-const io = new Server(server, {
+const io = new SocketServer(server, {
   cors: corsOptions,
 })
 

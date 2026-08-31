@@ -56,12 +56,12 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 2 — Notification creation helper (server)
 
-- [ ] Add `createNotification({ prisma, io, recipientId, actorId, type, postId?, chatId? })` to `server/src/lib/helpers.ts`. It: no-ops if `recipientId === actorId`; writes the row via `prisma.notification.create(...)`; looks up the recipient's live socket via the existing `userSocketIDs` map (same import `chat.class.ts` already uses: `import { userSocketIDs } from ".."`); if online, `io.to(socketId).emit(NEW_NOTIFICATION, notification)`.
-- [ ] Wire it into the three existing write paths, right after each DB write succeeds:
+- [x] Add `createNotification({ prisma, io, recipientId, actorId, type, postId?, chatId? })` to `server/src/lib/helpers.ts`. It: no-ops if `recipientId === actorId`; writes the row via `prisma.notification.create(...)`; looks up the recipient's live socket via the existing `userSocketIDs` map (same import `chat.class.ts` already uses: `import { userSocketIDs } from ".."`); if online, `io.to(socketId).emit(NEW_NOTIFICATION, notification)`.
+- [x] Wire it into the three existing write paths, right after each DB write succeeds:
   - `comment.class.ts` → `addcomment` (recipient = `post.authorId`)
   - `post.class.ts` → `upvotePost` / `downvotePost` (recipient = `post.authorId`; only on the "vote added" or "vote switched" branches inside `upvotePostHelper`/`downvotePostHelper` in `helpers.ts` — never on the "vote removed" branch, since un-voting isn't something worth notifying about)
   - `chat.class.ts` → the `newMessage` socket handler (recipient = each chat member except the sender)
-- [ ] `post.class.ts`/`comment.class.ts` are plain Express controllers, not socket handlers, so they don't have `io` in scope like `chat.class.ts` does — pull it via `req.app.get("io")` (already registered with `app.set("io", io)` in `index.ts`).
+- [x] `post.class.ts`/`comment.class.ts` are plain Express controllers, not socket handlers, so they don't have `io` in scope like `chat.class.ts` does — pull it via `req.app.get("io")` (already registered with `app.set("io", io)` in `index.ts`).
 
 ## Phase 3 — REST API (server)
 
