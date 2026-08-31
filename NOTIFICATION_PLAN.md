@@ -97,7 +97,7 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 8 — Verification
 
-- [ ] Docker rebuild, run the migration container, confirm the new table exists
-- [ ] Manual matrix with two logged-in browser sessions: trigger a chat message, a comment, an upvote, and a downvote — confirm the DB row, the realtime badge/toast update while both users are online, and correct persisted state (unread count, dropdown contents) when the recipient logs in later instead of being online at trigger time
-- [ ] Confirm self-notification suppression (commenting/voting on your own post creates no row)
-- [ ] Confirm click-through lands on the right post/chat and marks the row read
+- [x] Docker rebuild, run the migration container, confirm the new table exists
+- [x] Manual matrix with two logged-in browser sessions: trigger a chat message, a comment, an upvote, and a downvote — confirm the DB row, the realtime badge/toast update while both users are online, and correct persisted state (unread count, dropdown contents) when the recipient logs in later instead of being online at trigger time
+- [x] Confirm self-notification suppression (commenting/voting on your own post creates no row)
+- [x] Confirm click-through lands on the right post/chat and marks the row read
