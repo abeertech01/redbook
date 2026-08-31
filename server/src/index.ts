@@ -5,6 +5,7 @@ import { corsOptions } from "./constants/config"
 import userRoutes from "./routes/user.routes"
 import postRoutes from "./routes/post.routes"
 import chatRoutes from "./routes/chat.routes"
+import notificationRoutes from "./routes/notification.routes"
 import cookieParser from "cookie-parser"
 import { errorMiddleware } from "./middlewares/error"
 import { createServer } from "http"
@@ -41,6 +42,7 @@ cloudinary.config({
 app.use("/api/user", userRoutes)
 app.use("/api/post", postRoutes)
 app.use("/api/chat", chatRoutes)
+app.use("/api/notification", notificationRoutes)
 
 // Fake Data Generating to make a good-looking social media app
 ;(async function (userNumeber: number) {

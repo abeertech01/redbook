@@ -65,13 +65,13 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 3 — REST API (server)
 
-- [ ] `server/src/classes/notification.class.ts` (new, same three-layer pattern as the rest of the app):
+- [x] `server/src/classes/notification.class.ts` (new, same three-layer pattern as the rest of the app):
   - `getNotifications` — last 30 for `req.id`, newest first, `include: { actor: true, post: true, chat: true }`
   - `getUnreadCount` — `prisma.notification.count({ where: { recipientId: req.id, isRead: false } })`
   - `markAsRead` — `PUT /:id/read`, scoped to `recipientId: req.id` so one user can't mark another's notification read
   - `markAllAsRead` — `PUT /read-all`
-- [ ] `server/src/controllers/notification.controllers.ts` — thin re-exports, matching the existing pattern
-- [ ] `server/src/routes/notification.routes.ts` — `isAuthenticated`-gated, mounted at `/api/notification` in `index.ts`
+- [x] `server/src/controllers/notification.controllers.ts` — thin re-exports, matching the existing pattern
+- [x] `server/src/routes/notification.routes.ts` — `isAuthenticated`-gated, mounted at `/api/notification` in `index.ts`
 
 ## Phase 4 — Realtime event (server + client constants)
 
