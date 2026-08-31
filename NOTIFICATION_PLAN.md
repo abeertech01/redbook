@@ -90,8 +90,8 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 7 — Realtime listener + click-to-navigate
 
-- [ ] Subscribe to `NEW_NOTIFICATION`, either by extending the existing global listener in `SocketProvider.tsx` (same place `CHAT_ERROR` is handled today) or adding it where the notification list lives. On receipt: prepend to the RTK Query cache via `notificationAPI.util.updateQueryData` and bump the unread count — the same optimistic-cache pattern already used for votes in `app/api/post.ts`/`comment.ts`.
-- [ ] Row click → call `markAsRead(id)`, then navigate:
+- [x] Subscribe to `NEW_NOTIFICATION`, either by extending the existing global listener in `SocketProvider.tsx` (same place `CHAT_ERROR` is handled today) or adding it where the notification list lives. On receipt: prepend to the RTK Query cache via `notificationAPI.util.updateQueryData` and bump the unread count — the same optimistic-cache pattern already used for votes in `app/api/post.ts`/`comment.ts`.
+- [x] Row click → call `markAsRead(id)`, then navigate:
   - `NEW_COMMENT` / `POST_UPVOTE` / `POST_DOWNVOTE` → `/post/:postId`
   - `NEW_MESSAGE` → `/messages/:chatId`
 

@@ -1,8 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
 import { toast } from "sonner"
-import { CHAT_ERROR } from "./events"
+import { useDispatch } from "react-redux"
+import { CHAT_ERROR, NEW_NOTIFICATION } from "./events"
 import useSocketEvents from "@/hooks/useSocketEvents"
+import { AppDispatch } from "@/app/store"
+import { notificationAPI } from "@/app/api/notification"
+import { Notification } from "@/utility/types"
 
 type SocketProviderProps = {
   children: React.ReactNode
@@ -14,6 +18,7 @@ const useSocket = () => useContext(SocketContext)
 
 const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null)
+  const dispatch = useDispatch<AppDispatch>()
 
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_SERVER_URL, {
@@ -35,6 +40,29 @@ const SocketProvider = ({ children }: SocketProviderProps) => {
       const message =
         (data as { message?: string })?.message || "Something went wrong"
       toast.error(message)
+    },
+    [NEW_NOTIFICATION]: (data: unknown) => {
+      const notification = data as Notification
+
+      dispatch(
+        notificationAPI.util.updateQueryData(
+          "getNotifications",
+          undefined,
+          (draft) => {
+            draft.notifications.unshift(notification)
+          }
+        )
+      )
+
+      dispatch(
+        notificationAPI.util.updateQueryData(
+          "getUnreadCount",
+          undefined,
+          (draft) => {
+            draft.count += 1
+          }
+        )
+      )
     },
   })
 

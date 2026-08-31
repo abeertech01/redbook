@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Bell } from "lucide-react"
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
   useGetNotificationsQuery,
   useGetUnreadCountQuery,
   useMarkAllAsReadMutation,
+  useMarkAsReadMutation,
 } from "@/app/api/notification"
 import { Notification, NotificationType } from "@/utility/types"
 import { timeAgo } from "@/lib/helper"
@@ -26,11 +28,25 @@ const notificationVerb: Record<NotificationType, string> = {
   NEW_MESSAGE: "sent you a message",
 }
 
+const notificationTarget = (notification: Notification) =>
+  notification.type === "NEW_MESSAGE"
+    ? `/messages/${notification.chatId}`
+    : `/post/${notification.postId}`
+
 const NotificationRow = ({ notification }: { notification: Notification }) => {
+  const navigate = useNavigate()
+  const [markAsRead] = useMarkAsReadMutation()
+
+  const handleSelect = () => {
+    markAsRead(notification.id)
+    navigate(notificationTarget(notification))
+  }
+
   return (
     <DropdownMenuItem
+      onSelect={handleSelect}
       className={cn(
-        "flex items-start gap-2 py-2",
+        "flex items-start gap-2 py-2 cursor-pointer",
         !notification.isRead && "bg-accent/60"
       )}
     >
