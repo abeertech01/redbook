@@ -75,7 +75,7 @@ Needs matching back-relations added to `User` (`notificationsReceived`, `notific
 
 ## Phase 4 — Realtime event (server + client constants)
 
-- [ ] Add `NEW_NOTIFICATION` to both `server/src/constants/events.ts` and `client/src/constants/events.ts` — hand-kept in sync, same as `CHAT_ERROR` already is.
+- [x] Add `NEW_NOTIFICATION` to both `server/src/constants/events.ts` and `client/src/constants/events.ts` — hand-kept in sync, same as `CHAT_ERROR` already is.
 
 ## Phase 5 — Client data layer
 
