@@ -57,10 +57,9 @@ const Inbox = () => {
 
   const eventHandler = {
     [NEW_MESSAGE]: (data: unknown) => {
-      refetch()
-
       const newMessage = (data as { newMessage: Message }).newMessage
       if (newMessage.chatId === chatId) {
+        refetch()
         markChatNotificationsAsRead(chatId)
       }
     },

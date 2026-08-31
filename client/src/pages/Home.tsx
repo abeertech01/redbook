@@ -1,7 +1,7 @@
 import { useGet10RandomUsersQuery } from "@/app/api/user"
-import { useGetUnreadMessageCountQuery } from "@/app/api/notification"
 import { RootState } from "@/app/store"
 import AllPosts from "@/components/AllPosts"
+import MessagesSidebarLink from "@/components/MessagesSidebarLink"
 import Navbar from "@/components/Navbar"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -27,9 +27,7 @@ const Home = () => {
   const navigate = useNavigate()
   const { user } = useSelector((state: RootState) => state.user)
   const { data: _10Users } = useGet10RandomUsersQuery()
-  const { data: unreadMessageData } = useGetUnreadMessageCountQuery()
   const socket = useSocket()
-  const unreadMessageCount = unreadMessageData?.count ?? 0
   const [arePaginatedPosts, setArePaginatedPosts] = useState(false)
 
   const startChatting = (participantId: string) => {
@@ -52,9 +50,7 @@ const Home = () => {
               Profile
             </Link>
 
-            <Link to={"/messages"} className="text-md hover:underline">
-              Messages{unreadMessageCount > 0 && ` (${unreadMessageCount})`}
-            </Link>
+            <MessagesSidebarLink />
 
             <Link
               to={"#"}

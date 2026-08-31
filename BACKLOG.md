@@ -12,7 +12,11 @@ Notification list (and possibly chat/message history, post feeds) currently plan
 
 ## 3. Timestamps re-rendering on every keystroke ⬜
 
-Relative timestamps ("2 minutes ago") shown on messages, posts, comments, and elsewhere appear to recompute/re-render on every keystroke typed anywhere on the page, not just on a timer tick. Needs investigation into the actual root cause (likely an over-broad re-render trigger somewhere in state/context) before fixing.
+Partial progress, not actually resolved — reopened after further reports showed the same symptom from causes this pass didn't touch.
+
+Fixed so far: two over-broad re-render triggers where a component *far above* a list in the tree re-rendered the whole subtree for unrelated reasons — `Home.tsx` calling `useGetUnreadMessageCountQuery()` directly (fixed by extracting to [MessagesSidebarLink.tsx](client/src/components/MessagesSidebarLink.tsx)), and `Inbox.tsx`'s `NEW_MESSAGE` handler refetching unconditionally for any chat, not just the open one (fixed by gating on `chatId` match).
+
+Still open — a different, more pervasive cause: `timeAgo()` is computed inline during render with no memoization, and list items (`PostCard`, individual comments, individual messages) aren't wrapped in `React.memo`. So *any* re-render of a component for an unrelated reason (typing in a comment/message box whose state lives above the list, a vote mutation's `isLoading` flipping) recomputes and can visually change every timestamp in that render pass, even though nothing about the timestamps themselves changed. Needs: memoizing the per-item relative-time computation (`useMemo` keyed on the timestamp, or a small memoized `<TimeAgo>` component), moving comment/message input state into its own child component so typing doesn't cascade into the sibling list, and wrapping list-item components in `React.memo`.
 
 ## 4. Unread message count badge on the Home sidebar "Messages" link ⬜
 

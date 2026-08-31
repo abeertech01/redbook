@@ -67,7 +67,7 @@ function timeAgo(timestamp: Date, locale = "en") {
   } else if (minutes > 0) {
     value = rtf.format(0 - minutes, "minute")
   } else {
-    value = rtf.format(0 - diff, "second")
+    value = rtf.format(0 - Math.floor(diff), "second")
   }
   return value
 }
