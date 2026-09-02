@@ -155,3 +155,37 @@ export interface AxiosError {
     }
   }
 }
+
+export type NotificationType =
+  | "NEW_MESSAGE"
+  | "NEW_COMMENT"
+  | "POST_UPVOTE"
+  | "POST_DOWNVOTE"
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  isRead: boolean
+  createdAt: Date
+  recipientId: string
+  actorId: string
+  actor?: User
+  postId?: string | null
+  post?: Post | null
+  chatId?: string | null
+  chat?: Chat | null
+}
+
+export interface NotificationsResponse {
+  success: boolean
+  notifications: Notification[]
+}
+
+export interface UnreadCountResponse {
+  success: boolean
+  count: number
+}
+
+export interface NotificationMutationResponse {
+  success: boolean
+}

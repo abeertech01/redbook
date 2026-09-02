@@ -8,7 +8,7 @@ import {
   useGetCommentsQuery,
   useUpvoteCommentMutation,
 } from "@/app/api/comment"
-import { timeAgo } from "@/lib/helper"
+import TimeAgo from "./TimeAgo"
 
 type CommentsProps = {
   postId: string
@@ -76,7 +76,9 @@ const Comments = ({ postId, userId, setCommentNumber }: CommentsProps) => {
                 <CardDescription>
                   <h1>
                     <span>{comment.author?.name}</span> •{" "}
-                    <span>{timeAgo(comment.createdAt)}</span>
+                    <span>
+                      <TimeAgo timestamp={comment.createdAt} variant="date" />
+                    </span>
                   </h1>
                 </CardDescription>
                 <p className="mb-4">{comment.content}</p>

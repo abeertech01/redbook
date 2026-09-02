@@ -1,4 +1,5 @@
 import { NextFunction, Response } from "express"
+import { Server as SocketServer } from "socket.io"
 import { TryCatch } from "../middlewares/error"
 import { IRequest } from "../utils/types"
 import prisma from "../lib/prismadb"
@@ -154,7 +155,14 @@ class Post {
         where: { id: postId },
       })
 
-      const updatedPost = await upvotePostHelper(post!, prisma, req.id!, postId)
+      const io = req.app.get("io") as SocketServer
+      const updatedPost = await upvotePostHelper(
+        post!,
+        prisma,
+        req.id!,
+        postId,
+        io
+      )
 
       res.status(200).json({
         success: true,
@@ -172,7 +180,14 @@ class Post {
         where: { id: postId },
       })
 
-      const updatedPost = await downvotePostHelper(post!, prisma, req.id!, postId)
+      const io = req.app.get("io") as SocketServer
+      const updatedPost = await downvotePostHelper(
+        post!,
+        prisma,
+        req.id!,
+        postId,
+        io
+      )
 
       res.status(200).json({
         success: true,

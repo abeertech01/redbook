@@ -1,10 +1,15 @@
 import { NextFunction, Response } from "express"
+import { Server as SocketServer } from "socket.io"
 import { TryCatch } from "../middlewares/error"
 import { IRequest } from "../utils/types"
 import prisma from "../lib/prismadb"
 import { ErrorHandler } from "../utils/utility"
 import { addCommentSchema } from "../lib/zod/post"
-import { downvoteCommentHelper, upvoteCommentHelper } from "../lib/helpers"
+import {
+  createNotification,
+  downvoteCommentHelper,
+  upvoteCommentHelper,
+} from "../lib/helpers"
 
 class Comment {
   getComments = TryCatch(
@@ -53,6 +58,15 @@ class Comment {
           content,
           authorId: req.id as string,
         },
+      })
+
+      await createNotification({
+        prisma,
+        io: req.app.get("io") as SocketServer,
+        recipientId: post.authorId,
+        actorId: req.id as string,
+        type: "NEW_COMMENT",
+        postId,
       })
 
       res.status(200).json({

@@ -1,6 +1,7 @@
 import { useGet10RandomUsersQuery } from "@/app/api/user"
 import { RootState } from "@/app/store"
 import AllPosts from "@/components/AllPosts"
+import MessagesSidebarLink from "@/components/MessagesSidebarLink"
 import Navbar from "@/components/Navbar"
 import PostCreate from "@/components/PostCreate"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -49,9 +50,7 @@ const Home = () => {
               Profile
             </Link>
 
-            <Link to={"/messages"} className="text-md hover:underline">
-              Messages
-            </Link>
+            <MessagesSidebarLink />
 
             <Link
               to={"#"}

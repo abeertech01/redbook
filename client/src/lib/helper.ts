@@ -67,9 +67,13 @@ function timeAgo(timestamp: Date, locale = "en") {
   } else if (minutes > 0) {
     value = rtf.format(0 - minutes, "minute")
   } else {
-    value = rtf.format(0 - diff, "second")
+    value = rtf.format(0 - Math.floor(diff), "second")
   }
+
   return value
+    .replace(/\s+ago$/, "")
+    .replace(/\bminutes?\b/, "min")
+    .replace(/\bhours?\b/, "hr")
 }
 
 function formatHumanReadTimestamp(timestamp: Date) {
@@ -96,10 +100,56 @@ function formatHumanReadTimestamp(timestamp: Date) {
   return `${day}${daySuffix(day)} ${month}, ${year}`
 }
 
+function startOfDay(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+}
+
+function daysSince(timestamp: Date) {
+  return Math.round((startOfDay(new Date()) - startOfDay(new Date(timestamp))) / 86400000)
+}
+
+function formatClockTime(date: Date) {
+  let hours = date.getHours()
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const ampm = hours >= 12 ? "pm" : "am"
+  hours = hours % 12 || 12
+
+  return `${hours}:${minutes}${ampm}`
+}
+
+function formatExactMessageTime(timestamp: Date) {
+  const date = new Date(timestamp)
+  const daysDiff = daysSince(timestamp)
+  const time = formatClockTime(date)
+
+  if (daysDiff === 0) return `Today, ${time}`
+  if (daysDiff === 1) return `Yesterday, ${time}`
+
+  const day = String(date.getDate()).padStart(2, "0")
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const year = date.getFullYear()
+
+  return `${time}, ${day}/${month}/${year}`
+}
+
+function formatPostTimestamp(timestamp: Date) {
+  if (daysSince(timestamp) <= 1) return timeAgo(timestamp)
+
+  const date = new Date(timestamp)
+  const day = date.getDate()
+  const month = date.toLocaleString("default", { month: "short" })
+
+  if (date.getFullYear() === new Date().getFullYear()) return `${day} ${month}`
+
+  return `${day} ${month}, ${date.getFullYear()}`
+}
+
 export {
   isAxiosError,
   upvoteCacheHelper,
   downvoteCacheHelper,
   timeAgo,
   formatHumanReadTimestamp,
+  formatExactMessageTime,
+  formatPostTimestamp,
 }

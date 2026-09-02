@@ -5,10 +5,11 @@ import { corsOptions } from "./constants/config"
 import userRoutes from "./routes/user.routes"
 import postRoutes from "./routes/post.routes"
 import chatRoutes from "./routes/chat.routes"
+import notificationRoutes from "./routes/notification.routes"
 import cookieParser from "cookie-parser"
 import { errorMiddleware } from "./middlewares/error"
 import { createServer } from "http"
-import { Server } from "socket.io"
+import { Server as SocketServer } from "socket.io"
 import { ExtendedSocket } from "./utils/types"
 import { socketAuthenticator } from "./middlewares/auth"
 import chatClass from "./classes/chat.class"
@@ -20,7 +21,7 @@ const userSocketIDs = new Map()
 const app: Express = express()
 const PORT = process.env.PORT || 3000
 const server = createServer(app)
-const io = new Server(server, {
+const io = new SocketServer(server, {
   cors: corsOptions,
 })
 
@@ -41,6 +42,7 @@ cloudinary.config({
 app.use("/api/user", userRoutes)
 app.use("/api/post", postRoutes)
 app.use("/api/chat", chatRoutes)
+app.use("/api/notification", notificationRoutes)
 
 // Fake Data Generating to make a good-looking social media app
 ;(async function (userNumeber: number) {

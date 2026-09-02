@@ -1,8 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
 import { toast } from "sonner"
-import { CHAT_ERROR } from "./events"
+import { useDispatch } from "react-redux"
+import { CHAT_ERROR, NEW_NOTIFICATION } from "./events"
 import useSocketEvents from "@/hooks/useSocketEvents"
+import { AppDispatch } from "@/app/store"
+import { notificationAPI } from "@/app/api/notification"
+import { Notification } from "@/utility/types"
 
 type SocketProviderProps = {
   children: React.ReactNode
@@ -14,6 +18,7 @@ const useSocket = () => useContext(SocketContext)
 
 const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null)
+  const dispatch = useDispatch<AppDispatch>()
 
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_SERVER_URL, {
@@ -35,6 +40,37 @@ const SocketProvider = ({ children }: SocketProviderProps) => {
       const message =
         (data as { message?: string })?.message || "Something went wrong"
       toast.error(message)
+    },
+    [NEW_NOTIFICATION]: (data: unknown) => {
+      const notification = data as Notification
+
+      dispatch(
+        notificationAPI.util.updateQueryData(
+          "getNotifications",
+          undefined,
+          (draft) => {
+            draft.notifications.unshift(notification)
+          }
+        )
+      )
+
+      // The bell's count is deduplicated by (actor, type) across every
+      // unread notification, not just the last 30 held in the list cache
+      // above - so it can't be safely bumped by 1 here. Invalidating
+      // forces a fresh authoritative count from the server instead.
+      dispatch(notificationAPI.util.invalidateTags(["UnreadCount"]))
+
+      if (notification.type === "NEW_MESSAGE") {
+        dispatch(
+          notificationAPI.util.updateQueryData(
+            "getUnreadMessageCount",
+            undefined,
+            (draft) => {
+              draft.count += 1
+            }
+          )
+        )
+      }
     },
   })
 

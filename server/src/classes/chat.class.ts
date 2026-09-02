@@ -2,12 +2,12 @@ import { NEW_CHAT, NEW_MESSAGE, CHAT_ERROR } from "../constants/events"
 import { ExtendedSocket } from "../utils/types"
 import { ErrorHandler } from "../utils/utility"
 import prisma from "../lib/prismadb"
-import { DefaultEventsMap, Server } from "socket.io"
+import { DefaultEventsMap, Server as SocketServer } from "socket.io"
 import { userSocketIDs } from ".."
 import { TryCatch } from "../middlewares/error"
 import { IRequest } from "../utils/types"
 import { NextFunction, Response } from "express"
-import { getAllChats } from "../lib/helpers"
+import { createNotification, getAllChats } from "../lib/helpers"
 
 class Chat {
   private getSockets = (userIds: string[] = []) => {
@@ -20,7 +20,7 @@ class Chat {
 
   newChat = (
     socket: ExtendedSocket,
-    io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+    io: SocketServer<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   ) => {
     socket.on(NEW_CHAT, async ({ participantId }) => {
       const chatterSocket = this.getSockets([participantId, socket.user?.id])
@@ -100,7 +100,7 @@ class Chat {
 
   newMessage = (
     socket: ExtendedSocket,
-    io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+    io: SocketServer<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   ) => {
     socket.on(NEW_MESSAGE, async ({ chatId, message: msg }) => {
       console.log("[DEBUG] NEW_MESSAGE received", {
@@ -138,6 +138,21 @@ class Chat {
 
         io.to(chatterSocket).emit(NEW_MESSAGE, { newMessage })
         io.to(chatterSocket).emit(NEW_CHAT, theChat)
+
+        const recipients = theChat.members.filter(
+          (member) => member.id !== socket.user?.id,
+        )
+
+        for (const recipient of recipients) {
+          await createNotification({
+            prisma,
+            io,
+            recipientId: recipient.id,
+            actorId: socket.user?.id as string,
+            type: "NEW_MESSAGE",
+            chatId: chatId as string,
+          })
+        }
       } catch (error: any) {
         console.error("[DEBUG] NEW_MESSAGE error", error)
         const err = new ErrorHandler(error.message, 500)
