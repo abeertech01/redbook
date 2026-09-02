@@ -1,6 +1,10 @@
-import { useGetMessagesQuery } from "@/app/api/chat"
+import {
+  chatAPI,
+  useGetMessagesQuery,
+  useLazyGetMessagesQuery,
+} from "@/app/api/chat"
 import { useMarkChatNotificationsAsReadMutation } from "@/app/api/notification"
-import { RootState } from "@/app/store"
+import { AppDispatch, RootState } from "@/app/store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -11,26 +15,98 @@ import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import MessageBubble from "@/components/MessageBubble"
 import { Message } from "@/utility/types"
-import { useEffect, useRef, useState } from "react"
-import { useSelector } from "react-redux"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { useLocation } from "react-router-dom"
+
+const NEAR_BOTTOM_THRESHOLD = 80
+const LOAD_MORE_THRESHOLD = 80
 
 const Inbox = () => {
   const [text, setText] = useState("")
   const { user } = useSelector((state: RootState) => state.user)
+  const dispatch = useDispatch<AppDispatch>()
   const { pathname } = useLocation()
-  // const reversedMessages = messages.reverse()
   const scrollRef = useRef<HTMLUListElement>(null)
   const socket = useSocket()
 
   const chatId = pathname.match(/\/messages\/(.*)/)![1]
 
-  const {
-    data: messagesResult,
-    isLoading,
-    refetch,
-  } = useGetMessagesQuery(chatId)
-  const [markChatNotificationsAsRead] = useMarkChatNotificationsAsReadMutation()
+  const { data: messagesResult } = useGetMessagesQuery({ chatId })
+  const [fetchMoreMessages, { isFetching: isFetchingMore }] =
+    useLazyGetMessagesQuery()
+  const [markChatNotificationsAsRead] =
+    useMarkChatNotificationsAsReadMutation()
+
+  // Whether the next messagesResult update is this chat's first page (scroll
+  // to bottom), a load-more-on-scroll-up response (preserve reading
+  // position), or a plain append (only follow it if already near the
+  // bottom) - three cases that all fire through the same effect below.
+  const isInitialLoadRef = useRef(true)
+  const isNearBottomRef = useRef(true)
+  const loadingOlderRef = useRef(false)
+  const prevScrollHeightRef = useRef(0)
+  const prevScrollTopRef = useRef(0)
+
+  useEffect(() => {
+    isInitialLoadRef.current = true
+    isNearBottomRef.current = true
+  }, [chatId])
+
+  useEffect(() => {
+    markChatNotificationsAsRead(chatId)
+  }, [chatId, markChatNotificationsAsRead])
+
+  const loadMore = useCallback(() => {
+    const el = scrollRef.current
+    if (
+      !el ||
+      !messagesResult?.hasMore ||
+      !messagesResult.nextCursor ||
+      isFetchingMore ||
+      loadingOlderRef.current
+    )
+      return
+
+    prevScrollHeightRef.current = el.scrollHeight
+    prevScrollTopRef.current = el.scrollTop
+    loadingOlderRef.current = true
+    fetchMoreMessages({ chatId, cursor: messagesResult.nextCursor })
+  }, [chatId, messagesResult, isFetchingMore, fetchMoreMessages])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || !messagesResult) return
+
+    if (isInitialLoadRef.current) {
+      el.scrollTop = el.scrollHeight
+      isInitialLoadRef.current = false
+    } else if (loadingOlderRef.current) {
+      el.scrollTop =
+        prevScrollTopRef.current + (el.scrollHeight - prevScrollHeightRef.current)
+      loadingOlderRef.current = false
+    } else if (isNearBottomRef.current) {
+      el.scrollTop = el.scrollHeight
+    }
+
+    // Short messages may not fill the panel even with more history
+    // available - keep pulling pages until it's scrollable or exhausted.
+    if (messagesResult.hasMore && el.scrollHeight <= el.clientHeight) {
+      loadMore()
+    }
+  }, [messagesResult, loadMore])
+
+  const handleScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+
+    isNearBottomRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_THRESHOLD
+
+    if (el.scrollTop < LOAD_MORE_THRESHOLD) {
+      loadMore()
+    }
+  }
 
   const handleSendMessage = () => {
     if (!text) return
@@ -43,23 +119,15 @@ const Inbox = () => {
     setText("")
   }
 
-  useEffect(() => {
-    refetch()
-
-    if (!isLoading && messagesResult && scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messagesResult])
-
-  useEffect(() => {
-    markChatNotificationsAsRead(chatId)
-  }, [chatId])
-
   const eventHandler = {
     [NEW_MESSAGE]: (data: unknown) => {
       const newMessage = (data as { newMessage: Message }).newMessage
       if (newMessage.chatId === chatId) {
-        refetch()
+        dispatch(
+          chatAPI.util.updateQueryData("getMessages", { chatId }, (draft) => {
+            draft.messages.push(newMessage)
+          })
+        )
         markChatNotificationsAsRead(chatId)
       }
     },
@@ -85,12 +153,18 @@ const Inbox = () => {
 
       <ul
         ref={scrollRef}
-        className="relative flex flex-col flex-1 justify-end gap-4 mx-auto pr-1 border-[#f4c13f] border-t-2 w-[calc(100%-2rem)] overflow-y-scroll scroll-smooth inbox-messages"
+        onScroll={handleScroll}
+        className="relative flex flex-col flex-1 gap-4 mx-auto pr-1 border-[#f4c13f] border-t-2 w-[calc(100%-2rem)] overflow-y-scroll inbox-messages"
       >
+        {isFetchingMore && (
+          <li className="py-1 text-zinc-400 text-xs text-center">
+            Loading older messages...
+          </li>
+        )}
         {messagesResult && (
           <TooltipProvider delayDuration={200}>
-            {messagesResult.messages.map((message: Message) => (
-              <li key={message.id}>
+            {messagesResult.messages.map((message: Message, index) => (
+              <li key={message.id} className={index === 0 ? "mt-auto" : undefined}>
                 <MessageBubble
                   message={message}
                   isOwn={message.authorId === user?.id}

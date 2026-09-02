@@ -135,6 +135,8 @@ export interface MessagesResponse {
   success: boolean
   messages: Message[]
   participator: User
+  hasMore: boolean
+  nextCursor: string | null
 }
 
 export interface Message {
