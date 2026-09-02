@@ -23,9 +23,13 @@ Verified via render-count instrumentation against the exact three reported scena
 
 [client/src/pages/Home.tsx:52-54](client/src/pages/Home.tsx#L52-L54) — the "Messages" link in the left sidebar card should show an unread count in parentheses, e.g. "Messages (3)", similar to how the notification bell will show an unread badge.
 
-## 5. Hover tooltip for exact timestamp ⬜
+## 5. Hover tooltip for exact timestamp ✅
 
-Idea: Messenger-style — hovering over a relative timestamp ("3 minutes ago") shows a tooltip with the real/exact date-time. Explicitly flagged by the user as a pattern they're unsure about ("having a feeling this way of showing the real message time is wrong or bad UX") — revisit whether this is even the right approach before implementing the tooltip itself.
+Implemented for chat messages (`Inbox.tsx`): the per-message "Name • relative time" header is gone entirely. Desktop hovers a message to reveal a tooltip with the exact time — positioned to the *left* of the sender's own (right-aligned) bubbles and to the *right* of the participant's (left-aligned) bubbles, via a new [MessageBubble.tsx](client/src/components/MessageBubble.tsx) built on shadcn's `Tooltip` (`@radix-ui/react-tooltip`, newly added). Mobile taps the bubble to toggle the exact time inline above it instead (no hover on touch).
+
+Time format, per user spec: today/yesterday show a day label + clock time ("Today, 6:00pm" / "Yesterday, 6:00pm"); anything older shows the full date instead ("6:00pm, 28/08/2026") — `formatExactMessageTime()` in [helper.ts](client/src/lib/helper.ts). Deliberately *not* memoized (unlike `TimeAgo` from #3) since the whole point is a fresh, non-stale read of the current moment every time the tooltip opens.
+
+Note: this was scoped to chat messages only, per what was asked — posts/comments still use the plain relative-time `TimeAgo` display, no tooltip.
 
 ## 6. Responsive / mobile-friendly design 🔴 High Priority ⬜
 

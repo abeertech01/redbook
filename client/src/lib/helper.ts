@@ -96,10 +96,40 @@ function formatHumanReadTimestamp(timestamp: Date) {
   return `${day}${daySuffix(day)} ${month}, ${year}`
 }
 
+function formatClockTime(date: Date) {
+  let hours = date.getHours()
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const ampm = hours >= 12 ? "pm" : "am"
+  hours = hours % 12 || 12
+
+  return `${hours}:${minutes}${ampm}`
+}
+
+function formatExactMessageTime(timestamp: Date) {
+  const date = new Date(timestamp)
+  const now = new Date()
+
+  const startOfDay = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+
+  const daysDiff = Math.round((startOfDay(now) - startOfDay(date)) / 86400000)
+  const time = formatClockTime(date)
+
+  if (daysDiff === 0) return `Today, ${time}`
+  if (daysDiff === 1) return `Yesterday, ${time}`
+
+  const day = String(date.getDate()).padStart(2, "0")
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const year = date.getFullYear()
+
+  return `${time}, ${day}/${month}/${year}`
+}
+
 export {
   isAxiosError,
   upvoteCacheHelper,
   downvoteCacheHelper,
   timeAgo,
   formatHumanReadTimestamp,
+  formatExactMessageTime,
 }

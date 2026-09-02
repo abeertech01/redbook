@@ -5,12 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { NEW_MESSAGE } from "@/constants/events"
 import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
-import TimeAgo from "@/components/TimeAgo"
+import MessageBubble from "@/components/MessageBubble"
 import { Message } from "@/utility/types"
-import clsx from "clsx"
 import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { useLocation } from "react-router-dom"
@@ -87,38 +87,18 @@ const Inbox = () => {
         ref={scrollRef}
         className="relative flex flex-col flex-1 justify-end gap-4 mx-auto pr-1 border-[#f4c13f] border-t-2 w-[calc(100%-2rem)] overflow-y-scroll scroll-smooth inbox-messages"
       >
-        {messagesResult &&
-          messagesResult.messages.map((message: Message) => (
-            <li
-              key={message.id}
-              className={clsx(
-                "flex flex-col gap-1",
-                message.authorId === user?.id ? "items-end" : "items-start",
-              )}
-            >
-              <div className="flex items-center gap-1 text-gray-500">
-                <small>
-                  {message.authorId === user?.id
-                    ? user?.name
-                    : messagesResult.participator.name}
-                </small>
-                <div>•</div>
-                <small>
-                  <TimeAgo timestamp={message.createdAt} />
-                </small>
-              </div>
-              <Card
-                className={clsx(
-                  "px-3 py-1",
-                  message.authorId === user?.id
-                    ? "bg-zinc-500 text-white"
-                    : "bg-rose-600 text-white dark:text-white",
-                )}
-              >
-                {message.text}
-              </Card>
-            </li>
-          ))}
+        {messagesResult && (
+          <TooltipProvider delayDuration={200}>
+            {messagesResult.messages.map((message: Message) => (
+              <li key={message.id}>
+                <MessageBubble
+                  message={message}
+                  isOwn={message.authorId === user?.id}
+                />
+              </li>
+            ))}
+          </TooltipProvider>
+        )}
       </ul>
 
       <div className="flex items-center gap-2 mx-4">
