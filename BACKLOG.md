@@ -19,9 +19,11 @@ Two layers to this, fixed in two passes:
 
 Verified via render-count instrumentation against the exact three reported scenarios (typing in the message box, upvoting a post, adding a comment) — zero unrelated `TimeAgo` re-renders in all three, confirmed against a StrictMode-aware baseline (StrictMode double-invokes newly-mounted components' renders in dev, which is expected and unrelated to this bug).
 
-## 4. Unread message count badge on the Home sidebar "Messages" link ⬜
+## 4. Unread message count badge on the Home sidebar "Messages" link ✅
 
-[client/src/pages/Home.tsx:52-54](client/src/pages/Home.tsx#L52-L54) — the "Messages" link in the left sidebar card should show an unread count in parentheses, e.g. "Messages (3)", similar to how the notification bell will show an unread badge.
+Shipped as part of the notification feature rather than as its own task, which is why it sat unticked for a while. Lives in [MessagesSidebarLink.tsx](client/src/components/MessagesSidebarLink.tsx), not inline in `Home.tsx` — it's a separate component specifically so `useGetUnreadMessageCountQuery()` doesn't sit high in `Home`'s tree and re-render the whole feed on every count change (see [#3](#3-timestamps-re-rendering-on-every-keystroke)).
+
+Renders "Messages (3)" at `md:` and up, and a small red count badge on the icon below that, where the sidebar row is icon-only (see [#6](#6-responsive--mobile-friendly-design)). Note this count is deliberately *not* the same number as the bell's: the sidebar shows the raw unseen-message count while the bell deduplicates by (actor, type) — the split is spelled out in Phase 9 of [NOTIFICATION_PLAN.md](NOTIFICATION_PLAN.md). Verified against that distinction with an 8-case matrix (count climbs per message, ignores comments, drops by exactly that sender's share when their chat is opened) plus a mobile-badge check.
 
 ## 5. Hover tooltip for exact timestamp ✅
 
