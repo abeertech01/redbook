@@ -30,10 +30,43 @@ import {
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 
+type CoverPhotoProps = {
+  url?: string
+  uploading: boolean
+}
+
+// Keyed by `url` at the call site so a finished upload remounts this and
+// resets `loaded`. That keeps the placeholder up until the *new* image has
+// actually decoded, rather than only until the upload request resolved -
+// the window between those two is what used to flash the page background
+// through the empty <img>.
+const CoverPhoto = ({ url, uploading }: CoverPhotoProps) => {
+  const [loaded, setLoaded] = useState(false)
+
+  return (
+    <>
+      <img
+        src={url}
+        alt="cover photo"
+        onLoad={() => setLoaded(true)}
+        // Without this a broken/blocked image would spin forever.
+        onError={() => setLoaded(true)}
+        className={`absolute z-30 w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      {(!loaded || uploading) && (
+        <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-bl-md rounded-br-md w-full h-full">
+          <LoaderPinwheel className="text-xl animate-spin" />
+        </div>
+      )}
+    </>
+  )
+}
+
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
-  const [isLoading, setIsLoading] = useState(true)
   const [isBioEditing, setIsBioEditing] = useState(false)
   const [bioText, setBioText] = useState(user?.bio ?? "")
 
@@ -43,10 +76,8 @@ const Profile = () => {
     uploadProfileImage,
     { isLoading: uploadingProfileImg, isSuccess: uploadedProfileImg },
   ] = useUploadProfileImageMutation()
-  const [
-    uploadCoverImage,
-    { isLoading: uploadingCoverImg, isSuccess: uploadedCoverImg },
-  ] = useUploadCoverImageMutation()
+  const [uploadCoverImage, { isLoading: uploadingCoverImg }] =
+    useUploadCoverImageMutation()
 
   const editBio = async () => {
     if (isBioEditing && bioText && bioText !== user?.bio) {
@@ -100,22 +131,11 @@ const Profile = () => {
       <ScrollArea className="w-full h-[calc(100vh-3.5rem)]">
         <div className="mx-auto w-full md:w-4/6 lg:w-7/12 h-full">
           <div className="relative mb-32 w-full h-48 md:h-80">
-            {uploadingCoverImg && !uploadedCoverImg ? (
-              (isLoading || uploadingCoverImg) && (
-                <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-bl-md rounded-br-md w-full h-full">
-                  <LoaderPinwheel className="text-xl animate-spin" />
-                </div>
-              )
-            ) : (
-              <img
-                src={user?.coverImgUrl}
-                alt="cover photo"
-                className={`absolute z-30 w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
-                  isLoading ? "opacity-0" : "opacity-100"
-                }`}
-                onLoad={() => setIsLoading(false)}
-              />
-            )}
+            <CoverPhoto
+              key={user?.coverImgUrl}
+              url={user?.coverImgUrl}
+              uploading={uploadingCoverImg}
+            />
 
             <div className="bottom-0 left-12 z-40 absolute flex items-center gap-4 translate-y-3/4">
               <div className="group relative w-20 md:w-28 h-20 md:h-28">
