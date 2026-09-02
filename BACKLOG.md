@@ -6,9 +6,20 @@ Running list of things to come back to later. Unlike the per-feature `*_PLAN.md`
 
 Right now a notification only has `isRead`. Facebook-style products distinguish "seen" (the dropdown was opened, so it's no longer visually "new") from "read" (the user actually clicked into it). Revisit once the notification feature ([NOTIFICATION_PLAN.md](NOTIFICATION_PLAN.md)) is live.
 
-## 2. Pagination past "last 30" ⬜
+## 2. Pagination past "last 30" ✅
 
-Notification list (and possibly chat/message history, post feeds) currently plans to fetch a fixed recent window rather than true pagination/infinite scroll. Fine for a portfolio-scale dataset now; revisit if lists need to go deeper than the fixed window.
+Written speculatively ("and possibly chat/message history, post feeds"), and two of the three turned out not to need work: the **post feed** already had offset pagination (`?page`/`?limit`, default 10) with scroll-triggered loading in `AllPosts.tsx`, and **chat history** got cursor pagination (20/page) when the message list was fixed.
+
+The **notification list** was the real gap: `take: 30` with no cursor meant row 31 was simply unreachable — while still counting toward the bell's badge, since `getUnreadCount` runs its own unlimited query. So the badge could report unread notifications that no amount of scrolling would reveal.
+
+Now cursor-paginated at **18 per page** (`NOTIFICATIONS_PAGE_SIZE` in [notification.class.ts](server/src/classes/notification.class.ts)), same RTK Query `serializeQueryArgs`/`merge`/`forceRefetch` shape as the chat list, with two differences worth noting:
+
+- The query arg **is** the cursor (`string | undefined`) rather than an object, so `SocketProvider`'s existing `updateQueryData("getNotifications", undefined, …)` call keeps addressing the same cache entry untouched.
+- It's a newest-first list scrolled *downward*, so an older page **appends**; the chat list is oldest-first scrolled upward and prepends.
+
+`orderBy` gained `id` as a tiebreaker so two notifications created in the same millisecond can't straddle a page boundary and get skipped. `NotificationBell` also auto-pulls another page when a full page doesn't overflow the dropdown — on a tall screen 18 rows may not produce a scrollbar, which would otherwise strand the user at 18 with no way to scroll for more.
+
+Verified with 45 seeded notifications from 45 distinct actors (so every row is individually identifiable): 18 → 36 → 45 across scrolls, one network call per page, correct newest-first order maintained across page boundaries, zero duplicates, no further fetch once exhausted, and row 31 reachable. Phase 8's 16-case notification matrix re-run unchanged.
 
 ## 3. Timestamps re-rendering on every keystroke ✅
 

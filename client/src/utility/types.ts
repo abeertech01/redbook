@@ -181,6 +181,8 @@ export interface Notification {
 export interface NotificationsResponse {
   success: boolean
   notifications: Notification[]
+  hasMore: boolean
+  nextCursor: string | null
 }
 
 export interface UnreadCountResponse {

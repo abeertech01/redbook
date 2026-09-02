@@ -3,13 +3,20 @@ import { TryCatch } from "../middlewares/error"
 import { IRequest } from "../utils/types"
 import prisma from "../lib/prismadb"
 
+const NOTIFICATIONS_PAGE_SIZE = 18
+
 class Notification {
   getNotifications = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      const notifications = await prisma.notification.findMany({
+      const cursor = req.query.cursor as string | undefined
+
+      const rows = await prisma.notification.findMany({
         where: { recipientId: req.id },
-        orderBy: { createdAt: "desc" },
-        take: 30,
+        // id breaks ties so two notifications created in the same
+        // millisecond can't straddle a page boundary and be skipped.
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: NOTIFICATIONS_PAGE_SIZE + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
         include: {
           actor: true,
           post: true,
@@ -17,9 +24,19 @@ class Notification {
         },
       })
 
+      const hasMore = rows.length > NOTIFICATIONS_PAGE_SIZE
+      const notifications = hasMore
+        ? rows.slice(0, NOTIFICATIONS_PAGE_SIZE)
+        : rows
+      const nextCursor = hasMore
+        ? notifications[notifications.length - 1].id
+        : null
+
       res.status(200).json({
         success: true,
         notifications,
+        hasMore,
+        nextCursor,
       })
     }
   )
