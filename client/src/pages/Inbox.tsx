@@ -15,9 +15,10 @@ import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import MessageBubble from "@/components/MessageBubble"
 import { Message } from "@/utility/types"
+import { ArrowLeft } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 const NEAR_BOTTOM_THRESHOLD = 80
 const LOAD_MORE_THRESHOLD = 80
@@ -138,6 +139,10 @@ const Inbox = () => {
   return (
     <div className="flex flex-col gap-4 h-full">
       <Card className="flex items-center gap-3 bg-secondary mx-4 px-4 py-2 h-14">
+        <Link to="/messages" className="md:hidden">
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+
         <Avatar className="w-8 h-8">
           <AvatarImage
             src={messagesResult?.participator.profileImgUrl}

@@ -83,7 +83,7 @@ const Post = () => {
   return (
     <div>
       <Navbar />
-      <div className="mx-auto py-4 w-188 min-h-[calc(100vh-3.5rem)]">
+      <div className="mx-auto px-4 md:px-0 py-4 w-full md:w-188 min-h-[calc(100vh-3.5rem)]">
         <Card>
           <CardHeader>
             <CardTitle>{data?.post.title}</CardTitle>
