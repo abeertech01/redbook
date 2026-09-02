@@ -77,7 +77,7 @@ const Comments = ({ postId, userId, setCommentNumber }: CommentsProps) => {
                   <h1>
                     <span>{comment.author?.name}</span> •{" "}
                     <span>
-                      <TimeAgo timestamp={comment.createdAt} />
+                      <TimeAgo timestamp={comment.createdAt} variant="date" />
                     </span>
                   </h1>
                 </CardDescription>

@@ -63,7 +63,7 @@ const NotificationRow = ({ notification }: { notification: Notification }) => {
           {notificationVerb[notification.type]}
         </p>
         <span className="text-xs text-muted-foreground">
-          <TimeAgo timestamp={notification.createdAt} />
+          <TimeAgo timestamp={notification.createdAt} variant="date" />
         </span>
       </div>
     </DropdownMenuItem>

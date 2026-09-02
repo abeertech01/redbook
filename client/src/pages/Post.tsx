@@ -98,7 +98,11 @@ const Post = () => {
                 </Avatar>
                 <div>{data?.post.author?.name}</div>
                 <div>•</div>
-                <div>{data && <TimeAgo timestamp={data.post.createdAt} />}</div>
+                <div>
+                  {data && (
+                    <TimeAgo timestamp={data.post.createdAt} variant="date" />
+                  )}
+                </div>
               </div>
             </CardDescription>
           </CardHeader>

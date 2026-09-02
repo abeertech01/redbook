@@ -41,7 +41,7 @@ const PostCard = ({ post, userId }: PostCardProps) => {
             <div>{post.author?.name}</div>
             <div>•</div>
             <div>
-              <TimeAgo timestamp={post.createdAt} />
+              <TimeAgo timestamp={post.createdAt} variant="date" />
             </div>
           </div>
         </CardDescription>

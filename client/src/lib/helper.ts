@@ -69,7 +69,11 @@ function timeAgo(timestamp: Date, locale = "en") {
   } else {
     value = rtf.format(0 - Math.floor(diff), "second")
   }
+
   return value
+    .replace(/\s+ago$/, "")
+    .replace(/\bminutes?\b/, "min")
+    .replace(/\bhours?\b/, "hr")
 }
 
 function formatHumanReadTimestamp(timestamp: Date) {
@@ -96,6 +100,14 @@ function formatHumanReadTimestamp(timestamp: Date) {
   return `${day}${daySuffix(day)} ${month}, ${year}`
 }
 
+function startOfDay(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+}
+
+function daysSince(timestamp: Date) {
+  return Math.round((startOfDay(new Date()) - startOfDay(new Date(timestamp))) / 86400000)
+}
+
 function formatClockTime(date: Date) {
   let hours = date.getHours()
   const minutes = String(date.getMinutes()).padStart(2, "0")
@@ -107,12 +119,7 @@ function formatClockTime(date: Date) {
 
 function formatExactMessageTime(timestamp: Date) {
   const date = new Date(timestamp)
-  const now = new Date()
-
-  const startOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-
-  const daysDiff = Math.round((startOfDay(now) - startOfDay(date)) / 86400000)
+  const daysDiff = daysSince(timestamp)
   const time = formatClockTime(date)
 
   if (daysDiff === 0) return `Today, ${time}`
@@ -125,6 +132,18 @@ function formatExactMessageTime(timestamp: Date) {
   return `${time}, ${day}/${month}/${year}`
 }
 
+function formatPostTimestamp(timestamp: Date) {
+  if (daysSince(timestamp) <= 1) return timeAgo(timestamp)
+
+  const date = new Date(timestamp)
+  const day = date.getDate()
+  const month = date.toLocaleString("default", { month: "short" })
+
+  if (date.getFullYear() === new Date().getFullYear()) return `${day} ${month}`
+
+  return `${day} ${month}, ${date.getFullYear()}`
+}
+
 export {
   isAxiosError,
   upvoteCacheHelper,
@@ -132,4 +151,5 @@ export {
   timeAgo,
   formatHumanReadTimestamp,
   formatExactMessageTime,
+  formatPostTimestamp,
 }
