@@ -135,6 +135,8 @@ export interface MessagesResponse {
   success: boolean
   messages: Message[]
   participator: User
+  hasMore: boolean
+  nextCursor: string | null
 }
 
 export interface Message {
@@ -179,6 +181,8 @@ export interface Notification {
 export interface NotificationsResponse {
   success: boolean
   notifications: Notification[]
+  hasMore: boolean
+  nextCursor: string | null
 }
 
 export interface UnreadCountResponse {

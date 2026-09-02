@@ -9,6 +9,8 @@ import { IRequest } from "../utils/types"
 import { NextFunction, Response } from "express"
 import { createNotification, getAllChats } from "../lib/helpers"
 
+const MESSAGES_PAGE_SIZE = 20
+
 class Chat {
   private getSockets = (userIds: string[] = []) => {
     const sockets = userIds.map((id: string) =>
@@ -215,11 +217,21 @@ class Chat {
 
   getMessages = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      const messages = await prisma.message.findMany({
+      const cursor = req.query.cursor as string | undefined
+
+      const rows = await prisma.message.findMany({
         where: {
           chatId: req.params.chatId,
         },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: MESSAGES_PAGE_SIZE + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       })
+
+      const hasMore = rows.length > MESSAGES_PAGE_SIZE
+      const page = hasMore ? rows.slice(0, MESSAGES_PAGE_SIZE) : rows
+      const nextCursor = hasMore ? page[page.length - 1].id : null
+      const messages = page.reverse()
 
       const theChat = await prisma.chat.findUnique({
         where: { id: req.params.chatId },
@@ -236,6 +248,8 @@ class Chat {
         success: true,
         messages,
         participator,
+        hasMore,
+        nextCursor,
       })
     },
   )

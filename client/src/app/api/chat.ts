@@ -1,6 +1,11 @@
 import { ChatsResponse, MessagesResponse, UserResponse } from "@/utility/types"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
+interface GetMessagesArgs {
+  chatId: string
+  cursor?: string
+}
+
 const chatAPI = createApi({
   reducerPath: "chatAPI",
   baseQuery: fetchBaseQuery({
@@ -15,11 +20,27 @@ const chatAPI = createApi({
         method: "GET",
       }),
     }),
-    getMessages: builder.query<MessagesResponse, string>({
-      query: (chatId) => ({
+    getMessages: builder.query<MessagesResponse, GetMessagesArgs>({
+      query: ({ chatId, cursor }) => ({
         url: `/get-messages/${chatId}`,
         method: "GET",
+        params: cursor ? { cursor } : undefined,
       }),
+      // One cache entry per chat regardless of cursor, so pages accumulate
+      // instead of each cursor creating its own separate cache entry.
+      serializeQueryArgs: ({ queryArgs }) => queryArgs.chatId,
+      merge: (currentCache, newData, { arg }) => {
+        // No cursor means a fresh load of the chat (mount, or an explicit
+        // refetch) - replace instead of prepending, or older pages the user
+        // had already scrolled up to load would pile back on top of it.
+        if (!arg.cursor) return newData
+
+        currentCache.messages.unshift(...newData.messages)
+        currentCache.hasMore = newData.hasMore
+        currentCache.nextCursor = newData.nextCursor
+      },
+      forceRefetch: ({ currentArg, previousArg }) =>
+        currentArg?.cursor !== previousArg?.cursor,
       providesTags: ["Chat"],
     }),
     getChatParticipator: builder.query<UserResponse, string>({
@@ -35,5 +56,6 @@ export { chatAPI }
 export const {
   useGetChatsQuery,
   useGetMessagesQuery,
+  useLazyGetMessagesQuery,
   useGetChatParticipatorQuery,
 } = chatAPI

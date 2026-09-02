@@ -4,24 +4,25 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import ThemeToggle from "./ThemeToggle"
 import NotificationBell from "./NotificationBell"
-import { Menu } from "lucide-react"
-import { Button } from "./ui/button"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { userDoesntExist } from "@/app/reducers/user"
 import { toast } from "sonner"
 import { isAxiosError } from "@/lib/helper"
 import { RootState } from "@/app/store"
+import { useTheme } from "@/constants/ThemeProvider"
 
 const Navbar = () => {
   const { user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { setTheme } = useTheme()
 
   const logout = async () => {
     try {
@@ -51,7 +52,9 @@ const Navbar = () => {
       </Link>
 
       <div className="flex items-center gap-2 md:gap-5">
-        <ThemeToggle />
+        <div className="hidden md:block">
+          <ThemeToggle />
+        </div>
 
         <NotificationBell />
 
@@ -71,28 +74,30 @@ const Navbar = () => {
             </DropdownMenuItem>
             <DropdownMenuItem disabled>Settings</DropdownMenuItem>
             <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+
+            <div className="md:hidden">
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setTheme("light")}
+                className="cursor-pointer"
+              >
+                Light Mode
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme("dark")}
+                className="cursor-pointer"
+              >
+                Dark Mode
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme("system")}
+                className="cursor-pointer"
+              >
+                System Theme
+              </DropdownMenuItem>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <div className="md:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="bg-zinc-800 hover:bg-zinc-800 focus-visible:outline-none text-white hover:text-inherit"
-              >
-                <Menu />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuItem>Subscription</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
     </div>
   )

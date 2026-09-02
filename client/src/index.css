@@ -132,7 +132,9 @@
 }
 
 .allposts,
-.inbox-messages {
+.inbox-messages,
+.people-scroll,
+.notification-scroll {
   padding-right: 0.2rem;
   scrollbar-width: 0.6rem; /* For Firefox  */
   scrollbar-color: #71717a #71717a36;
@@ -140,18 +142,24 @@
 
 /* Webkit browsers (Chrome, Edge, Safari) */
 .allposts::-webkit-scrollbar,
-.inbox-messages::-webkit-scrollbar {
+.inbox-messages::-webkit-scrollbar,
+.people-scroll::-webkit-scrollbar,
+.notification-scroll::-webkit-scrollbar {
   width: 0.6rem;
 }
 
 .allposts::-webkit-scrollbar-thumb,
-.inbox-messages::-webkit-scrollbar-thumb {
+.inbox-messages::-webkit-scrollbar-thumb,
+.people-scroll::-webkit-scrollbar-thumb,
+.notification-scroll::-webkit-scrollbar-thumb {
   background-color: #71717a;
   border-radius: 1rem;
 }
 
 .allposts::-webkit-scrollbar-track,
-.inbox-messages::-webkit-scrollbar-track {
+.inbox-messages::-webkit-scrollbar-track,
+.people-scroll::-webkit-scrollbar-track,
+.notification-scroll::-webkit-scrollbar-track {
   background-color: #71717a19;
   border-radius: 1rem;
 }

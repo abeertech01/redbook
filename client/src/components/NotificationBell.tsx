@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Bell } from "lucide-react"
 import {
@@ -14,6 +14,7 @@ import { Button } from "./ui/button"
 import {
   useGetNotificationsQuery,
   useGetUnreadCountQuery,
+  useLazyGetNotificationsQuery,
   useMarkAllAsReadMutation,
   useMarkAsReadMutation,
 } from "@/app/api/notification"
@@ -70,6 +71,8 @@ const NotificationRow = ({ notification }: { notification: Notification }) => {
   )
 }
 
+const LOAD_MORE_THRESHOLD = 80
+
 const NotificationBell = () => {
   const [open, setOpen] = useState(false)
   const { data: unreadData } = useGetUnreadCountQuery()
@@ -77,11 +80,45 @@ const NotificationBell = () => {
     undefined,
     { skip: !open }
   )
+  const [fetchMoreNotifications, { isFetching: isFetchingMore }] =
+    useLazyGetNotificationsQuery()
   const [markAllAsRead, { isLoading: isMarkingAllAsRead }] =
     useMarkAllAsReadMutation()
 
   const unreadCount = unreadData?.count ?? 0
   const notifications = notificationsData?.notifications ?? []
+  const hasMore = notificationsData?.hasMore ?? false
+  const nextCursor = notificationsData?.nextCursor ?? null
+
+  const listRef = useRef<HTMLDivElement>(null)
+
+  const handleScroll = () => {
+    const el = listRef.current
+    if (!el || !hasMore || !nextCursor || isFetchingMore) return
+
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < LOAD_MORE_THRESHOLD) {
+      fetchMoreNotifications(nextCursor)
+    }
+  }
+
+  // On a tall screen a full page may not overflow the dropdown, leaving no
+  // scrollbar and therefore no way to reach the rest - keep pulling pages
+  // until it's actually scrollable or there's nothing left.
+  useEffect(() => {
+    const el = listRef.current
+    if (!el || !open || !hasMore || !nextCursor || isFetchingMore) return
+
+    if (el.scrollHeight <= el.clientHeight) {
+      fetchMoreNotifications(nextCursor)
+    }
+  }, [
+    open,
+    notifications.length,
+    hasMore,
+    nextCursor,
+    isFetchingMore,
+    fetchMoreNotifications,
+  ])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -100,7 +137,12 @@ const NotificationBell = () => {
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent
+        ref={listRef}
+        onScroll={handleScroll}
+        align="end"
+        className="w-80 notification-scroll"
+      >
         <div className="flex items-center justify-between px-2 py-1.5">
           <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
           <Button
@@ -130,6 +172,11 @@ const NotificationBell = () => {
         {notifications.map((notification) => (
           <NotificationRow key={notification.id} notification={notification} />
         ))}
+        {isFetchingMore && (
+          <div className="px-2 py-2 text-center text-xs text-muted-foreground">
+            Loading more...
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

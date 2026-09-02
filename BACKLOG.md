@@ -6,9 +6,20 @@ Running list of things to come back to later. Unlike the per-feature `*_PLAN.md`
 
 Right now a notification only has `isRead`. Facebook-style products distinguish "seen" (the dropdown was opened, so it's no longer visually "new") from "read" (the user actually clicked into it). Revisit once the notification feature ([NOTIFICATION_PLAN.md](NOTIFICATION_PLAN.md)) is live.
 
-## 2. Pagination past "last 30" ⬜
+## 2. Pagination past "last 30" ✅
 
-Notification list (and possibly chat/message history, post feeds) currently plans to fetch a fixed recent window rather than true pagination/infinite scroll. Fine for a portfolio-scale dataset now; revisit if lists need to go deeper than the fixed window.
+Written speculatively ("and possibly chat/message history, post feeds"), and two of the three turned out not to need work: the **post feed** already had offset pagination (`?page`/`?limit`, default 10) with scroll-triggered loading in `AllPosts.tsx`, and **chat history** got cursor pagination (20/page) when the message list was fixed.
+
+The **notification list** was the real gap: `take: 30` with no cursor meant row 31 was simply unreachable — while still counting toward the bell's badge, since `getUnreadCount` runs its own unlimited query. So the badge could report unread notifications that no amount of scrolling would reveal.
+
+Now cursor-paginated at **18 per page** (`NOTIFICATIONS_PAGE_SIZE` in [notification.class.ts](server/src/classes/notification.class.ts)), same RTK Query `serializeQueryArgs`/`merge`/`forceRefetch` shape as the chat list, with two differences worth noting:
+
+- The query arg **is** the cursor (`string | undefined`) rather than an object, so `SocketProvider`'s existing `updateQueryData("getNotifications", undefined, …)` call keeps addressing the same cache entry untouched.
+- It's a newest-first list scrolled *downward*, so an older page **appends**; the chat list is oldest-first scrolled upward and prepends.
+
+`orderBy` gained `id` as a tiebreaker so two notifications created in the same millisecond can't straddle a page boundary and get skipped. `NotificationBell` also auto-pulls another page when a full page doesn't overflow the dropdown — on a tall screen 18 rows may not produce a scrollbar, which would otherwise strand the user at 18 with no way to scroll for more.
+
+Verified with 45 seeded notifications from 45 distinct actors (so every row is individually identifiable): 18 → 36 → 45 across scrolls, one network call per page, correct newest-first order maintained across page boundaries, zero duplicates, no further fetch once exhausted, and row 31 reachable. Phase 8's 16-case notification matrix re-run unchanged.
 
 ## 3. Timestamps re-rendering on every keystroke ✅
 
@@ -19,9 +30,11 @@ Two layers to this, fixed in two passes:
 
 Verified via render-count instrumentation against the exact three reported scenarios (typing in the message box, upvoting a post, adding a comment) — zero unrelated `TimeAgo` re-renders in all three, confirmed against a StrictMode-aware baseline (StrictMode double-invokes newly-mounted components' renders in dev, which is expected and unrelated to this bug).
 
-## 4. Unread message count badge on the Home sidebar "Messages" link ⬜
+## 4. Unread message count badge on the Home sidebar "Messages" link ✅
 
-[client/src/pages/Home.tsx:52-54](client/src/pages/Home.tsx#L52-L54) — the "Messages" link in the left sidebar card should show an unread count in parentheses, e.g. "Messages (3)", similar to how the notification bell will show an unread badge.
+Shipped as part of the notification feature rather than as its own task, which is why it sat unticked for a while. Lives in [MessagesSidebarLink.tsx](client/src/components/MessagesSidebarLink.tsx), not inline in `Home.tsx` — it's a separate component specifically so `useGetUnreadMessageCountQuery()` doesn't sit high in `Home`'s tree and re-render the whole feed on every count change (see [#3](#3-timestamps-re-rendering-on-every-keystroke)).
+
+Renders "Messages (3)" at `md:` and up, and a small red count badge on the icon below that, where the sidebar row is icon-only (see [#6](#6-responsive--mobile-friendly-design)). Note this count is deliberately *not* the same number as the bell's: the sidebar shows the raw unseen-message count while the bell deduplicates by (actor, type) — the split is spelled out in Phase 9 of [NOTIFICATION_PLAN.md](NOTIFICATION_PLAN.md). Verified against that distinction with an 8-case matrix (count climbs per message, ignores comments, drops by exactly that sender's share when their chat is opened) plus a mobile-badge check.
 
 ## 5. Hover tooltip for exact timestamp ✅
 
@@ -31,15 +44,21 @@ Time format, per user spec: today/yesterday show a day label + clock time ("Toda
 
 Note: this was scoped to chat messages only, per what was asked — posts/comments still use the plain relative-time `TimeAgo` display, no tooltip.
 
-## 6. Responsive / mobile-friendly design 🔴 High Priority ⬜
+## 6. Responsive / mobile-friendly design ✅
 
-App is partially responsive at best, leaning desktop-only. Audit findings:
+Original audit findings, plus two more a live mobile-viewport pass turned up that the static read-through had missed (`Home.tsx`'s sidebar height and `AuthTabs`' fixed width) — both screenshotted and fixed the same way as the rest:
 
-- A viewport meta tag exists (`client/index.html`) and a few pages show deliberate mobile consideration — `Navbar.tsx` has a real `md:hidden` hamburger menu (though its items are placeholders with no `onClick` handlers), `Home.tsx`'s 3-column grid collapses to stacked blocks below `md`, and `Profile.tsx` is the most genuinely responsive page (scales avatar/cover/text, grid drops to one column below `lg`).
-- Two flows are actively broken on a phone-sized viewport: `Post.tsx` has a fixed `w-188` (752px) with no breakpoint override, causing overflow/clipping; `Messages.tsx`/`Inbox.tsx` use `ResizablePanelGroup` in a hardcoded horizontal 3-panel layout (chat list / conversation / participant info) with no mobile fallback, crushing everything into unusable slivers.
-- Everything else (`AllPosts`, `PostCard`, `PostCreate`, `Login`) has no explicit breakpoints but is naturally fluid, so it degrades acceptably by inheriting whatever width its parent gives it.
+- `Post.tsx` had a fixed `w-188` (752px) with no breakpoint override, clipping content and cutting off the comment button. Now `w-full md:w-188` with mobile side padding.
+- `Messages.tsx`/`Inbox.tsx` used `ResizablePanelGroup` in a hardcoded horizontal 3-panel layout (chat list / conversation / participant info), crushing everything into unusable slivers below `md`. Rewritten so mobile shows one full-width pane at a time — the chat list, or the open conversation with a new back button (`Inbox.tsx`) — chosen via `useMediaQuery("(min-width: 768px)")` (from the already-installed `@uidotdev/usehooks`, same package `SearchUser.tsx` gets `useDebounce` from) rather than a CSS-only `md:hidden`/`hidden md:block` split. A pure-CSS split would've rendered `<Outlet/>` (i.e. `Inbox`) twice at once — once per layout branch — which would have double-subscribed to the `NEW_MESSAGE` socket event and duplicated every incoming live message in the UI. `useMediaQuery` picks exactly one branch, so `Inbox` only ever mounts once. Desktop behavior (resizable panels, participant info panel) is unchanged and re-verified against it.
+- `Navbar.tsx`'s `md:hidden` hamburger had four placeholder items with no `onClick` handlers, three of which (Billing/Team/Subscription) don't correspond to anything the app has. First attempt wired it to the app's three real destinations (Home/Messages/Profile) instead — but that made it purely redundant with `Home.tsx`'s own Profile/Messages/Marketplace row once that row got icon-only mobile styling (see below), so per instruction it was removed outright rather than kept as a second, duplicate nav. `Navbar.tsx` is back to just theme toggle, notification bell, and the avatar dropdown (Profile/Settings/Logout) on every breakpoint.
+- `Home.tsx`'s two side `ScrollArea`s were pinned to `h-[calc(100vh-3.5rem)]` unconditionally. Fine on desktop where they're one column among three, but once `md:grid` collapses to stacked blocks below `md`, that pinned height turned the left sidebar into a nearly-empty full-screen panel that pushed the actual feed a full scroll below the fold. Changed to `h-auto md:h-[calc(100vh-3.5rem)]` so it sizes to content on mobile; the feed's own internally-scrolling container (needed for its scroll-triggered pagination) was left untouched. Its Profile/Messages/Marketplace row was also reworked per follow-up requests: a row of icon-only links on mobile (`MessageSquare`/`User`/`Store` from `lucide-react`) with the unread-message count now a small badge dot on the icon instead of inline text, and back to the original icon+label column at `md:` and up.
+- `AuthTabs.tsx` (`Login.tsx`'s wrapper) had a fixed `w-[400px]`, overflowing a 375px viewport by ~13px — the one page-level horizontal scroll found in an overflow sweep across every route. Changed to `w-[calc(100%-2rem)] max-w-100`.
+- `Home.tsx`'s "People You may want to chat with" column is a desktop-only third grid column, so on mobile — where the grid collapses to stacked blocks — it used to land at the very bottom of the page, below the entire infinite-scrolling feed, i.e. effectively unreachable. Mobile now reaches it through a `Users` icon in the sidebar row that swaps the main pane between the feed and the People list (the icon and label flip to `Newspaper`/"Feed" to toggle back); desktop is untouched and still shows it permanently in its own right-hand column, with no toggle button rendered at all. The column is rendered conditionally on `useMediaQuery("(min-width: 768px)")` rather than hidden with `md:` classes, since a CSS-only hide would still stack it at the page bottom on mobile — the exact problem being fixed. The shared list markup lives in a local `PeopleList` component so both placements keep their own wrappers without duplicating the list.
+  - That right-hand column is a plain `overflow-y-auto` div, *not* shadcn's `ScrollArea`, on purpose: Radix wraps a ScrollArea's children in an unclassed `display: table; min-width: 100%` element that grows to the content's **max-content** width, and `Button`'s base classes include `whitespace-nowrap` — so one long username stretched the card ~20px past its 352px column, clipping off its right padding entirely while the left sidebar kept its 8px (the sidebar was fine only because its content is short). Long names now `truncate` inside a `min-w-0` flex column, and the card's width is tied to the column. `.people-scroll` was added to the existing `.allposts`/`.inbox-messages` scrollbar rules in `index.css` so the native scrollbar still matches the app's styling. Symmetric wasn't sufficient on its own, though: at the columns' original `p-2` both side panels sat 8px from the screen edge while `Navbar`'s `px-5` put its content at 20px, so the panels visibly jutted past everything else. The grid now carries `md:px-3`, which pairs with each column's `p-2` for a 20px gutter matching the navbar (verified equal on both sides, and equal to the navbar, from 1024px through 2560px).
+  - Gotcha worth remembering: the first cut of this *dropped* the third grid column entirely instead of making it conditional. That silently widened the layout — the middle track (`minmax(22rem,auto)`) absorbed all the space the removed column had been reserving, which is invisible at 1280px but sprawls badly on a wide monitor. Grid sizes a declared track from its own `minmax()` whether or not a child occupies it, so keeping all three tracks declared is what holds the feed's width stable. Layout changes like this need checking at a wide viewport, not just a laptop-sized one.
+- `AllPosts`, `PostCard`, `PostCreate`, `Profile.tsx` needed no changes — confirmed still correct after the above, both by re-reading and by live screenshot.
 
-Scope: make the whole app usable at mobile widths, not just patch the two broken flows — includes wiring up the Navbar's dead hamburger menu items to the app's actual features.
+Verified live at a 375×812 viewport via Playwright screenshots across every page (catching the two bugs above that reading the code alone missed), a scripted mobile chat flow (open a chat full-screen, send a message, tap back, confirm the list reflects it), a `document.documentElement.scrollWidth` sweep confirming zero horizontal overflow anywhere, and the full pre-existing desktop chat/notification regression suite (38 checks across pagination, live-chat counts, the message tooltip, and Phase 9's bell/sidebar dedup) re-run unchanged to confirm nothing on desktop moved.
 
 ## 7. Migrate database from PostgreSQL/Prisma to MongoDB/Mongoose ⬜
 
