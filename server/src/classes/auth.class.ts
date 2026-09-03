@@ -4,7 +4,7 @@ import { IRequest, User } from "../utils/types"
 import { compare, hash } from "bcrypt"
 import { ErrorHandler } from "../utils/utility"
 import { loginSchema, registerSchema, RegisterSchemaType } from "../lib/zod"
-import { isEmail, sendToken } from "../utils/features"
+import { cookieOptions, isEmail, sendToken } from "../utils/features"
 import prisma from "../lib/prismadb"
 
 class Auth {
@@ -102,7 +102,7 @@ class Auth {
 
   public logoutUser = TryCatch(
     async (req: IRequest, res: Response, next: NextFunction) => {
-      res.clearCookie("redbook-token")
+      res.clearCookie("redbook-token", cookieOptions)
       res.status(200).json({
         success: true,
         message: "Logged out successfully!",
