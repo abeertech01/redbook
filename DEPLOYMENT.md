@@ -15,7 +15,7 @@ Two consequences worth internalising:
 
 | Piece | Host | Why |
 |---|---|---|
-| Client (`client/`) | Cloudflare Pages | Static files. Free tier doesn't sleep or expire. |
+| Client (`client/`) | Cloudflare Workers (static assets) | Static files. Free tier doesn't sleep or expire. |
 | Server (`server/`) | Render (free web service) | Always-on Node process, supports WebSockets, no card required. |
 | Database | Neon | Free Postgres that persists and auto-resumes in well under a second. |
 
@@ -87,15 +87,17 @@ Notes specific to this repo:
 - `prisma migrate deploy` is idempotent — safe on every deploy. It replaces what the `migration` service does in `docker-compose.yaml`.
 - `.nvmrc` (Node 24) is picked up automatically once the root directory is `server`.
 
-### 3. Client (Cloudflare Pages)
+### 3. Client (Cloudflare Workers, git-integrated)
 
-New Pages project → same repo:
+Cloudflare now has two different products that both call themselves "deploy a static site": classic **Pages** (dashboard-configured Build output directory, `_redirects` file) and the newer **Workers** git-integration flow, which is config-file-driven via `client/wrangler.jsonc` and deploys with `npx wrangler deploy` instead of a dashboard output-directory field. This repo uses the latter — that's what `client/wrangler.jsonc` is for.
+
+New Worker project → connect the repo:
 
 | Setting | Value |
 |---|---|
-| Root directory | `client` |
+| Path (under "Advanced settings") | `client` |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
+| Deploy command | `npx wrangler deploy` |
 
 Environment variable:
 
@@ -109,13 +111,9 @@ VITE_SERVER_URL           the Render URL from step 2
 
 The app uses `BrowserRouter` with client-side routes (`/post/:id`, `/messages/:chatId`, `/profile`). There is no real file at `/post/abc123`, so without a rewrite the host returns **404** whenever someone refreshes on one of those routes, opens a post link in a new tab, or follows a shared link. In-app navigation works fine, which makes this easy to miss in testing and then break for real visitors — and notification rows point at exactly these routes.
 
-Create `client/public/_redirects` (Vite copies `public/` into `dist/`):
+`client/wrangler.jsonc` already handles this via `assets.not_found_handling: "single-page-application"` — any request with no matching static file falls back to `index.html` with a 200. **Do not also add a `client/public/_redirects` catch-all** (`/*  /index.html  200`) alongside it — Cloudflare's build rejects that combination outright as an infinite loop (error `100324`, "Invalid _redirects configuration"), since the assets layer's own `index.html`/`.html`-stripping behavior loops back into the `_redirects` rule. The two mechanisms are redundant; `not_found_handling` alone is sufficient for this deploy path.
 
-```
-/*  /index.html  200
-```
-
-On Vercel instead of Cloudflare, the equivalent is `client/vercel.json`:
+`_redirects` is still the right tool if this project ever moves to **classic** Cloudflare Pages (dashboard Build output directory, no `wrangler.jsonc` involved) instead — the two flows shouldn't be mixed. On Vercel, the equivalent is `client/vercel.json`:
 
 ```json
 { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
@@ -123,13 +121,13 @@ On Vercel instead of Cloudflare, the equivalent is `client/vercel.json`:
 
 ### 4. Close the loop
 
-Back on Render, set `CLIENT_URL` to the exact Pages origin and redeploy. `corsOptions` in `server/src/constants/config.ts` uses `origin: process.env.CLIENT_URL`, so it must match **exactly** — including scheme, and **no trailing slash**.
+Back on Render, set `CLIENT_URL` to the exact client origin and redeploy. `corsOptions` in `server/src/constants/config.ts` uses `origin: process.env.CLIENT_URL`, so it must match **exactly** — including scheme, and **no trailing slash**.
 
 ## Auth cookies across two domains
 
 `server/src/utils/features.ts` sets the JWT cookie with `httpOnly: true`, `secure: true`, `sameSite: "none"`. That's correct for a cross-origin setup and requires HTTPS (every host above provides it).
 
-The catch: with the client on `*.pages.dev` and the API on `*.onrender.com`, those are unrelated sites, so the auth cookie is a **third-party cookie**. Safari blocks those by default and Chrome has been restricting them — meaning **login can silently fail for some visitors** while working fine for you.
+The catch: with the client on `*.workers.dev` and the API on `*.onrender.com`, those are unrelated sites, so the auth cookie is a **third-party cookie**. Safari blocks those by default and Chrome has been restricting them — meaning **login can silently fail for some visitors** while working fine for you.
 
 The fix, if it bites: buy a domain (~$10/yr), put the client on `example.com` and the API on `api.example.com`. They're then same-site, and the cookie can be relaxed to `sameSite: "lax"`, sidestepping third-party cookie blocking entirely. Cloudflare's proxy passes WebSockets through fine, so `api.` can point at Render without breaking Socket.IO.
 
