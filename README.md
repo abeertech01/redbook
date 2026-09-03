@@ -2,6 +2,15 @@
 
 **Redbook** is a social media app built with the PERN stack (PostgreSQL, Express, React, and Node.js). This README will guide you through the setup process to run the project using Docker, including necessary environment variables.
 
+## Live Demo
+
+Try it out without any setup: **[redbook-client.abeer-technology.workers.dev](https://redbook-client.abeer-technology.workers.dev)**
+
+This is hosted on free-tier services (Cloudflare Workers, Render, Neon). Two things worth knowing:
+
+- The server can take up to ~50 seconds to respond on the first request after a period of inactivity (it spins down after 15 minutes idle, then wakes back up) — this is normal, not a bug.
+- If the live link is unresponsive or broken beyond that, it likely means something's off with the free-tier hosting rather than the code itself. In that case, use the Docker setup below to run it yourself.
+
 ## Watch The App Preview
 [![Redbook Preview Thumbnail](./client/public/redbook-screenshot.png)](https://www.youtube.com/watch?v=SJKd8GhW-iE)
 
