@@ -1,0 +1,13 @@
+{
+  "name": "redbook-client",
+  "compatibility_date": "2024-09-23",
+  "assets": {
+    "directory": "./dist",
+    // Any path with no matching static file (e.g. /post/:id, /messages/:chatId)
+    // falls back to index.html instead of 404ing, so React Router can handle
+    // it client-side - the same fallback client/public/_redirects provides
+    // for the classic Cloudflare Pages flow, in case this project ever
+    // switches back to that.
+    "not_found_handling": "single-page-application"
+  }
+}
