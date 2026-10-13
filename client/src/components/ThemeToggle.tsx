@@ -1,40 +1,20 @@
 import { useTheme } from "@/constants/ThemeProvider"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
-import { Button } from "./ui/button"
 import { Moon, Sun } from "lucide-react"
 
 const ThemeToggle = () => {
-  const { setTheme } = useTheme()
+  const { theme, toggleTheme } = useTheme()
+  const label = theme === "light" ? "Switch to dark" : "Switch to light"
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="secondary"
-          size="icon"
-          className="bg-zinc-800 hover:bg-zinc-800 text-white hover:text-inherit focus-visible:outline-none"
-        >
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={label}
+      title={label}
+      className="grid size-10 cursor-pointer place-items-center rounded-full text-ink-3b hover:bg-chip hover:text-ink"
+    >
+      {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+    </button>
   )
 }
 export default ThemeToggle

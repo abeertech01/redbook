@@ -1,127 +1,76 @@
-import { useEffect, useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowBigDown, ArrowBigUp } from "lucide-react"
+import { useState } from "react"
 import {
   useDownvoteCommentMutation,
   useGetCommentsQuery,
   useUpvoteCommentMutation,
 } from "@/app/api/comment"
 import TimeAgo from "./TimeAgo"
+import UserAvatar from "./UserAvatar"
+import VoteControls from "./VoteControls"
 
 type CommentsProps = {
   postId: string
   userId: string
-  setCommentNumber: (cmts: number) => void
 }
 
-type LoadingState = {
-  upvote: boolean
-  downvote: boolean
-}
-
-const Comments = ({ postId, userId, setCommentNumber }: CommentsProps) => {
+const Comments = ({ postId, userId }: CommentsProps) => {
   const { data } = useGetCommentsQuery(postId)
   const [upvoteComment] = useUpvoteCommentMutation()
   const [downvoteComment] = useDownvoteCommentMutation()
-  const [loadingStates, setLoadingStates] = useState<
-    Record<string, LoadingState>
-  >({})
+  // Comment ids with a vote request in flight, so a comment's buttons are
+  // disabled until its own request settles without blocking the others.
+  const [pending, setPending] = useState<Set<string>>(new Set())
 
-  const handleUpvote = async (commentId: string) => {
-    setLoadingStates((prev: Record<string, LoadingState>) => ({
-      ...prev,
-      [commentId]: { upvote: true, downvote: true },
-    }))
+  const vote = async (commentId: string, direction: "up" | "down") => {
+    setPending((prev) => new Set(prev).add(commentId))
 
-    await upvoteComment({ commentId, postId })
+    await (direction === "up" ? upvoteComment : downvoteComment)({
+      commentId,
+      postId,
+    })
 
-    setLoadingStates((prev: Record<string, LoadingState>) => ({
-      ...prev,
-      [commentId]: { upvote: false, downvote: false },
-    }))
+    setPending((prev) => {
+      const next = new Set(prev)
+      next.delete(commentId)
+      return next
+    })
   }
 
-  const handleDownvote = async (commentId: string) => {
-    setLoadingStates((prev: Record<string, LoadingState>) => ({
-      ...prev,
-      [commentId]: { downvote: true, upvote: true },
-    }))
-
-    await downvoteComment({ commentId, postId })
-
-    setLoadingStates((prev: Record<string, LoadingState>) => ({
-      ...prev,
-      [commentId]: { downvote: false, upvote: false },
-    }))
-  }
-
-  useEffect(() => {
-    if (data) setCommentNumber(data.comments.length as number)
-  }, [data])
+  if (!data || data.comments.length === 0) return null
 
   return (
-    <>
-      {data && data?.comments.length > 0 && (
-        <ul className="flex flex-col gap-4 w-full">
-          {data.comments.map((comment) => (
-            <li key={comment.id} className="flex space-x-2 w-full">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={comment.author?.profileImgUrl} />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-
-              <Card className="px-3 py-2 w-full">
-                <CardDescription>
-                  <h1>
-                    <span>{comment.author?.name}</span> •{" "}
-                    <span>
-                      <TimeAgo timestamp={comment.createdAt} variant="date" />
-                    </span>
-                  </h1>
-                </CardDescription>
-                <p className="mb-4">{comment.content}</p>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => handleUpvote(comment.id)}
-                    disabled={
-                      loadingStates[comment.id]?.upvote ||
-                      loadingStates[comment.id]?.downvote
-                    }
-                    variant={
-                      comment.upvoteIds.includes(userId)
-                        ? "secondary"
-                        : "outline"
-                    }
-                  >
-                    <ArrowBigUp className="scale-125" />{" "}
-                    {comment.upvoteIds.length}
-                  </Button>
-                  <div>|</div>
-                  <Button
-                    onClick={() => handleDownvote(comment.id)}
-                    disabled={
-                      loadingStates[comment.id]?.upvote ||
-                      loadingStates[comment.id]?.downvote
-                    }
-                    variant={
-                      comment.downvoteIds.includes(userId)
-                        ? "secondary"
-                        : "outline"
-                    }
-                  >
-                    <ArrowBigDown className="scale-125" />{" "}
-                    {comment.downvoteIds.length}
-                  </Button>
-                </div>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
+    <div className="flex flex-col gap-1 px-1">
+      {data.comments.map((comment) => (
+        <div
+          key={comment.id}
+          className="flex gap-3.5 border-b border-chip py-3.5 last:border-b-0"
+        >
+          <UserAvatar user={comment.author} className="size-9.5 text-[13px]" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="text-[13.5px]">
+              <span className="font-semibold text-ink">{comment.author?.name}</span>{" "}
+              <span className="text-mute-2">
+                · <TimeAgo timestamp={comment.createdAt} variant="date" />
+              </span>
+            </div>
+            <div className="text-[15px] leading-normal whitespace-pre-line text-ink-2">
+              {comment.content}
+            </div>
+            <div className="-ml-2">
+              <VoteControls
+                variant="plain"
+                upvoteIds={comment.upvoteIds}
+                downvoteIds={comment.downvoteIds}
+                userId={userId}
+                onUpvote={() => vote(comment.id, "up")}
+                onDownvote={() => vote(comment.id, "down")}
+                disabled={pending.has(comment.id)}
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 export default Comments

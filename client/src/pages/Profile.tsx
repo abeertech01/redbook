@@ -5,21 +5,13 @@ import {
   useUploadProfileImageMutation,
 } from "@/app/api/user"
 import { AppDispatch, RootState } from "@/app/store"
-import Navbar from "@/components/Navbar"
+import { useAppShell } from "@/components/layout/AppShellContext"
 import PostCard from "@/components/PostCard"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Textarea } from "@/components/ui/textarea"
+import UserAvatar from "@/components/UserAvatar"
+import useLogout from "@/hooks/useLogout"
 import { formatHumanReadTimestamp } from "@/lib/helper"
-import {
-  Camera,
-  CameraIcon,
-  Edit,
-  LoaderPinwheel,
-  SquareCheckBig,
-} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Camera, LoaderCircle, LogOut, Pencil } from "lucide-react"
 import { ChangeEvent, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
@@ -28,7 +20,6 @@ import {
   updateProfileImageUrl,
 } from "@/app/reducers/user"
 import { toast } from "sonner"
-import { Input } from "@/components/ui/input"
 
 type CoverPhotoProps = {
   url?: string
@@ -51,202 +42,255 @@ const CoverPhoto = ({ url, uploading }: CoverPhotoProps) => {
         onLoad={() => setLoaded(true)}
         // Without this a broken/blocked image would spin forever.
         onError={() => setLoaded(true)}
-        className={`absolute z-30 w-full h-full object-cover rounded-bl-md rounded-br-md transition-opacity duration-500 ${
+        className={cn(
+          "absolute inset-0 size-full object-cover transition-opacity duration-500",
           loaded ? "opacity-100" : "opacity-0"
-        }`}
+        )}
       />
-      {(!loaded || uploading) && (
-        <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-bl-md rounded-br-md w-full h-full">
-          <LoaderPinwheel className="text-xl animate-spin" />
-        </div>
-      )}
+      {(!loaded || uploading) && <Spinner />}
     </>
   )
 }
 
+const Spinner = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      "absolute inset-0 grid place-items-center bg-black/40 text-white",
+      className
+    )}
+  >
+    <LoaderCircle className="animate-spin" />
+  </div>
+)
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <span className="font-mono text-[11px] tracking-[0.08em] text-mute-2 uppercase">
+    {children}
+  </span>
+)
+
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
+  const { isMobile, showBottomNav } = useAppShell()
+  const logout = useLogout()
   const [isBioEditing, setIsBioEditing] = useState(false)
-  const [bioText, setBioText] = useState(user?.bio ?? "")
+  const [bioDraft, setBioDraft] = useState("")
 
   const { data: postsResult } = useGetUserPostsQuery(user!.id)
-  const [updateBio] = useUpdateBioMutation()
-  const [
-    uploadProfileImage,
-    { isLoading: uploadingProfileImg, isSuccess: uploadedProfileImg },
-  ] = useUploadProfileImageMutation()
+  const [updateBio, { isLoading: savingBio }] = useUpdateBioMutation()
+  const [uploadProfileImage, { isLoading: uploadingProfileImg }] =
+    useUploadProfileImageMutation()
   const [uploadCoverImage, { isLoading: uploadingCoverImg }] =
     useUploadCoverImageMutation()
 
-  const editBio = async () => {
-    if (isBioEditing && bioText && bioText !== user?.bio) {
-      const theBioResult = await updateBio(bioText).unwrap()
+  const posts = postsResult?.posts ?? []
 
-      await dispatch(updateBioReducer(theBioResult.user.bio))
-    }
+  const startBio = () => {
+    setBioDraft(user?.bio ?? "")
+    setIsBioEditing(true)
+  }
 
-    if (isBioEditing && bioText === user?.bio) {
-      toast.error("No changes made")
-    }
+  const saveBio = async () => {
+    const bio = bioDraft.trim()
 
-    if (isBioEditing && !bioText) {
+    if (!bio) {
       toast.error("Bio cannot be empty")
+      return
     }
 
-    setIsBioEditing((prev) => !prev)
+    if (bio !== user?.bio) {
+      const result = await updateBio(bio)
+
+      if ("error" in result) {
+        toast.error("Couldn't update your bio")
+        return
+      }
+
+      dispatch(updateBioReducer(result.data.user.bio))
+    }
+
+    setIsBioEditing(false)
   }
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    if (files!.length > 0) {
-      const formData = new FormData()
+    const formData = new FormData()
+    formData.append("profileImage", file)
 
-      await formData.append("profileImage", files![0])
+    const updatedUserData = await uploadProfileImage(formData)
 
-      const updatedUserData = await uploadProfileImage(formData)
-
-      dispatch(updateProfileImageUrl(updatedUserData.data?.user.profileImgUrl))
-    }
+    dispatch(updateProfileImageUrl(updatedUserData.data?.user.profileImgUrl))
   }
 
   const handleCoverChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    if (files!.length > 0) {
-      const formData = new FormData()
+    const formData = new FormData()
+    formData.append("coverImage", file)
 
-      await formData.append("coverImage", files![0])
+    const updatedUserData = await uploadCoverImage(formData)
 
-      const updatedUserData = await uploadCoverImage(formData)
-
-      dispatch(updateCoverImageUrl(updatedUserData.data?.user.coverImgUrl))
-    }
+    dispatch(updateCoverImageUrl(updatedUserData.data?.user.coverImgUrl))
   }
 
+  // Every account starts on a stock cover URL (the schema default) with no
+  // Cloudinary id behind it - treat that as "no cover yet".
+  const hasCover = !!user?.coverImgPId
+
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <ScrollArea className="w-full h-[calc(100vh-3.5rem)]">
-        <div className="mx-auto w-full md:w-4/6 lg:w-7/12 h-full">
-          <div className="relative mb-32 w-full h-48 md:h-80">
+    <>
+      <div className="overflow-hidden rounded-[20px] border border-line bg-surface">
+        <div
+          className={cn(
+            "cover-placeholder relative grid place-items-center",
+            isMobile ? "h-37.5" : "h-55"
+          )}
+        >
+          <span className="font-mono text-xs tracking-[0.04em]">cover photo</span>
+          {hasCover ? (
             <CoverPhoto
               key={user?.coverImgUrl}
               url={user?.coverImgUrl}
               uploading={uploadingCoverImg}
             />
-
-            <div className="bottom-0 left-12 z-40 absolute flex items-center gap-4 translate-y-3/4">
-              <div className="group relative w-20 md:w-28 h-20 md:h-28">
-                <Avatar className="border w-full md:w-28 h-full md:h-28">
-                  <AvatarImage
-                    src={user?.profileImgUrl}
-                    className="object-cover"
-                  />
-                  <AvatarFallback>
-                    <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-full w-full h-full">
-                      <LoaderPinwheel className="animate-spin" />
-                    </div>
-                  </AvatarFallback>
-                </Avatar>
-                {uploadingProfileImg && !uploadedProfileImg ? (
-                  <div className="top-0 z-40 absolute flex justify-center items-center bg-zinc-500 rounded-full w-full h-full">
-                    <LoaderPinwheel className="animate-spin" />
-                  </div>
-                ) : (
-                  <div className="group hidden group-hover:block top-0 absolute shadow-md rounded-full w-20 md:w-28 h-20 md:h-28 custom-glow">
-                    <div className="z-30 relative flex justify-center items-center bg-transparent group-hover:bg-rose-500/60 rounded-full w-full h-full text-white">
-                      <Camera className="scale-150" />
-                    </div>
-                    {!uploadingProfileImg && (
-                      <Input
-                        id="picture"
-                        type="file"
-                        onChange={handleImageUpload}
-                        className="top-0 left-0 z-40 absolute opacity-0 rounded-full w-full h-full cursor-pointer"
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <h1 className="font-bold text-xl md:text-2xl">{user?.name}</h1>
-            </div>
-            <div className="right-2 bottom-2 z-40 absolute flex items-center gap-4 shadow-md custom-glow">
-              <div className="relative flex justify-center items-center gap-2 bg-rose-500 hover:bg-rose-600 px-2 py-1 text-white text-sm">
-                <CameraIcon />
-                <span className="inline-block">Upload Cover Photo</span>
-                <Input
-                  type="file"
-                  onChange={handleCoverChange}
-                  className="absolute opacity-0 w-full h-full cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="items-start gap-3 grid lg:grid-cols-[34%_auto] md:grid-rows-[auto_auto] p-3 md:p-0 w-full">
-            <Card className="p-4">
-              <ul className="flex flex-col gap-3 overflow-x-hidden">
-                <li>
-                  <h1 className="font-semibold text-lg underline">Username</h1>
-                  <p>@{user?.username}</p>
-                </li>
-                <li>
-                  <h1 className="font-semibold text-lg underline">Email</h1>
-                  <p className="overflow-hidden truncate text-ellipsis whitespace-nowrap">
-                    {user?.email}
-                  </p>
-                </li>
-                <li>
-                  <h1 className="font-semibold text-lg underline">
-                    Bio{" "}
-                    <Button
-                      onClick={editBio}
-                      size={"icon"}
-                      variant={"ghost"}
-                      className="hover:bg-transparent"
-                    >
-                      {!isBioEditing ? (
-                        <Edit className="text-zinc-500" />
-                      ) : (
-                        <SquareCheckBig className="text-zinc-500" />
-                      )}
-                    </Button>
-                  </h1>
-                  {!isBioEditing && (
-                    <p>
-                      {user && user.bio
-                        ? user.bio
-                        : "Add something about yourself."}
-                    </p>
-                  )}
-                  {isBioEditing && (
-                    <Textarea
-                      value={bioText}
-                      onChange={(e) => setBioText(e.target.value)}
-                      className="border"
-                    />
-                  )}
-                </li>
-                <li>
-                  <h1 className="font-semibold text-lg underline">Joined</h1>
-                  <p>{formatHumanReadTimestamp(user?.createdAt as Date)}</p>
-                </li>
-              </ul>
-            </Card>
-            <div>
-              <ul className="flex flex-col gap-3">
-                {postsResult?.posts.map((post) => (
-                  <PostCard key={post.id} post={post} userId={user!.id} />
-                ))}
-              </ul>
-            </div>
-          </div>
+          ) : (
+            uploadingCoverImg && <Spinner />
+          )}
+          <label className="absolute right-4 bottom-4 flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/14 bg-[rgba(10,10,12,0.6)] px-3.5 text-[13.5px] font-medium whitespace-nowrap text-white backdrop-blur-sm hover:bg-[rgba(10,10,12,0.8)]">
+            <Camera size={16} />
+            Change cover
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleCoverChange}
+              disabled={uploadingCoverImg}
+              className="sr-only"
+            />
+          </label>
         </div>
-      </ScrollArea>
-    </div>
+        <div className="flex flex-wrap items-end gap-5 px-5 pb-6 sm:px-7">
+          <label className="group relative z-1 -mt-14 size-28 flex-none cursor-pointer overflow-hidden rounded-full border-5 border-surface">
+            <UserAvatar user={user} className="size-full text-[34px]" />
+            {uploadingProfileImg ? (
+              <Spinner className="rounded-full" />
+            ) : (
+              <div className="absolute inset-0 hidden place-items-center rounded-full bg-brand/60 text-white group-hover:grid">
+                <Camera />
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              aria-label="Change profile photo"
+              onChange={handleImageUpload}
+              disabled={uploadingProfileImg}
+              className="sr-only"
+            />
+          </label>
+          <div className="min-w-50 flex-1 pt-3.5">
+            <div className="text-[26px] font-bold tracking-[-0.02em]">{user?.name}</div>
+            <div className="mt-0.5 text-sm text-mute">
+              @{user?.username} · Joined{" "}
+              {formatHumanReadTimestamp(user?.createdAt as Date)}
+            </div>
+          </div>
+          {/* The sidebar (and its Log out) is gone below 900px. */}
+          {showBottomNav && (
+            <button
+              type="button"
+              onClick={logout}
+              className="flex h-9.5 flex-none cursor-pointer items-center gap-2 rounded-full border border-line-3 px-4.5 text-sm font-semibold whitespace-nowrap text-ink hover:bg-chip"
+            >
+              <LogOut size={16} />
+              Log out
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-start gap-4">
+        <aside className="flex max-w-full flex-[1_1_260px] flex-col gap-4.5 rounded-[18px] border border-line bg-surface p-5">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <FieldLabel>Bio</FieldLabel>
+              {!isBioEditing && (
+                <button
+                  type="button"
+                  onClick={startBio}
+                  className="flex cursor-pointer items-center gap-1.5 py-0.5 text-[13px] text-ink-3b hover:text-ink"
+                >
+                  <Pencil size={13} />
+                  Edit
+                </button>
+              )}
+            </div>
+            {isBioEditing ? (
+              <>
+                <textarea
+                  autoFocus
+                  value={bioDraft}
+                  onChange={(e) => setBioDraft(e.target.value)}
+                  rows={3}
+                  placeholder="Add something about yourself"
+                  className="w-full resize-y rounded-[10px] border border-line-3 bg-field px-3 py-2.5 text-[14.5px] leading-normal text-ink outline-none"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsBioEditing(false)}
+                    className="h-8 cursor-pointer rounded-full px-3.5 text-[13.5px] text-ink-3b"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveBio}
+                    disabled={savingBio}
+                    className="h-8 cursor-pointer rounded-full bg-brand px-3.5 text-[13.5px] font-semibold text-white"
+                  >
+                    Save
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div
+                className={cn(
+                  "text-[15px] leading-normal whitespace-pre-line",
+                  user?.bio ? "text-ink-2" : "text-mute-2"
+                )}
+              >
+                {user?.bio || "Add something about yourself."}
+              </div>
+            )}
+          </div>
+          <div className="h-px bg-line" />
+          <div className="flex flex-col gap-1">
+            <FieldLabel>Email</FieldLabel>
+            <span className="text-[14.5px] break-all text-ink-2">{user?.email}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <FieldLabel>Joined</FieldLabel>
+            <span className="text-[14.5px] text-ink-2">
+              {formatHumanReadTimestamp(user?.createdAt as Date)}
+            </span>
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-[2_1_360px] flex-col gap-3">
+          <div className="flex items-center gap-1.5 px-1">
+            <span className="text-[15px] font-semibold">Posts</span>
+            <span className="text-[13px] text-mute-2">{posts.length}</span>
+          </div>
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} userId={user!.id} showAuthor={false} />
+          ))}
+        </div>
+      </div>
+    </>
   )
 }
 export default Profile

@@ -77,27 +77,12 @@ function timeAgo(timestamp: Date, locale = "en") {
 }
 
 function formatHumanReadTimestamp(timestamp: Date) {
-  const date = new Date(timestamp)
-
-  const day = date.getDate()
-  const month = date.toLocaleString("default", { month: "long" })
-  const year = date.getFullYear()
-
-  const daySuffix = (d: number) => {
-    if (d > 3 && d < 21) return "th"
-    switch (d % 10) {
-      case 1:
-        return "st"
-      case 2:
-        return "nd"
-      case 3:
-        return "rd"
-      default:
-        return "th"
-    }
-  }
-
-  return `${day}${daySuffix(day)} ${month}, ${year}`
+  // e.g. "3 September 2026"
+  return new Date(timestamp).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
 }
 
 function startOfDay(d: Date) {

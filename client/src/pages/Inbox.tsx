@@ -5,39 +5,52 @@ import {
 } from "@/app/api/chat"
 import { useMarkChatNotificationsAsReadMutation } from "@/app/api/notification"
 import { AppDispatch, RootState } from "@/app/store"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { NEW_MESSAGE } from "@/constants/events"
 import { useSocket } from "@/constants/SocketProvider"
 import useSocketEvents from "@/hooks/useSocketEvents"
 import MessageBubble from "@/components/MessageBubble"
+import UserAvatar from "@/components/UserAvatar"
+import { cn } from "@/lib/utils"
 import { Message } from "@/utility/types"
-import { ArrowLeft } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { ArrowUp, ChevronLeft, Info } from "lucide-react"
+import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useOutletContext, useParams } from "react-router-dom"
+import { useAppShell } from "@/components/layout/AppShellContext"
+import type { InboxOutletContext } from "./Messages"
 
 const NEAR_BOTTOM_THRESHOLD = 80
 const LOAD_MORE_THRESHOLD = 80
+
+const dayKey = (timestamp: Date) => new Date(timestamp).toDateString()
+
+// e.g. "3 Sep 2026"
+const formatDay = (timestamp: Date) =>
+  new Date(timestamp).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
 
 const Inbox = () => {
   const [text, setText] = useState("")
   const { user } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch<AppDispatch>()
-  const { pathname } = useLocation()
+  const { chatId } = useParams() as { chatId: string }
+  const { isMobile } = useAppShell()
+  const { infoOpen, canShowInfo, toggleInfo } =
+    useOutletContext<InboxOutletContext>()
   const scrollRef = useRef<HTMLUListElement>(null)
   const socket = useSocket()
-
-  const chatId = pathname.match(/\/messages\/(.*)/)![1]
 
   const { data: messagesResult } = useGetMessagesQuery({ chatId })
   const [fetchMoreMessages, { isFetching: isFetchingMore }] =
     useLazyGetMessagesQuery()
   const [markChatNotificationsAsRead] =
     useMarkChatNotificationsAsReadMutation()
+
+  const participator = messagesResult?.participator
 
   // Whether the next messagesResult update is this chat's first page (scroll
   // to bottom), a load-more-on-scroll-up response (preserve reading
@@ -109,18 +122,20 @@ const Inbox = () => {
     }
   }
 
+  const canSend = text.trim().length > 0
+
   const handleSendMessage = () => {
-    if (!text) return
+    if (!canSend) return
 
     socket?.emit(NEW_MESSAGE, {
       chatId,
-      message: text,
+      message: text.trim(),
     })
 
     setText("")
   }
 
-  const eventHandler = {
+  useSocketEvents(socket, {
     [NEW_MESSAGE]: (data: unknown) => {
       const newMessage = (data as { newMessage: Message }).newMessage
       if (newMessage.chatId === chatId) {
@@ -132,65 +147,132 @@ const Inbox = () => {
         markChatNotificationsAsRead(chatId)
       }
     },
-  }
+  })
 
-  useSocketEvents(socket!, eventHandler)
+  const messages = messagesResult?.messages ?? []
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <Card className="flex items-center gap-3 bg-secondary mx-4 px-4 py-2 h-14">
-        <Link to="/messages" className="md:hidden">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-
-        <Avatar className="w-8 h-8">
-          <AvatarImage
-            src={messagesResult?.participator.profileImgUrl}
-            className="object-cover"
-          />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
-
-        <h1 className="font-bold text-xl">
-          {messagesResult?.participator.name}
-        </h1>
-      </Card>
+    <>
+      <div
+        className={cn(
+          "flex h-17 flex-none items-center gap-3 border-b border-line pr-4",
+          isMobile ? "pl-1.5" : "pl-5"
+        )}
+      >
+        {isMobile && (
+          <Link
+            to="/messages"
+            aria-label="Back"
+            className="grid size-9.5 flex-none place-items-center rounded-full text-ink hover:bg-hover-2"
+          >
+            <ChevronLeft size={19} />
+          </Link>
+        )}
+        <UserAvatar user={participator} className="size-10 text-[13.5px]" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[15.5px] font-semibold">{participator?.name}</div>
+          {participator && (
+            <div className="truncate text-[12.5px] text-mute-2">
+              @{participator.username}
+            </div>
+          )}
+        </div>
+        {canShowInfo && (
+          <button
+            type="button"
+            onClick={toggleInfo}
+            aria-label="Conversation info"
+            aria-pressed={infoOpen}
+            className={cn(
+              "grid size-9.5 cursor-pointer place-items-center rounded-full text-ink hover:bg-hover-2",
+              infoOpen && "bg-hover-2"
+            )}
+          >
+            <Info size={18} />
+          </button>
+        )}
+      </div>
 
       <ul
         ref={scrollRef}
         onScroll={handleScroll}
-        className="relative flex flex-col flex-1 gap-4 mx-auto pr-1 border-[#f4c13f] border-t-2 w-[calc(100%-2rem)] overflow-y-scroll inbox-messages"
+        className="thin-scroll flex flex-1 flex-col overflow-auto px-5 pt-5 pb-3"
       >
         {isFetchingMore && (
-          <li className="py-1 text-zinc-400 text-xs text-center">
+          <li className="py-1 text-center text-xs text-faint">
             Loading older messages...
           </li>
         )}
-        {messagesResult && (
-          <TooltipProvider delayDuration={200}>
-            {messagesResult.messages.map((message: Message, index) => (
-              <li key={message.id} className={index === 0 ? "mt-auto" : undefined}>
-                <MessageBubble
-                  message={message}
-                  isOwn={message.authorId === user?.id}
-                />
-              </li>
-            ))}
-          </TooltipProvider>
-        )}
+        <TooltipProvider delayDuration={200}>
+          {messages.map((message, index) => {
+            const prev = messages[index - 1]
+            const next = messages[index + 1]
+            const newDay = !prev || dayKey(prev.createdAt) !== dayKey(message.createdAt)
+            const first = newDay || prev.authorId !== message.authorId
+            const last =
+              !next ||
+              next.authorId !== message.authorId ||
+              dayKey(next.createdAt) !== dayKey(message.createdAt)
+
+            return (
+              <Fragment key={message.id}>
+                {newDay && (
+                  <li
+                    className={cn(
+                      "flex justify-center pt-1 pb-4",
+                      index === 0 ? "mt-auto" : "mt-3.5"
+                    )}
+                  >
+                    <span className="font-mono text-[11px] tracking-[0.06em] text-faint uppercase">
+                      {formatDay(message.createdAt)}
+                    </span>
+                  </li>
+                )}
+                <li className={cn(!newDay && (first ? "mt-3.5" : "mt-0.75"))}>
+                  <MessageBubble
+                    message={message}
+                    isOwn={message.authorId === user?.id}
+                    first={first}
+                    last={last}
+                    author={participator}
+                  />
+                </li>
+              </Fragment>
+            )
+          })}
+        </TooltipProvider>
       </ul>
 
-      <div className="flex items-center gap-2 mx-4">
-        <Input
-          onChange={(e) => setText(e.target.value)}
-          onKeyUp={(e) => e.key === "Enter" && handleSendMessage()}
-          value={text}
-          type="email"
-          placeholder="Write Message"
-        />
-        <Button onClick={handleSendMessage}>Send</Button>
+      <div className="flex flex-none items-center gap-2.5 px-4 pt-3 pb-4">
+        <div className="flex h-11.5 min-w-0 flex-1 items-center rounded-full border border-line-2 bg-field pr-1.5 pl-4.5 focus-within:border-line-3">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                handleSendMessage()
+              }
+            }}
+            placeholder="Write a message…"
+            aria-label="Write a message"
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none"
+          />
+          <button
+            type="button"
+            onClick={handleSendMessage}
+            disabled={!canSend}
+            aria-label="Send"
+            className={cn(
+              "grid size-9 flex-none place-items-center rounded-full",
+              canSend ? "cursor-pointer bg-brand text-white" : "bg-line text-faint"
+            )}
+          >
+            <ArrowUp size={16} strokeWidth={2.2} />
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 export default Inbox

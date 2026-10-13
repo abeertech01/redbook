@@ -1,207 +1,135 @@
-import { useAddCommentMutation } from "@/app/api/comment"
+import { useAddCommentMutation, useGetCommentsQuery } from "@/app/api/comment"
 import {
-  useDeletePostMutation,
   useDownvotePostMutation,
   useGetPostQuery,
   useUpvotePostMutation,
 } from "@/app/api/post"
 import { RootState } from "@/app/store"
 import Comments from "@/components/Comments"
-import Navbar from "@/components/Navbar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+import PostMenu from "@/components/PostMenu"
 import TimeAgo from "@/components/TimeAgo"
-import clsx from "clsx"
-import {
-  ArrowBigDown,
-  ArrowBigUp,
-  CircleEllipsis,
-  MessageSquareText,
-  Trash,
-} from "lucide-react"
+import UserAvatar from "@/components/UserAvatar"
+import VoteControls from "@/components/VoteControls"
+import { cn } from "@/lib/utils"
+import { ArrowLeft, MessageSquare } from "lucide-react"
 import { useState } from "react"
 import { useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
+import { toast } from "sonner"
 
 const Post = () => {
   const [commentText, setCommentText] = useState("")
-  const [commentNumber, setCommentNumber] = useState<number>(0)
   const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useSelector((state: RootState) => state.user)
   const { data } = useGetPostQuery(id as string)
-  const [deletePost, { isLoading: deleteLoading }] = useDeletePostMutation()
+  const { data: commentsData } = useGetCommentsQuery(id as string)
   const [addComment, { isLoading: addCommentLoading }] = useAddCommentMutation()
   const [upvotePost, { isLoading: uv_loading }] = useUpvotePostMutation()
   const [downvotePost, { isLoading: dv_loading }] = useDownvotePostMutation()
 
-  const deletePostClick = async () => {
-    if (user?.id !== data?.post.authorId) {
-      toast.error("You are not authorized to delete this post")
+  const post = data?.post
+  const commentCount = commentsData?.comments.length ?? 0
+  const canComment = commentText.trim().length > 0 && !addCommentLoading
+
+  const submitComment = async () => {
+    if (!canComment) return
+
+    const result = await addComment({
+      postId: id as string,
+      content: commentText.trim(),
+    })
+
+    if ("error" in result) {
+      toast.error("Couldn't add the comment")
       return
     }
 
-    const result = await deletePost(data!.post.id)
-
-    if (result.data?.success) {
-      toast("Post Deleted Successfully")
-      navigate("/")
-    }
-  }
-
-  const submitComment = async () => {
-    const comment = await addComment({
-      postId: id as string,
-      content: commentText,
-    })
-
-    if (comment) {
-      setCommentText("")
-
-      toast("Comment Added Successfully")
-    }
+    setCommentText("")
   }
 
   return (
-    <div>
-      <Navbar />
-      <div className="mx-auto px-4 md:px-0 py-4 w-full md:w-188 min-h-[calc(100vh-3.5rem)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>{data?.post.title}</CardTitle>
-            <CardDescription className="py-2">
-              <div className="flex items-center gap-1">
-                <Avatar className="w-[1.8rem] h-[1.8rem]">
-                  <AvatarImage
-                    src={data?.post.author?.profileImgUrl}
-                    className="object-cover"
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <div>{data?.post.author?.name}</div>
-                <div>•</div>
-                <div>
-                  {data && (
-                    <TimeAgo timestamp={data.post.createdAt} variant="date" />
-                  )}
-                </div>
-              </div>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="">{data?.post.content}</p>
-          </CardContent>
-          <CardFooter className="flex flex-col items-start">
-            <div className="flex justify-between items-center mb-4 w-full">
-              <div className="flex items-center gap-2">
-                {/* Upvote */}
-                <Button
-                  disabled={uv_loading || dv_loading}
-                  onClick={() => upvotePost(data!.post.id)}
-                  variant={"outline"}
-                  className={clsx(
-                    data?.post.upvoteIds.includes(user!.id) &&
-                      "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500",
-                  )}
-                >
-                  <ArrowBigUp className="scale-125" />{" "}
-                  {data?.post.upvoteIds.length}
-                </Button>
-                <div>|</div>
-                {/* Downvote */}
-                <Button
-                  disabled={uv_loading || dv_loading}
-                  onClick={() => downvotePost(data!.post.id)}
-                  variant={"outline"}
-                  className={clsx(
-                    data?.post.downvoteIds.includes(user!.id) &&
-                      "bg-linear-to-r from-rose-500 to-red-400 text-white hover:text-white hover:to-yellow-500",
-                  )}
-                >
-                  <ArrowBigDown className="scale-125" />{" "}
-                  {data?.post.downvoteIds.length}
-                </Button>
-                <div>|</div>
-                {/* Comment */}
-                <Button variant={"outline"}>
-                  <MessageSquareText className="scale-125" /> {commentNumber}
-                </Button>
-              </div>
-              {user?.id === data?.post.authorId && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant={"ghost"} size={"icon"}>
-                      <CircleEllipsis />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuLabel className="text-center">
-                      More Options
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Button
-                        disabled={deleteLoading}
-                        onClick={deletePostClick}
-                        variant={"ghost"}
-                      >
-                        Delete Post <Trash />
-                      </Button>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-            <div className="bg-zinc-500 mb-4 w-full h-px"></div>
+    <>
+      <button
+        type="button"
+        onClick={() => navigate("/")}
+        className="flex h-9 cursor-pointer items-center gap-2 self-start rounded-full pr-3.5 pl-2.5 text-sm font-medium text-ink-3b hover:bg-hover hover:text-ink"
+      >
+        <ArrowLeft size={17} />
+        Back to feed
+      </button>
 
-            {/* Comment Area */}
-            <div className="flex flex-col gap-2 mb-4 w-full">
-              <Textarea
-                rows={1}
-                placeholder="Comment..."
-                onChange={(e) => setCommentText(e.target.value)}
-                value={commentText}
-                className="focus-visible:outline-none"
-              />
-              <Button
-                onClick={submitComment}
-                variant={"secondary"}
-                disabled={addCommentLoading}
-              >
-                Comment
-              </Button>
+      {post && (
+        <article className="flex flex-col gap-4 rounded-[20px] border border-line bg-surface px-5 py-5 sm:px-7 sm:py-6.5">
+          <div className="flex items-center gap-3">
+            <UserAvatar user={post.author} className="size-11 text-sm" />
+            <div className="min-w-0 flex-1">
+              <div className="text-[15px] font-semibold">{post.author?.name}</div>
+              <div className="text-[13px] text-mute-2">
+                @{post.author?.username} ·{" "}
+                <TimeAgo timestamp={post.createdAt} variant="date" />
+              </div>
             </div>
-
-            {/* All Comments */}
-            {data && (
-              <Comments
-                postId={data.post.id}
-                userId={user!.id}
-                setCommentNumber={setCommentNumber}
-              />
+            {post.authorId === user?.id && (
+              <PostMenu postId={post.id} onDeleted={() => navigate("/")} />
             )}
-          </CardFooter>
-        </Card>
+          </div>
+          {post.title && (
+            <h1 className="m-0 text-[28px] leading-[1.2] font-semibold tracking-[-0.02em] text-pretty">
+              {post.title}
+            </h1>
+          )}
+          <p className="m-0 text-[16.5px] leading-[1.6] whitespace-pre-line text-pretty text-ink-2">
+            {post.content}
+          </p>
+          <div className="flex items-center gap-2 pt-1.5">
+            <VoteControls
+              size="lg"
+              upvoteIds={post.upvoteIds}
+              downvoteIds={post.downvoteIds}
+              userId={user!.id}
+              onUpvote={() => upvotePost(post.id)}
+              onDownvote={() => downvotePost(post.id)}
+              disabled={uv_loading || dv_loading}
+            />
+            <div className="flex h-9.5 items-center gap-1.75 px-3.5 text-sm font-semibold text-ink-3b">
+              <MessageSquare size={16} />
+              {commentCount === 1 ? "1 comment" : `${commentCount} comments`}
+            </div>
+          </div>
+        </article>
+      )}
+
+      <div className="flex gap-3.5 rounded-[20px] border border-line bg-surface px-4 py-4 sm:px-6 sm:py-5">
+        <UserAvatar user={user} className="size-9.5 text-[13px]" />
+        <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+          <textarea
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            rows={3}
+            placeholder="Add a comment…"
+            className="w-full resize-y rounded-xl border border-line-2 bg-field px-3.5 py-3 text-[15px] leading-normal text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(255,51,88,0.18)]"
+          />
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={submitComment}
+              disabled={!canComment}
+              className={cn(
+                "h-9 rounded-full px-4.5 text-sm font-semibold",
+                canComment
+                  ? "cursor-pointer bg-brand text-white hover:bg-brand-hover"
+                  : "bg-line text-faint"
+              )}
+            >
+              Comment
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {post && <Comments postId={post.id} userId={user!.id} />}
+    </>
   )
 }
 export default Post
