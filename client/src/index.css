@@ -4,30 +4,59 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* Design palette - values flip between light and dark below */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-pop: var(--pop);
+  --color-field: var(--field);
+  --color-hover: var(--hover);
+  --color-chip: var(--chip);
+  --color-hover-2: var(--hover2);
+  --color-bubble: var(--bubble);
+  --color-line: var(--line);
+  --color-line-2: var(--line2);
+  --color-line-3: var(--line3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink2);
+  --color-ink-3: var(--ink3);
+  --color-ink-3b: var(--ink3b);
+  --color-mute: var(--mute);
+  --color-mute-2: var(--mute2);
+  --color-faint: var(--faint);
+  --color-accent-text: var(--accentText);
+  --color-accent-text-2: var(--accentText2);
+  --color-down: var(--down);
+  --color-glass: var(--glass);
+  --color-backdrop: var(--backdrop);
+  --color-shade: var(--shade);
+  --color-brand: #ff3358;
+  --color-brand-hover: #ff4d6d;
+
+  /* shadcn/ui tokens, mapped onto the design palette so the primitives
+     under components/ui match the rest of the app */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--pop);
+  --color-popover-foreground: var(--ink);
+  --color-primary: #ff3358;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--chip);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--chip);
+  --color-muted-foreground: var(--mute);
+  --color-accent: var(--hover2);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: #ff3358;
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--line2);
+  --color-input: var(--line2);
+  --color-ring: #ff3358;
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -36,57 +65,69 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    color-scheme: light;
+    --bg: #f4f4f3;
+    --surface: #ffffff;
+    --pop: #ffffff;
+    --field: #f4f4f3;
+    --hover: #efefed;
+    --chip: #f3f3f1;
+    --hover2: #e9e9e7;
+    --bubble: #ececea;
+    --line: #e6e6e3;
+    --line2: #e0e0dd;
+    --line3: #d3d3cf;
+    --ink: #141416;
+    --ink2: #2c2c31;
+    --ink3: #44444b;
+    --ink3b: #55555c;
+    --mute: #66666e;
+    --mute2: #6f6f77;
+    --faint: #8f8f96;
+    --thumb: #cfcfcb;
+    --thumbH: #b5b5b0;
+    --accentText: #d9143c;
+    --accentText2: #c20f35;
+    --down: #2a66d8;
+    --cover1: #e2ebe7;
+    --cover2: #d9e4df;
+    --coverText: #557064;
+    --glass: rgba(244, 244, 243, 0.86);
+    --backdrop: rgba(20, 20, 24, 0.32);
+    --shade: rgba(20, 20, 30, 0.14);
+    --radius: 0.75rem;
   }
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    color-scheme: dark;
+    --bg: #0a0a0c;
+    --surface: #121215;
+    --pop: #131317;
+    --field: #0e0e11;
+    --hover: #16161a;
+    --chip: #18181d;
+    --hover2: #1b1b20;
+    --bubble: #1f1f25;
+    --line: #1f1f24;
+    --line2: #24242a;
+    --line3: #2a2a30;
+    --ink: #ececef;
+    --ink2: #d0d0d6;
+    --ink3: #b4b4bc;
+    --ink3b: #a9a9b2;
+    --mute: #8e8e96;
+    --mute2: #7d7d86;
+    --faint: #6b6b74;
+    --thumb: #2e2e35;
+    --thumbH: #3d3d45;
+    --accentText: #ff5c7a;
+    --accentText2: #ff8098;
+    --down: #8ab8ff;
+    --cover1: #16251f;
+    --cover2: #13201b;
+    --coverText: #6f8a80;
+    --glass: rgba(10, 10, 12, 0.86);
+    --backdrop: rgba(5, 5, 7, 0.72);
+    --shade: rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -95,8 +136,53 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-bg text-ink font-sans antialiased;
+    font-size: 15px;
+    transition: background 0.2s;
   }
+  textarea::placeholder,
+  input::placeholder {
+    color: var(--faint);
+  }
+}
+
+/* Phones scroll the page itself; hide its scrollbar like the design does */
+@media (max-width: 759px) {
+  html,
+  body {
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--thumb) transparent;
+}
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--thumb);
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--thumbH);
+}
+
+.cover-placeholder {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--cover1) 0 12px,
+    var(--cover2) 12px 24px
+  );
+  color: var(--coverText);
 }
 
 .centering {
@@ -110,7 +196,7 @@
   aspect-ratio: 1;
   border-radius: 50%;
   padding: 1px;
-  background: conic-gradient(#0000 10%, #f03355) content-box;
+  background: conic-gradient(#0000 10%, #ff3358) content-box;
   -webkit-mask: repeating-conic-gradient(
       #0000 0deg,
       #000 1deg 20deg,
@@ -129,37 +215,4 @@
   to {
     transform: rotate(1turn);
   }
-}
-
-.allposts,
-.inbox-messages,
-.people-scroll,
-.notification-scroll {
-  padding-right: 0.2rem;
-  scrollbar-width: 0.6rem; /* For Firefox  */
-  scrollbar-color: #71717a #71717a36;
-}
-
-/* Webkit browsers (Chrome, Edge, Safari) */
-.allposts::-webkit-scrollbar,
-.inbox-messages::-webkit-scrollbar,
-.people-scroll::-webkit-scrollbar,
-.notification-scroll::-webkit-scrollbar {
-  width: 0.6rem;
-}
-
-.allposts::-webkit-scrollbar-thumb,
-.inbox-messages::-webkit-scrollbar-thumb,
-.people-scroll::-webkit-scrollbar-thumb,
-.notification-scroll::-webkit-scrollbar-thumb {
-  background-color: #71717a;
-  border-radius: 1rem;
-}
-
-.allposts::-webkit-scrollbar-track,
-.inbox-messages::-webkit-scrollbar-track,
-.people-scroll::-webkit-scrollbar-track,
-.notification-scroll::-webkit-scrollbar-track {
-  background-color: #71717a19;
-  border-radius: 1rem;
 }

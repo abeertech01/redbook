@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner.tsx"
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-      <ThemeProvider defaultTheme="system" storageKey="redbook-ui-theme">
+      <ThemeProvider storageKey="redbook-ui-theme">
         <App />
         <Toaster />
       </ThemeProvider>

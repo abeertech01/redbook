@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "./app/store"
 import ProtectedRoute from "./components/ProtectedRoute"
 import LayoutLoader from "./components/LayoutLoader"
+import AppLayout from "./components/layout/AppLayout"
 import { SocketProvider } from "./constants/SocketProvider"
 
 const App = () => {
@@ -46,12 +47,14 @@ const App = () => {
             </SocketProvider>
           }
         >
-          <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/messages" element={<Messages />}>
-            <Route path=":chatId" element={<Inbox />} />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/messages" element={<Messages />}>
+              <Route path=":chatId" element={<Inbox />} />
+            </Route>
+            <Route path="/post/:id" element={<Post />} />
           </Route>
-          <Route path="/post/:id" element={<Post />} />
         </Route>
 
         <Route path="/login" element={<Login />} />

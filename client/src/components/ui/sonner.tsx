@@ -11,7 +11,7 @@ import { Toaster as Sonner } from "sonner"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const { theme } = useTheme()
 
   return (
     <Sonner
@@ -27,15 +27,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "hsl(var(--primary))",
-          "--normal-text": "hsl(var(--primary-foreground))",
-          "--normal-border": "hsl(var(--primary))",
+          "--normal-bg": "var(--pop)",
+          "--normal-text": "var(--ink)",
+          "--normal-border": "var(--line2)",
           "--success-bg": "#059669",
           "--success-text": "#ffffff",
           "--success-border": "#059669",
-          "--error-bg": "hsl(var(--destructive))",
-          "--error-text": "hsl(var(--destructive-foreground))",
-          "--error-border": "hsl(var(--destructive))",
+          "--error-bg": "#ff3358",
+          "--error-text": "#ffffff",
+          "--error-border": "#ff3358",
           "--warning-bg": "#d97706",
           "--warning-text": "#ffffff",
           "--warning-border": "#d97706",

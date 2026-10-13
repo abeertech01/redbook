@@ -1,72 +1,72 @@
 import { createContext, useContext, useEffect, useState } from "react"
 
-type Theme = "dark" | "light" | "system"
+type ResolvedTheme = "dark" | "light"
 
 type ThemeProviderProps = {
   children: React.ReactNode
-  defaultTheme?: Theme
   storageKey?: string
 }
 
 type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
+  theme: ResolvedTheme
+  toggleTheme: () => void
 }
 
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-}
+const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
+  undefined
+)
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+const systemTheme = (): ResolvedTheme =>
+  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+
+const readStored = (storageKey: string): ResolvedTheme | null => {
+  try {
+    const stored = localStorage.getItem(storageKey)
+    return stored === "dark" || stored === "light" ? stored : null
+  } catch {
+    return null
+  }
+}
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
   storageKey = "vite-ui-theme",
-  ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+  // null until the user picks a theme with the toggle - until then the OS
+  // preference decides, and keeps deciding if it changes mid-session.
+  const [chosen, setChosen] = useState<ResolvedTheme | null>(() =>
+    readStored(storageKey)
   )
+  const [system, setSystem] = useState<ResolvedTheme>(systemTheme)
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)")
+    const onChange = () => setSystem(media.matches ? "dark" : "light")
+    media.addEventListener("change", onChange)
+    return () => media.removeEventListener("change", onChange)
+  }, [])
+
+  const theme = chosen ?? system
 
   useEffect(() => {
     const root = window.document.documentElement
-
     root.classList.remove("light", "dark")
-
-    /**
-     * The condition here is "(prefers-color-scheme: dark)", which checks if the user has set their system (like their computer or phone) to prefer dark mode.
-     * .matches is a part of matchMedia that tells us if this condition is met.
-     * It returns true if the user’s system prefers dark mode, and false if it doesn’t.
-     */
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
-
-      /**
-       * root represents the HTML element of the webpage.
-       * root.classList.add(systemTheme) adds either the "dark" or "light" class to the <html> element.
-       */
-      root.classList.add(systemTheme)
-      return
-    }
-
     root.classList.add(theme)
   }, [theme])
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark"
+    try {
+      localStorage.setItem(storageKey, next)
+    } catch {
+      // Storage can be blocked (private mode) - the toggle still works for
+      // this session, it just won't be remembered.
+    }
+    setChosen(next)
   }
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeProviderContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeProviderContext.Provider>
   )

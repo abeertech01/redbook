@@ -43,7 +43,13 @@ const postAPI = createApi({
         return endpointName
       },
       merge: (currentCache, newItems) => {
-        currentCache.posts.push(...newItems.posts)
+        // Skip posts already held: createPost/deletePost invalidate this tag,
+        // which refetches a page that's already been merged in, and pushing
+        // it again would duplicate every post on it.
+        const seen = new Set(currentCache.posts.map((post) => post.id))
+        currentCache.posts.push(
+          ...newItems.posts.filter((post) => !seen.has(post.id))
+        )
       },
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg

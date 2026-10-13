@@ -29,27 +29,17 @@ const userSlice = createSlice({
       state.user!.coverImgUrl = action.payload
     },
   },
+  // `loader` is only for the initial session check in App. Login/register
+  // deliberately don't touch it: App swaps the whole router for a spinner
+  // while it's set, which would unmount the auth form mid-submit and lose
+  // its error message. The form tracks its own submitting state instead.
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state) => {
-        state.loader = true
-      })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.loader = false
         state.user = action.payload.user
-      })
-      .addCase(registerUser.rejected, (state) => {
-        state.loader = false
-      })
-      .addCase(loginUser.pending, (state) => {
-        state.loader = true
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.loader = false
         state.user = action.payload.user
-      })
-      .addCase(loginUser.rejected, (state) => {
-        state.loader = false
       })
   },
 })
