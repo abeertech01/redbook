@@ -1,6 +1,6 @@
 # Redbook
 
-**Redbook** is a social media app built with the PERN stack (PostgreSQL, Express, React, and Node.js). This README will guide you through the setup process to run the project using Docker, including necessary environment variables.
+**Redbook** is a social media app built with the PERN stack (PostgreSQL, Express, React, and Node.js). You can try it in your browser through the live demo, or run it on your own machine with Docker.
 
 ## Live Demo
 
@@ -8,78 +8,79 @@ Try it out without any setup: **[redbook-client.abeer-technology.workers.dev](ht
 
 This is hosted on free-tier services (Cloudflare Workers, Render, Neon). Two things worth knowing:
 
-- The server can take up to ~50 seconds to respond on the first request after a period of inactivity (it spins down after 15 minutes idle, then wakes back up) — this is normal, not a bug.
-- If the live link is unresponsive or broken beyond that, it likely means something's off with the free-tier hosting rather than the code itself. In that case, use the Docker setup below to run it yourself.
+- **<ins>Slow first load is normal.</ins>** The server can take up to ~50 seconds to respond on the first request after a period of inactivity (it spins down after 15 minutes idle, then wakes back up) — this is not a bug.
+- **<ins>Still broken? Run it locally.</ins>** If the live link is unresponsive or broken beyond that, it likely means something's off with the free-tier hosting rather than the code itself. In that case, use the Docker setup below to run it yourself.
 
 ## Watch The App Preview
+
 [![Redbook Preview Thumbnail](./client/public/redbook-screenshot.png)](https://www.youtube.com/watch?v=SJKd8GhW-iE)
 
-## Prerequisites
+## Run It Locally with Docker
 
-- Ensure you have Docker and Docker Compose installed on your machine.
-- Clone the repository to your local machine.
+> **Everything from here on is only for running Redbook on your own machine.** If you just want to see how it works, use the [live demo](#live-demo) instead — no setup required.
 
-## Project Structure
+### 1. Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) with Docker Compose installed.
+- A local copy of this repository:
+
+  ```bash
+  git clone https://github.com/abeertech01/redbook.git
+  cd redbook
+  ```
+
+The project is split into two independent apps, wired together by Docker Compose:
 
 ```bash
-pern-stack/
- client/          # Contains the frontend (React)
- server/          # Contains the backend (Express, Node.js)
+redbook/
+ client/              # Frontend (React)
+ server/              # Backend (Express, Node.js)
  docker-compose.yaml
  ...
 ```
 
-## Setting Up Environment Variables
+### 2. Set up environment variables
 
-Before running the project, you need to set up environment variables for both the **client** and **server**:
+Copy the example env file in each app folder to `.env`:
 
-1. Copy the `example.env` file located in each folder (`client` and `server`) and rename it to `.env`:
+```bash
+cp client/example.env client/.env
+cp server/example.env server/.env
+```
 
-   ```bash
-   cp client/example.env client/.env
-   cp server/example.env server/.env
-   ```
+Then fill in the values in each `.env`:
 
-2. Fill in the required values in each .env file as specified in the example.env file.
+- **`server/.env`:** set `PORT=3030`, add any random string as `JWT_SECRET`, and add your [Cloudinary](https://cloudinary.com/) credentials (needed for profile and cover photo uploads). The Postgres values can stay as they are.
+- **`client/.env`:** works as is.
 
-## Running the Project
-
-Once the environment variables are set up, you can start the project using Docker Compose.
-
-Start the Docker Containers: <br>
-Run the following command to build and start all services in detached mode:
+### 3. Start the app
 
 ```bash
 docker compose up -d
 ```
 
-This command will set up the following services:
+This builds and starts four services, in this order:
 
-- PostgreSQL: The database service with persistent volume storage.
-- Migration: Prisma migration service. This will migrate the prisma schema to get the database ready.
-- Server: The Node.js backend running on http://localhost:3030.
-- Client: The React frontend running on http://localhost:5173.
+- **Database:** PostgreSQL, with data kept in a persistent volume.
+- **Migration:** applies the Prisma schema so the database is ready, then exits.
+- **Server:** the Node.js backend at http://localhost:3030.
+- **Client:** the React frontend at http://localhost:5173.
 
-## Accessing the Application
+Once everything is up, open **http://localhost:5173** in your browser. The database is filled with demo users and posts on first start.
 
-- Frontend: http://localhost:5173 - The main entry point for the Redbook application.
-- Backend: http://localhost:3030 - The API server where backend services are exposed.
-
-## Stopping the Services
-
-To stop the running containers, use:
+### 4. Stop the app
 
 ```bash
 docker compose down
 ```
 
-This command will stop all services and remove the associated containers.
+This stops and removes the containers. Your data stays in the database volume and will still be there next time you start the app.
 
-## Troubleshooting
+### Troubleshooting
 
-- Environment Variables Not Loading: Ensure that the .env files are properly configured and located in the correct folders (client/.env and server/.env).
-- Ports Already in Use: If you encounter port conflicts, make sure that the ports 5173 (client) and 3030 (server) are available on your machine.
+- **Environment variables not loading:** make sure the files are named `.env` (not `example.env`) and sit in `client/` and `server/`.
+- **Ports already in use:** the app needs ports 5173 (client), 3030 (server) and 5432 (database) to be free on your machine.
 
 ## Contributing
 
-If you'd like to contribute to Redbook, feel free to fork the repository and submit a pull request. I welcome contributions that demonstrates weak points of the project.
+If you'd like to contribute to Redbook, feel free to fork the repository and submit a pull request. I welcome contributions that point out weak spots in the project.

@@ -21,6 +21,8 @@ import {
 } from "@/app/reducers/user"
 import { toast } from "sonner"
 
+const DEFAULT_COVER = "bmw-6706660_1280.jpg"
+
 type CoverPhotoProps = {
   url?: string
   uploading: boolean
@@ -137,9 +139,11 @@ const Profile = () => {
     dispatch(updateCoverImageUrl(updatedUserData.data?.user.coverImgUrl))
   }
 
-  // Every account starts on a stock cover URL (the schema default) with no
-  // Cloudinary id behind it - treat that as "no cover yet".
-  const hasCover = !!user?.coverImgPId
+  // Every account starts on a stock cover URL (the schema default) - treat
+  // that as "no cover yet". Checked by URL because the API never sends
+  // coverImgPId to the client.
+  const hasCover =
+    !!user?.coverImgUrl && !user.coverImgUrl.includes(DEFAULT_COVER)
 
   return (
     <>
