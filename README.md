@@ -13,7 +13,7 @@ This is hosted on free-tier services (Cloudflare Workers, Render, Neon). Two thi
 
 ## Watch The App Preview
 
-[![Redbook Preview Thumbnail](./client/public/redbook-screenshot.png)](https://www.youtube.com/watch?v=SJKd8GhW-iE)
+[![Redbook Preview Thumbnail](./client/public/redbook-app-screenshot.png)](https://www.youtube.com/watch?v=SJKd8GhW-iE)
 
 ## Run It Locally with Docker
 
